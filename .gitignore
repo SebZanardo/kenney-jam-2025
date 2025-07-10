@@ -17,6 +17,15 @@ venv.bak/
 build/
 *.zip
 
+# Pygbag
+*.wav
+*.mp3
+*.pyc
+*.egg-info
+*-pygbag.???
+/build
+/dist
+
 # MacOS
 .DS_Store
 
