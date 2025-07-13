@@ -1,44 +1,38 @@
-import platform
 import asyncio
 import pygame
 
 import core.constants as c
-import core.assets as a
+import core.input as i
+from core.setup import window, clock
 
 
 pygame.init()
 
-if c.IS_WEB:
-    platform.window.canvas.style.imageRendering = "pixelated"
-    window = pygame.display.set_mode(c.WINDOW_SETUP["size"])
-else:
-    window = pygame.display.set_mode(**c.WINDOW_SETUP)
-
-pygame.display.set_caption(c.CAPTION)
-pygame.display.set_icon(a.ICON)
-
-clock = pygame.time.Clock()
-
 
 async def main() -> None:
+    # Should these be global too with clock?
+    mouse_buffer: i.InputBuffer = [i.InputState.NOTHING for _ in i.MouseButton]
+    action_buffer: i.InputBuffer = [i.InputState.NOTHING for _ in i.Action]
+    last_pressed = [i.action_mappings[action][0] for action in i.Action]
+
+    print("Starting game loop")
+
     while True:
-        clock.tick(c.FPS)
+        elapsed_time = clock.tick(c.FPS)
+        dt = elapsed_time / 1000.0  # Convert to seconds
+        dt = min(dt, c.MAX_DT)  # Clamp delta time
+        # dt *= g.time_dilation
 
-        # INPUT
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-                return
+        i.update_action_buffer(action_buffer, last_pressed)
 
-            # HACK: For quick development
-            # NOTE: It overrides exitting fullscreen when in browser
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                terminate()
-                return
+        running = i.input_event_queue(action_buffer)
 
-        # UPDATE
+        if not running:
+            terminate()
 
-        # RENDER
+        i.update_mouse_buffer(mouse_buffer)
+
+        # TODO: UPDATE and RENDER from current scene
         window.fill(c.WHITE)
 
         # Keep these calls together in this order

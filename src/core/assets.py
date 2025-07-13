@@ -4,5 +4,7 @@ import pygame
 ICON = pygame.image.load("data/textures/icon.png")
 
 # Load audio (ogg for web compatibility)
+pass
 
 # Load fonts (ttf for web compatibility)
+pass
