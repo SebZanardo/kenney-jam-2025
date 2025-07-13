@@ -2,6 +2,7 @@ import pygame
 from enum import IntEnum, auto
 
 import core.constants as c
+import core.globals as g
 
 
 class InputState(IntEnum):
@@ -31,23 +32,23 @@ class Action(IntEnum):
 InputBuffer = list[InputState]
 
 
-def is_pressed(action_buffer: InputBuffer, input_enum: IntEnum) -> bool:
-    return action_buffer[input_enum] == InputState.PRESSED
+def is_pressed(input_enum: IntEnum) -> bool:
+    return g.action_buffer[input_enum] == InputState.PRESSED
 
 
-def is_held(action_buffer: InputBuffer, input_enum: IntEnum) -> bool:
-    return action_buffer[input_enum] == InputState.HELD
+def is_held(input_enum: IntEnum) -> bool:
+    return g.action_buffer[input_enum] == InputState.HELD
 
 
-def is_released(action_buffer: InputBuffer, input_enum: IntEnum) -> bool:
-    return action_buffer[input_enum] == InputState.RELEASED
+def is_released(input_enum: IntEnum) -> bool:
+    return g.action_buffer[input_enum] == InputState.RELEASED
 
 
-def is_nothing(action_buffer: InputBuffer, input_enum: IntEnum) -> bool:
-    return action_buffer[input_enum] == InputState.NOTHING
+def is_nothing(input_enum: IntEnum) -> bool:
+    return g.action_buffer[input_enum] == InputState.NOTHING
 
 
-def input_event_queue(action_buffer: InputBuffer) -> bool:
+def input_event_queue() -> bool:
     """
     Pumps the event queue and handles application events
     Returns False if application should terminate, else True
@@ -58,9 +59,9 @@ def input_event_queue(action_buffer: InputBuffer) -> bool:
 
         if event.type == pygame.MOUSEWHEEL and not c.IS_WEB:
             if event.y < 0:
-                action_buffer[Action.RIGHT] = InputState.PRESSED
+                g.action_buffer[Action.RIGHT] = InputState.PRESSED
             elif event.y > 0:
-                action_buffer[Action.LEFT] = InputState.PRESSED
+                g.action_buffer[Action.LEFT] = InputState.PRESSED
 
         elif event.type == pygame.WINDOWFOCUSGAINED:
             pygame.mixer.music.unpause()
@@ -72,61 +73,59 @@ def input_event_queue(action_buffer: InputBuffer) -> bool:
     return True
 
 
-def update_action_buffer(
-    action_buffer: InputBuffer, last_action_mapping_pressed: list[int]
-) -> None:
+def update_action_buffer() -> None:
     # get_just_pressed() and get_just_released() do not work with web ;(
     keys_held = pygame.key.get_pressed()
     for action in Action:
-        if action_buffer[action] == InputState.NOTHING:
+        if g.action_buffer[action] == InputState.NOTHING:
             # Check if any alternate keys for the action were just pressed
             for mapping in action_mappings[action]:
-                if mapping == last_action_mapping_pressed[action]:
+                if mapping == g.last_action_pressed[action]:
                     continue
 
                 # If an alternate key was pressed than last recorded key
                 if keys_held[mapping]:
                     # Set that key bind as the current bind to 'track'
-                    last_action_mapping_pressed[action] = mapping
+                    g.last_action_pressed[action] = mapping
 
-        if keys_held[last_action_mapping_pressed[action]]:
+        if keys_held[g.last_action_pressed[action]]:
             if (
-                action_buffer[action] == InputState.NOTHING
-                or action_buffer[action] == InputState.RELEASED
+                g.action_buffer[action] == InputState.NOTHING
+                or g.action_buffer[action] == InputState.RELEASED
             ):
-                action_buffer[action] = InputState.PRESSED
-            elif action_buffer[action] == InputState.PRESSED:
-                action_buffer[action] = InputState.HELD
+                g.action_buffer[action] = InputState.PRESSED
+            elif g.action_buffer[action] == InputState.PRESSED:
+                g.action_buffer[action] = InputState.HELD
         else:
             if (
-                action_buffer[action] == InputState.PRESSED
-                or action_buffer[action] == InputState.HELD
+                g.action_buffer[action] == InputState.PRESSED
+                or g.action_buffer[action] == InputState.HELD
             ):
-                action_buffer[action] = InputState.RELEASED
-            elif action_buffer[action] == InputState.RELEASED:
-                action_buffer[action] = InputState.NOTHING
+                g.action_buffer[action] = InputState.RELEASED
+            elif g.action_buffer[action] == InputState.RELEASED:
+                g.action_buffer[action] = InputState.NOTHING
 
 
-def update_mouse_buffer(mouse_buffer: InputBuffer) -> None:
+def update_mouse_buffer() -> None:
     # get_just_pressed() and get_just_released() do not work with web ;(
     mouse_pressed = pygame.mouse.get_pressed()
     for button in MouseButton:
         if mouse_pressed[button]:
             if (
-                mouse_buffer[button] == InputState.NOTHING
-                or mouse_buffer[button] == InputState.RELEASED
+                g.mouse_buffer[button] == InputState.NOTHING
+                or g.mouse_buffer[button] == InputState.RELEASED
             ):
-                mouse_buffer[button] = InputState.PRESSED
-            elif mouse_buffer[button] == InputState.PRESSED:
-                mouse_buffer[button] = InputState.HELD
+                g.mouse_buffer[button] = InputState.PRESSED
+            elif g.mouse_buffer[button] == InputState.PRESSED:
+                g.mouse_buffer[button] = InputState.HELD
         else:
             if (
-                mouse_buffer[button] == InputState.PRESSED
-                or mouse_buffer[button] == InputState.HELD
+                g.mouse_buffer[button] == InputState.PRESSED
+                or g.mouse_buffer[button] == InputState.HELD
             ):
-                mouse_buffer[button] = InputState.RELEASED
-            elif mouse_buffer[button] == InputState.RELEASED:
-                mouse_buffer[button] = InputState.NOTHING
+                g.mouse_buffer[button] = InputState.RELEASED
+            elif g.mouse_buffer[button] == InputState.RELEASED:
+                g.mouse_buffer[button] = InputState.NOTHING
 
 
 action_mappings = {

@@ -3,44 +3,34 @@ import pygame
 
 import core.constants as c
 import core.input as i
-from core.setup import window, clock
-import core.assets as a
+import core.globals as g
 
-from components.statemachine import (
-    StateMachine, statemachine_initialise, statemachine_execute
-)
+from core.setup import setup
 
-from scenes.manager import SCENE_MAPPING, SceneState
+from components.statemachine import statemachine_execute
 
 
 async def main() -> None:
-    pygame.display.set_icon(a.ICON)
-    scene_manager = StateMachine()
-    statemachine_initialise(scene_manager, SCENE_MAPPING, SceneState.MENU)
-
-    # TODO: Make these global
-    mouse_buffer: i.InputBuffer = [i.InputState.NOTHING for _ in i.MouseButton]
-    action_buffer: i.InputBuffer = [i.InputState.NOTHING for _ in i.Action]
-    last_pressed = [i.action_mappings[action][0] for action in i.Action]
-
+    setup()
     print("Starting game loop")
 
     while True:
-        elapsed_time = clock.tick(c.FPS)
+        elapsed_time = g.clock.tick(c.FPS)
+        # TODO: Make dt global or used fixed_dt which can be in constants
         dt = elapsed_time / 1000.0  # Convert to seconds
         dt = min(dt, c.MAX_DT)  # Clamp delta time
         # dt *= g.time_dilation
 
-        i.update_action_buffer(action_buffer, last_pressed)
+        i.update_action_buffer()
 
-        running = i.input_event_queue(action_buffer)
+        running = i.input_event_queue()
 
         if not running:
             terminate()
 
-        i.update_mouse_buffer(mouse_buffer)
+        i.update_mouse_buffer()
 
-        statemachine_execute(scene_manager, dt, action_buffer, mouse_buffer)
+        statemachine_execute(g.scene_manager)
 
         # Keep these calls together in this order
         pygame.display.flip()
@@ -51,7 +41,7 @@ def terminate() -> None:
     print("Terminated application")
 
     pygame.mixer.stop()
-    window.fill(c.BLACK)
+    g.window.fill(c.BLACK)
 
     pygame.quit()
     raise SystemExit

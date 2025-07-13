@@ -4,9 +4,34 @@ import json
 
 import core.constants as c
 import core.globals as g
+import core.input as i
+import core.assets as a
+
+from components.statemachine import StateMachine, statemachine_initialise
+from scenes.manager import SCENE_MAPPING, SceneState
 
 
-pygame.init()
+def setup() -> None:
+    pygame.init()
+
+    # GLOBALS #################################################################
+    g.window = setup_window()
+    g.clock = pygame.time.Clock()
+    g.scene_manager = StateMachine()
+    g.mouse_buffer = [i.InputState.NOTHING for _ in i.MouseButton]
+    g.action_buffer = [i.InputState.NOTHING for _ in i.Action]
+    g.last_action_pressed = [i.action_mappings[action][0] for action in i.Action]
+    ###########################################################################
+
+    statemachine_initialise(g.scene_manager, SCENE_MAPPING, SceneState.MENU)
+    pygame.display.set_caption(c.CAPTION)
+    pygame.display.set_icon(a.ICON)
+
+    print("Setup complete")
+
+    # Try load settings from web
+    load_settings()
+    print("Loaded settings")
 
 
 def setup_window() -> pygame.Surface:
@@ -15,16 +40,6 @@ def setup_window() -> pygame.Surface:
         return pygame.display.set_mode(c.WINDOW_SETUP["size"])
     else:
         return pygame.display.set_mode(**c.WINDOW_SETUP)
-
-
-# GLOBALS #####################################################################
-window = setup_window()
-clock = pygame.time.Clock()
-###############################################################################
-
-pygame.display.set_caption(c.CAPTION)
-
-print("Setup complete")
 
 
 def load_settings() -> None:
@@ -60,8 +75,3 @@ def write_settings() -> None:
         return
     json_str = json.dumps(g.settings)
     platform.window.localStorage.setItem("settings", json_str)
-
-
-# Try load settings from web
-load_settings()
-print("Loaded settings")

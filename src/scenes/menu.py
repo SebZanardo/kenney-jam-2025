@@ -5,8 +5,6 @@ import core.constants as c
 import core.input as i
 import core.globals as g
 
-from core.setup import window
-
 from components.statemachine import StateMachine, statemachine_change_state
 
 from scenes.scene import Scene
@@ -20,16 +18,11 @@ class Menu(Scene):
     def enter(self) -> None:
         pass
 
-    def execute(
-        self,
-        dt: float,
-        action_buffer: i.InputBuffer,
-        mouse_buffer: i.InputBuffer,
-    ) -> None:
+    def execute(self) -> None:
         # UPDATE
         if (
-            action_buffer[i.Action.START] == i.InputState.PRESSED or
-            mouse_buffer[i.MouseButton.LEFT] == i.InputState.PRESSED
+            g.action_buffer[i.Action.START] == i.InputState.PRESSED or
+            g.mouse_buffer[i.MouseButton.LEFT] == i.InputState.PRESSED
         ):
             statemachine_change_state(
                 self.statemachine,
@@ -38,7 +31,7 @@ class Menu(Scene):
             return
 
         # RENDER
-        window.fill(c.RED)
+        g.window.fill(c.RED)
 
     def exit(self) -> None:
         pass

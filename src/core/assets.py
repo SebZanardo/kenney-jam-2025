@@ -1,5 +1,7 @@
 import pygame
 
+pygame.init()
+
 # Load fonts (ttf for web compatibility)
 FONT = pygame.font.Font("data/fonts/joystix.ttf", 10)
 
