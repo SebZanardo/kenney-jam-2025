@@ -4,19 +4,21 @@ import pygame
 import core.constants as c
 import core.input as i
 from core.setup import window, clock
+import core.assets as a
 
-from components.statemachine import StateMachine, statemachine_initialise, statemachine_execute
+from components.statemachine import (
+    StateMachine, statemachine_initialise, statemachine_execute
+)
+
 from scenes.manager import SCENE_MAPPING, SceneState
 
 
-pygame.init()
-
-
 async def main() -> None:
+    pygame.display.set_icon(a.ICON)
     scene_manager = StateMachine()
     statemachine_initialise(scene_manager, SCENE_MAPPING, SceneState.MENU)
 
-    # Should these be global too with clock?
+    # TODO: Make these global
     mouse_buffer: i.InputBuffer = [i.InputState.NOTHING for _ in i.MouseButton]
     action_buffer: i.InputBuffer = [i.InputState.NOTHING for _ in i.Action]
     last_pressed = [i.action_mappings[action][0] for action in i.Action]

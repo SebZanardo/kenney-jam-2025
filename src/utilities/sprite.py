@@ -32,4 +32,3 @@ def get_sprite_from_sheet(
     sprite = sprite.convert_alpha()
 
     return sprite
-

@@ -4,7 +4,9 @@ import pygame
 
 import core.constants as c
 import core.globals as g
+
 from components.motion import Motion, motion_update
+
 from utilities.math import clamp
 
 
@@ -19,7 +21,12 @@ class Camera:
 
     @staticmethod
     def empty():
-        return Camera(Motion.empty(), pygame.Vector2(), pygame.Vector2(), pygame.Vector2(30, 30))
+        return Camera(
+            Motion.empty(),
+            pygame.Vector2(),
+            pygame.Vector2(),
+            pygame.Vector2(30, 30)
+        )
 
 
 def camera_rect(camera: Camera) -> pygame.Rect:
@@ -31,8 +38,13 @@ def camera_rect(camera: Camera) -> pygame.Rect:
     )
 
 
-def camera_follow(camera: Camera, x: float, y: float, speed: float = 8) -> None:
-    dist = pygame.Vector2(x - camera.motion.position.x, y - camera.motion.position.y)
+def camera_follow(
+    camera: Camera, x: float, y: float, speed: float = 8
+) -> None:
+    dist = pygame.Vector2(
+        x - camera.motion.position.x,
+        y - camera.motion.position.y
+    )
     if dist.magnitude() < 1:
         camera.motion.position = pygame.Vector2(x, y)
         camera.motion.velocity = pygame.Vector2()
@@ -48,9 +60,11 @@ def camera_update(camera: Camera, dt: float) -> None:
     camera.trauma -= dt / camera.max_shake_duration
 
     if camera.trauma > 0 and g.settings["screenshake"]:
-        shake = camera.trauma**3  # Can square trauma too
-        camera.shake_offset.x = camera.max_shake_offset.x * shake * random.uniform(-1, 1)
-        camera.shake_offset.y = camera.max_shake_offset.y * shake * random.uniform(-1, 1)
+        shake = camera.trauma**3  # NOTE: Can square trauma too
+        camera.shake_offset.x = camera.max_shake_offset.x * shake
+        camera.shake_offset.x *= random.uniform(-1, 1)
+        camera.shake_offset.y = camera.max_shake_offset.y * shake
+        camera.shake_offset.y *= random.uniform(-1, 1)
     elif camera.trauma < 0:
         camera.shake_offset.x = 0
         camera.shake_offset.y = 0
@@ -69,8 +83,12 @@ def camera_to_screen(camera: Camera, x: float, y: float) -> tuple[int, int]:
     )
 
 
-def camera_to_screen_shake(camera: Camera, x: float, y: float) -> tuple[int, int]:
-    return camera_to_screen(camera, x + camera.shake_offset.x, y + camera.shake_offset.y)
+def camera_to_screen_shake(
+    camera: Camera, x: float, y: float
+) -> tuple[int, int]:
+    return camera_to_screen(
+        camera, x + camera.shake_offset.x, y + camera.shake_offset.y
+    )
 
 
 def camera_to_screen_shake_rect(

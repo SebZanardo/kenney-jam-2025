@@ -1,5 +1,6 @@
 import pygame
 from enum import IntEnum, auto
+
 import core.constants as c
 
 

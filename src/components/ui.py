@@ -1,3 +1,4 @@
+# TODO: This needs to be debugged as missing assets among other things
 from dataclasses import dataclass
 from typing import Callable
 import pygame
@@ -5,8 +6,9 @@ import pygame
 import core.setup as setup
 import core.assets as a
 import core.constants as c
-import core.input as t
+import core.input as i
 import core.globals as g
+
 from components.audio import AudioChannel, play_sound, try_play_sound
 from utilities.math import clamp
 
@@ -107,7 +109,9 @@ def slider_set_value_mouse(slider: Slider, x: int) -> None:
     slider_set_value(slider, value)
 
 
-def button_render(surface: pygame.Surface, button: Button, selected: bool) -> None:
+def button_render(
+    surface: pygame.Surface, button: Button, selected: bool
+) -> None:
     surface.blit(a.MENU_BUTTONS[1 if selected else 0], button.rect.topleft)
     surface.blit(
         button.graphic,
@@ -121,7 +125,9 @@ def button_render(surface: pygame.Surface, button: Button, selected: bool) -> No
                      special_flags=pygame.BLEND_RGB_ADD)
 
 
-def slider_render(surface: pygame.Surface, slider: Slider, selected: bool) -> None:
+def slider_render(
+    surface: pygame.Surface, slider: Slider, selected: bool
+) -> None:
     surface.blit(slider.name_render, (slider.rect.left - 150, slider.rect.y))
     surface.blit(a.MENU_BUTTONS[1 if selected else 0], slider.rect.topleft)
     surface.blit(
@@ -131,29 +137,39 @@ def slider_render(surface: pygame.Surface, slider: Slider, selected: bool) -> No
     surface.blit(slider.value_render, (slider.rect.right + 20, slider.rect.y))
     if selected:
         surface.blit(
-            a.MENU_BUTTONS[2], (slider.rect.x,
-                                slider.rect.y), special_flags=pygame.BLEND_RGB_ADD
+            a.MENU_BUTTONS[2],
+            (slider.rect.x, slider.rect.y),
+            special_flags=pygame.BLEND_RGB_ADD
         )
 
 
-def checkbox_render(surface: pygame.Surface, checkbox: Checkbox, selected: bool) -> None:
-    surface.blit(checkbox.name_render,
-                 (checkbox.rect.x - 150, checkbox.rect.y))
+def checkbox_render(
+    surface: pygame.Surface, checkbox: Checkbox, selected: bool
+) -> None:
+    surface.blit(
+        checkbox.name_render,
+        (checkbox.rect.x - 150, checkbox.rect.y)
+    )
     surface.blit(a.MENU_BUTTONS[1 if selected else 0], checkbox.rect.topleft)
+
     if checkbox.enabled:
+        half_width = checkbox.graphic_enabled.get_width() // 2
+        half_height = checkbox.graphic_enabled.get_height() // 2
         surface.blit(
             checkbox.graphic_enabled,
             (
-                checkbox.rect.centerx - checkbox.graphic_enabled.get_width() // 2,
-                checkbox.rect.centery - checkbox.graphic_enabled.get_height() // 2,
+                checkbox.rect.centerx - half_width,
+                checkbox.rect.centery - half_height
             ),
         )
     else:
+        half_width = checkbox.graphic_disabled.get_width() // 2
+        half_height = checkbox.graphic_disabled.get_height() // 2
         surface.blit(
             checkbox.graphic_disabled,
             (
-                checkbox.rect.centerx - checkbox.graphic_disabled.get_width() // 2,
-                checkbox.rect.centery - checkbox.graphic_disabled.get_height() // 2,
+                checkbox.rect.centerx - half_width,
+                checkbox.rect.centery - half_height
             ),
         )
     if selected:
@@ -165,31 +181,30 @@ def checkbox_render(surface: pygame.Surface, checkbox: Checkbox, selected: bool)
 
 
 def ui_list_update_selection(
-    action_buffer: t.InputBuffer,
+    action_buffer: i.InputBuffer,
     mouse_position: pygame.Vector2 | None,
     ui_list: list,
     ui_index: int,
 ) -> int | None:
-
     # Check if mouse moved and is over rect
     if mouse_position is not None:
-        for i, element in enumerate(ui_list):
+        for e, element in enumerate(ui_list):
             if element.rect.collidepoint(mouse_position):
-                if i != ui_index:
+                if e != ui_index:
                     try_play_sound(AudioChannel.UI, a.UI_HOVER)
-                return i
+                return e
 
         return None
 
     else:
         # Check if direction pressed and move index
-        if t.is_pressed(action_buffer, t.Action.UP):
+        if i.is_pressed(action_buffer, i.Action.UP):
             play_sound(AudioChannel.UI, a.UI_HOVER)
             if ui_index is None:
                 return 0
             return (ui_index - 1) % len(ui_list)
 
-        if t.is_pressed(action_buffer, t.Action.DOWN):
+        if i.is_pressed(action_buffer, i.Action.DOWN):
             play_sound(AudioChannel.UI, a.UI_HOVER)
             if ui_index is None:
                 return 0
@@ -198,9 +213,11 @@ def ui_list_update_selection(
         return ui_index
 
 
-def ui_list_render(surface: pygame.Surface, ui_list: list, ui_index: int) -> None:
-    for i, element in enumerate(ui_list):
-        selected = i == ui_index
+def ui_list_render(
+    surface: pygame.Surface, ui_list: list, ui_index: int
+) -> None:
+    for e, element in enumerate(ui_list):
+        selected = e == ui_index
         if isinstance(element, Slider):
             slider_render(surface, element, selected)
         elif isinstance(element, Checkbox):

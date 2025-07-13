@@ -32,7 +32,10 @@ class Game(Scene):
             action_buffer[i.Action.START] == i.InputState.PRESSED or
             mouse_buffer[i.MouseButton.LEFT] == i.InputState.PRESSED
         ):
-            statemachine_change_state(self.statemachine, manager.SceneState.MENU)
+            statemachine_change_state(
+                self.statemachine,
+                manager.SceneState.MENU
+            )
             return
 
         # RENDER

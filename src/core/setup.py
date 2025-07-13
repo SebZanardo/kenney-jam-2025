@@ -4,14 +4,11 @@ import json
 
 import core.constants as c
 import core.globals as g
-import core.assets as a
-import core.input as i
 
 
 pygame.init()
 
 
-# BUG: can't seem to get this function to work at runtime, it just freezes the display
 def setup_window() -> pygame.Surface:
     if c.IS_WEB:
         platform.window.canvas.style.imageRendering = "pixelated"
@@ -26,7 +23,6 @@ clock = pygame.time.Clock()
 ###############################################################################
 
 pygame.display.set_caption(c.CAPTION)
-pygame.display.set_icon(a.ICON)
 
 print("Setup complete")
 

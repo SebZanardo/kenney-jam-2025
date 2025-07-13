@@ -24,7 +24,9 @@ def timer_update(timer: Timer, dt: float) -> bool:
     return False
 
 
-def timer_reset(timer: Timer, duration: float, callback: Callable = None) -> None:
+def timer_reset(
+    timer: Timer, duration: float, callback: Callable = None
+) -> None:
     timer.duration = duration
     timer.elapsed = 0
     timer.remaining = duration
@@ -42,10 +44,14 @@ def stopwatch_update(stopwatch: Stopwatch, dt: float) -> None:
     stopwatch.elapsed += dt
     if stopwatch.bindings:
         for time, callback in stopwatch.bindings.items():
-            if prev_elapsed < time and stopwatch.elapsed > time and callable(callback):
+            if prev_elapsed >= time:
+                continue
+            if stopwatch.elapsed > time and callable(callback):
                 callback()
 
 
-def stopwatch_reset(stopwatch: Stopwatch, bindings: dict[int, Callable] = None) -> None:
+def stopwatch_reset(
+    stopwatch: Stopwatch, bindings: dict[int, Callable] = None
+) -> None:
     stopwatch.elapsed = 0
     stopwatch.bindings = bindings

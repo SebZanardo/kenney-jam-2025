@@ -1,10 +1,10 @@
 import pygame
 
+# Load fonts (ttf for web compatibility)
+FONT = pygame.font.Font("data/fonts/joystix.ttf", 10)
+
 # Load sprites (png, webp or jpg for web compatibility)
 ICON = pygame.image.load("data/textures/icon.png")
 
 # Load audio (ogg for web compatibility)
-pass
-
-# Load fonts (ttf for web compatibility)
 pass
