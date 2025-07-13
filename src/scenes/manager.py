@@ -1,5 +1,6 @@
 from enum import IntEnum, auto
 
+
 # Import all scenes
 import scenes.menu
 import scenes.game
