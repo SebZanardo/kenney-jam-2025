@@ -1,4 +1,3 @@
-# TODO: This needs to be debugged as missing assets among other things
 from dataclasses import dataclass
 from typing import Callable
 import pygame
@@ -106,11 +105,12 @@ def slider_set_value_mouse(slider: Slider, x: int) -> None:
     slider_set_value(slider, value)
 
 
-def button_render(
-    surface: pygame.Surface, button: Button, selected: bool
-) -> None:
-    surface.blit(g.sprites.MENU_BUTTONS[1 if selected else 0], button.rect.topleft)
-    surface.blit(
+def button_render(button: Button, selected: bool) -> None:
+    g.window.blit(
+        g.sprites.MENU_BUTTONS[1 if selected else 0],
+        button.rect.topleft
+    )
+    g.window.blit(
         button.graphic,
         (
             button.rect.centerx - button.graphic.get_width() // 2,
@@ -118,41 +118,50 @@ def button_render(
         ),
     )
     if selected:
-        surface.blit(g.sprites.MENU_BUTTONS[2], button.rect.topleft,
-                     special_flags=pygame.BLEND_RGB_ADD)
+        g.window.blit(
+            g.sprites.MENU_BUTTONS[2],
+            button.rect.topleft,
+            special_flags=pygame.BLEND_RGB_ADD
+        )
 
 
-def slider_render(
-    surface: pygame.Surface, slider: Slider, selected: bool
-) -> None:
-    surface.blit(slider.name_render, (slider.rect.left - 150, slider.rect.y))
-    surface.blit(g.sprites.MENU_BUTTONS[1 if selected else 0], slider.rect.topleft)
-    surface.blit(
-        g.sprites.MENU_BUTTONS[3], slider.rect.topleft, (
-            0, 0, slider.filled_rect[2], slider.filled_rect[3])
+def slider_render(slider: Slider, selected: bool) -> None:
+    g.window.blit(
+        slider.name_render,
+        (slider.rect.left - 150, slider.rect.y)
     )
-    surface.blit(slider.value_render, (slider.rect.right + 20, slider.rect.y))
+    g.window.blit(
+        g.sprites.MENU_BUTTONS[1 if selected else 0],
+        slider.rect.topleft
+    )
+    g.window.blit(
+        g.sprites.MENU_BUTTONS[3],
+        slider.rect.topleft,
+        (0, 0, slider.filled_rect[2], slider.filled_rect[3])
+    )
+    g.window.blit(slider.value_render, (slider.rect.right + 20, slider.rect.y))
     if selected:
-        surface.blit(
+        g.window.blit(
             g.sprites.MENU_BUTTONS[2],
             (slider.rect.x, slider.rect.y),
             special_flags=pygame.BLEND_RGB_ADD
         )
 
 
-def checkbox_render(
-    surface: pygame.Surface, checkbox: Checkbox, selected: bool
-) -> None:
-    surface.blit(
+def checkbox_render(checkbox: Checkbox, selected: bool) -> None:
+    g.window.blit(
         checkbox.name_render,
         (checkbox.rect.x - 150, checkbox.rect.y)
     )
-    surface.blit(g.sprites.MENU_BUTTONS[1 if selected else 0], checkbox.rect.topleft)
+    g.window.blit(
+        g.sprites.MENU_BUTTONS[1 if selected else 0],
+        checkbox.rect.topleft
+    )
 
     if checkbox.enabled:
         half_width = checkbox.graphic_enabled.get_width() // 2
         half_height = checkbox.graphic_enabled.get_height() // 2
-        surface.blit(
+        g.window.blit(
             checkbox.graphic_enabled,
             (
                 checkbox.rect.centerx - half_width,
@@ -162,7 +171,7 @@ def checkbox_render(
     else:
         half_width = checkbox.graphic_disabled.get_width() // 2
         half_height = checkbox.graphic_disabled.get_height() // 2
-        surface.blit(
+        g.window.blit(
             checkbox.graphic_disabled,
             (
                 checkbox.rect.centerx - half_width,
@@ -170,19 +179,16 @@ def checkbox_render(
             ),
         )
     if selected:
-        surface.blit(
+        g.window.blit(
             g.sprites.MENU_BUTTONS[2],
             (checkbox.rect.x, checkbox.rect.y),
             special_flags=pygame.BLEND_RGB_ADD,
         )
 
 
-def ui_list_update_selection(
-    action_buffer: i.InputBuffer,
-    mouse_position: pygame.Vector2 | None,
-    ui_list: list,
-    ui_index: int,
-) -> int | None:
+def ui_list_update_selection(ui_list: list, ui_index: int) -> int | None:
+    mouse_position = pygame.mouse.get_pos()
+
     # Check if mouse moved and is over rect
     if mouse_position is not None:
         for e, element in enumerate(ui_list):
@@ -210,14 +216,12 @@ def ui_list_update_selection(
         return ui_index
 
 
-def ui_list_render(
-    surface: pygame.Surface, ui_list: list, ui_index: int
-) -> None:
+def ui_list_render(ui_list: list, ui_index: int) -> None:
     for e, element in enumerate(ui_list):
         selected = e == ui_index
         if isinstance(element, Slider):
-            slider_render(surface, element, selected)
+            slider_render(element, selected)
         elif isinstance(element, Checkbox):
-            checkbox_render(surface, element, selected)
+            checkbox_render(element, selected)
         elif isinstance(element, Button):
-            button_render(surface, element, selected)
+            button_render(element, selected)

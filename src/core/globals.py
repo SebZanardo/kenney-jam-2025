@@ -1,9 +1,8 @@
 import pygame
 
 import core.assets as a
-import core.input as i
 
-from components.statemachine import Statemachine
+from components.statemachine import StateMachine
 
 
 # Pygame Globals
@@ -11,13 +10,13 @@ from components.statemachine import Statemachine
 window: pygame.Window = None
 clock: pygame.time.Clock = None
 
-scene_manager: Statemachine = None
+scene_manager: StateMachine = None
 
-mouse_buffer: i.InputBuffer = None
-action_buffer: i.InputBuffer = None
-last_action_pressed: list[i.Action] = None
+mouse_buffer = None
+action_buffer = None
+last_action_pressed = None
 
-fonts: a.Font = None
+fonts: a.Fonts = None
 sprites: a.Sprites = None
 sfx: a.Sfx = None
 

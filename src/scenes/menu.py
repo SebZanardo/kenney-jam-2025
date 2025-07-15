@@ -51,7 +51,6 @@ class Menu(Scene):
         )
 
         self.ui_index = 0
-        self.last_mouse_position = None
 
         self.ui_list = [
             self.ui_start_button,
@@ -67,18 +66,9 @@ class Menu(Scene):
     def execute(self) -> None:
         mouse_position = pygame.mouse.get_pos()
 
-        self.ui_index = ui_list_update_selection(
-            g.action_buffer,
-            (
-                mouse_position
-                if mouse_position != self.last_mouse_position
-                and self.last_mouse_position is not None
-                else None
-            ),
-            self.ui_list,
-            self.ui_index,
-        )
+        self.ui_index = ui_list_update_selection(self.ui_list, self.ui_index)
 
+        # NOTE: Do we not already have this in ui??!?!
         if g.mouse_buffer[i.MouseButton.LEFT] == i.InputState.PRESSED:
             for element in self.ui_list:
                 if element.rect.collidepoint(mouse_position):
@@ -95,11 +85,9 @@ class Menu(Scene):
                 button_activate(element)
                 play_sound(AudioChannel.UI, g.sfx.SELECT)
 
-        self.last_mouse_position = mouse_position
-
         # RENDER
         g.window.fill(c.RED)
-        ui_list_render(g.window, self.ui_list, self.ui_index)
+        ui_list_render(self.ui_list, self.ui_index)
 
     def exit(self) -> None:
         pass
