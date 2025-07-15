@@ -20,6 +20,9 @@ fonts: a.Fonts = None
 sprites: a.Sprites = None
 sfx: a.Sfx = None
 
+settings = None
+
+
 # User settings
 default_settings = {
     "music": 50,

@@ -8,6 +8,8 @@ import core.input as i
 import core.assets as a
 
 from components.statemachine import StateMachine, statemachine_initialise
+from components.settings import Settings
+
 from scenes.manager import SCENE_MAPPING, SceneState
 
 
@@ -42,8 +44,10 @@ def setup() -> None:
     a.load_sfx()
     print("Loaded assets")
 
+    # These must be done after assets have been loaded
     pygame.display.set_icon(g.sprites.ICON)
     statemachine_initialise(g.scene_manager, SCENE_MAPPING, SceneState.MENU)
+    g.settings = Settings()
 
 
 def setup_window() -> pygame.Surface:

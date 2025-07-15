@@ -17,6 +17,7 @@ class Fonts:
 class Sprites:
     ICON: pygame.Surface = None
     MENU_BUTTONS: list[pygame.Surface] = None
+    MENU_CONTROLS: pygame.Surface = None
 
 
 @dataclass(slots=True)
@@ -38,6 +39,7 @@ def load_sprites() -> None:
     # Load sprites (png, webp or jpg for web compatibility)
     g.sprites.ICON = pygame.image.load(path + "icon.png")
     g.sprites.MENU_BUTTONS = slice_sheet(path + "buttons.png", *c.BUTTON_SIZE)
+    g.sprites.MENU_CONTROLS = pygame.image.load(path + "controls.png")
 
 
 def load_sfx() -> None:
