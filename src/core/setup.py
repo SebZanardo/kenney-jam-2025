@@ -73,18 +73,18 @@ def load_settings() -> None:
     is_cooked = False
 
     try:
-        g.settings = json.loads(json_str)
+        g.setting_params = json.loads(json_str)
     except json.JSONDecodeError:
         is_cooked = True
 
     finally:
         for key in g.default_settings.keys():
-            if key not in g.settings:
+            if key not in g.setting_params:
                 is_cooked = True
                 break
 
     if is_cooked:
-        g.settings = g.default_settings.copy()
+        g.setting_params = g.default_settings.copy()
         print("Cooked settings :(")
         write_settings()
 
@@ -92,5 +92,5 @@ def load_settings() -> None:
 def write_settings() -> None:
     if not c.IS_WEB:
         return
-    json_str = json.dumps(g.settings)
+    json_str = json.dumps(g.setting_params)
     platform.window.localStorage.setItem("settings", json_str)

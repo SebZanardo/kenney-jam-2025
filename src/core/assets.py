@@ -22,8 +22,8 @@ class Sprites:
 
 @dataclass(slots=True)
 class Sfx:
-    HOVER: pygame.Sound = None
-    SELECT: pygame.Sound = None
+    HOVER: pygame.mixer.Sound = None
+    SELECT: pygame.mixer.Sound = None
 
 
 @dataclass(slots=True)
