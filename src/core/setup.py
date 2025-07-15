@@ -78,13 +78,13 @@ def load_settings() -> None:
         is_cooked = True
 
     finally:
-        for key in g.default_settings.keys():
+        for key in g.default_setting_params.keys():
             if key not in g.setting_params:
                 is_cooked = True
                 break
 
     if is_cooked:
-        g.setting_params = g.default_settings.copy()
+        g.setting_params = g.default_setting_params.copy()
         print("Cooked settings :(")
         write_settings()
 
