@@ -1,17 +1,25 @@
+import pygame
+
+import core.assets as a
+import core.input as i
+
+from components.statemachine import Statemachine
+
+
 # Pygame Globals
-# NOTE: These get init in setup
-window = None
-clock = None
+# NOTE: These get initialised in setup. Typehints should help with autocomplete
+window: pygame.Window = None
+clock: pygame.time.Clock = None
 
-scene_manager = None
+scene_manager: Statemachine = None
 
-mouse_buffer = None
-action_buffer = None
-last_action_pressed = None
+mouse_buffer: i.InputBuffer = None
+action_buffer: i.InputBuffer = None
+last_action_pressed: list[i.Action] = None
 
-fonts = None
-sprites = None
-sfx = None
+fonts: a.Font = None
+sprites: a.Sprites = None
+sfx: a.Sfx = None
 
 # User settings
 default_settings = {
