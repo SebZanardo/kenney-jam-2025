@@ -3,7 +3,6 @@ from typing import Callable
 import pygame
 
 import core.setup as setup
-import core.assets as a
 import core.constants as c
 import core.input as i
 import core.globals as g
@@ -70,7 +69,7 @@ def slider_percent(slider: Slider) -> float:
 
 
 def slider_value_render(slider: Slider) -> None:
-    slider.value_render = a.FONT.render(
+    slider.value_render = g.fonts.FONT.render(
         str(int(slider.value)), False, c.WHITE)
 
 

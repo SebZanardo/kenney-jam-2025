@@ -1,6 +1,5 @@
 import pygame
 
-import core.assets as a
 import core.constants as c
 import core.input as i
 import core.globals as g
