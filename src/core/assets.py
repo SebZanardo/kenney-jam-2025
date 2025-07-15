@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import pygame
 
 import core.constants as c
@@ -7,18 +8,21 @@ from utilities.sprite import slice_sheet
 
 
 # NOTE: These get filled out at runtime, after window is initialised
-# Really don't like this because easy to make runtime bugs if member variable
-# doesn't exist...
+@dataclass(slots=True)
 class Fonts:
-    pass
+    FONT: pygame.Font = None
 
 
+@dataclass(slots=True)
 class Sprites:
-    pass
+    ICON: pygame.Surface = None
+    MENU_BUTTONS: list[pygame.Surface] = None
 
 
+@dataclass(slots=True)
 class Sfx:
-    pass
+    HOVER: pygame.Sound = None
+    SELECT: pygame.Sound = None
 
 
 def load_fonts() -> None:
