@@ -59,7 +59,7 @@ def camera_update(camera: Camera, dt: float) -> None:
     # Update shake
     camera.trauma -= dt / camera.max_shake_duration
 
-    if camera.trauma > 0 and g.settings["screenshake"]:
+    if camera.trauma > 0 and g.setting_params["screenshake"]:
         shake = camera.trauma**3  # NOTE: Can square trauma too
         camera.shake_offset.x = camera.max_shake_offset.x * shake
         camera.shake_offset.x *= random.uniform(-1, 1)

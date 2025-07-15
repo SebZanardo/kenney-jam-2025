@@ -17,6 +17,11 @@ from components.settings import (
     settings_update,
     settings_render
 )
+from components.camera import (
+    Camera,
+    camera_update,
+    camera_to_screen_shake,
+)
 
 from scenes.scene import Scene
 from scenes import manager
@@ -80,12 +85,15 @@ class Menu(Scene):
             c.BLACK
         )
 
+        self.camera = Camera.empty()
 
     def enter(self) -> None:
         play_music(g.music.NINTENDO, -1)
 
     def execute(self) -> None:
         mouse_position = pygame.mouse.get_pos()
+
+        camera_update(self.camera, g.dt)
 
         if self.current_state == MenuState.MAIN:
             self.ui_index = ui_list_update_selection(self.ui_list, self.ui_index)
@@ -122,8 +130,19 @@ class Menu(Scene):
                 self.current_state = MenuState.MAIN
                 return
 
+        if (
+            g.action_buffer[i.Action.START] == i.InputState.PRESSED or
+            g.mouse_buffer[i.MouseButton.LEFT] == i.InputState.PRESSED
+        ):
+            self.camera.trauma += 0.5
+
         # RENDER
         g.window.fill(c.RED)
+
+        g.window.blit(
+            g.sprites.ICON,
+            camera_to_screen_shake(self.camera, 0, 0)
+        )
 
         if self.current_state == MenuState.MAIN:
             ui_list_render(self.ui_list, self.ui_index)

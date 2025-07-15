@@ -23,6 +23,7 @@ music: a.Music = None
 
 settings = None
 
+dt = 0.0
 
 # User settings
 default_setting_params = {

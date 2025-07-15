@@ -17,8 +17,8 @@ async def main() -> None:
     while True:
         elapsed_time = g.clock.tick(c.FPS)
         # TODO: Make dt global or used fixed_dt which can be in constants
-        dt = elapsed_time / 1000.0  # Convert to seconds
-        dt = min(dt, c.MAX_DT)  # Clamp delta time
+        g.dt = elapsed_time / 1000.0  # Convert to seconds
+        g.dt = min(g.dt, c.MAX_DT)  # Clamp delta time
         # dt *= g.time_dilation
 
         i.update_action_buffer()
