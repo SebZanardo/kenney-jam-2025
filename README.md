@@ -8,6 +8,6 @@ python3 main.py
 
 ### Web
 ```
-pygbag .
+pygbag --template custom.tmpl .
 ```
 Then go to `http://localhost:8000/#debug`
