@@ -8,7 +8,7 @@ import core.input as i
 import core.assets as a
 
 from components.statemachine import StateMachine, statemachine_initialise
-from components.settings import Settings
+from components.settings import Settings, settings_load
 
 from scenes.manager import SCENE_MAPPING, SceneState
 
@@ -29,7 +29,9 @@ def setup() -> None:
     g.fonts = a.Fonts()
     g.sprites = a.Sprites()
     g.sfx = a.Sfx()
+    g.music = a.Music()
     ###########################################################################
+
     pygame.display.set_caption(c.CAPTION)
 
     print("Setup complete")
@@ -48,6 +50,7 @@ def setup() -> None:
     pygame.display.set_icon(g.sprites.ICON)
     statemachine_initialise(g.scene_manager, SCENE_MAPPING, SceneState.MENU)
     g.settings = Settings()
+    settings_load()
 
 
 def setup_window() -> pygame.Surface:

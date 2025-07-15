@@ -19,12 +19,13 @@ last_action_pressed = None
 fonts: a.Fonts = None
 sprites: a.Sprites = None
 sfx: a.Sfx = None
+music: a.Music = None
 
 settings = None
 
 
 # User settings
-default_settings = {
+default_setting_params = {
     "music": 50,
     "sfx": 30,
     "fullscreen": False,
@@ -32,7 +33,7 @@ default_settings = {
     "screenshake": True,
 }
 
-settings = default_settings.copy()
+setting_params = default_setting_params.copy()
 
 
 # Dev settings

@@ -51,7 +51,7 @@ def button_activate(button: Button) -> None:
 
 def checkbox_set_enabled(checkbox: Checkbox, enabled: bool) -> None:
     if checkbox.key:
-        g.settings[checkbox.key] = enabled
+        g.setting_params[checkbox.key] = enabled
 
     checkbox.enabled = enabled
     if callable(checkbox.callback):
@@ -83,13 +83,14 @@ def slider_set_value(slider: Slider, value: int) -> None:
     )
     slider_value_render(slider)
     if slider.key:
-        g.settings[slider.key] = slider.value
+        g.setting_params[slider.key] = slider.value
     if callable(slider.callback):
         slider.callback(slider.value)
     setup.write_settings()
 
 
-def slider_set_value_mouse(slider: Slider, x: int) -> None:
+def slider_set_value_mouse(slider: Slider) -> None:
+    x = pygame.mouse.get_pos()[0]
     if x <= slider.rect.x:
         slider_set_value(slider, slider.min_value)
         return

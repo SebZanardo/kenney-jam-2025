@@ -26,6 +26,11 @@ class Sfx:
     SELECT: pygame.Sound = None
 
 
+@dataclass(slots=True)
+class Music:
+    NINTENDO: str = "data/music/theme.ogg"
+
+
 def load_fonts() -> None:
     path = "data/fonts/"
 

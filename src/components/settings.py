@@ -91,14 +91,14 @@ class Settings:
             "",
             pygame.Rect(250, 150, *c.BUTTON_SIZE),
             g.fonts.FONT.render("DEFAULT", False, c.WHITE),
-            lambda: settings_reset(self),
+            lambda: settings_reset(),
         )
 
         self.ui_back_button = Button(
             "",
             pygame.Rect(250, 185, *c.BUTTON_SIZE),
             g.fonts.FONT.render("< BACK", False, c.WHITE),
-            lambda: settings_exit(self),
+            lambda: settings_exit(),
         )
 
         # the slider currently being dragged by the mouse
@@ -121,8 +121,8 @@ class Settings:
 
 def settings_load() -> None:
     for element in g.settings.ui_list:
-        if element.key in g.settings:
-            value = g.settings[element.key]
+        if element.key in g.setting_params:
+            value = g.setting_params[element.key]
             if isinstance(element, Checkbox):
                 checkbox_set_enabled(element, value)
             elif isinstance(element, Slider):
@@ -130,7 +130,7 @@ def settings_load() -> None:
 
 
 def settings_reset() -> None:
-    g.settings = g.default_settings.copy()
+    g.setting_params = g.default_setting_params.copy()
     settings_load()
 
 
@@ -212,4 +212,4 @@ def settings_render() -> None:
         (g.window.get_width() // 2 - g.sprites.MENU_CONTROLS.get_width() // 2, 215)
     )
 
-    ui_list_render()
+    ui_list_render(g.settings.ui_list, g.settings.ui_index)
