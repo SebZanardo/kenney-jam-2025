@@ -17,21 +17,33 @@ def setup() -> None:
     # GLOBALS #################################################################
     g.window = setup_window()
     g.clock = pygame.time.Clock()
+
     g.scene_manager = StateMachine()
+
     g.mouse_buffer = [i.InputState.NOTHING for _ in i.MouseButton]
     g.action_buffer = [i.InputState.NOTHING for _ in i.Action]
-    g.last_action_pressed = [i.action_mappings[action][0] for action in i.Action]
-    ###########################################################################
+    g.last_action_pressed = [i.action_mappings[a][0] for a in i.Action]
 
-    statemachine_initialise(g.scene_manager, SCENE_MAPPING, SceneState.MENU)
+    g.fonts = a.Fonts()
+    g.sprites = a.Sprites()
+    g.sfx = a.Sfx()
+    ###########################################################################
     pygame.display.set_caption(c.CAPTION)
-    pygame.display.set_icon(a.ICON)
 
     print("Setup complete")
 
     # Try load settings from web
     load_settings()
     print("Loaded settings")
+
+    # Try load assets
+    a.load_fonts()
+    a.load_sprites()
+    a.load_sfx()
+    print("Loaded assets")
+
+    pygame.display.set_icon(g.sprites.ICON)
+    statemachine_initialise(g.scene_manager, SCENE_MAPPING, SceneState.MENU)
 
 
 def setup_window() -> pygame.Surface:

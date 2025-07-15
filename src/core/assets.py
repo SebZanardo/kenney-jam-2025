@@ -1,12 +1,44 @@
 import pygame
 
-pygame.init()
+import core.constants as c
+import core.globals as g
 
-# Load fonts (ttf for web compatibility)
-FONT = pygame.font.Font("data/fonts/joystix.ttf", 10)
+from utilities.sprite import slice_sheet
 
-# Load sprites (png, webp or jpg for web compatibility)
-ICON = pygame.image.load("data/textures/icon.png")
 
-# Load audio (ogg for web compatibility)
-pass
+# NOTE: These get filled out at runtime, after window is initialised
+# Really don't like this because easy to make runtime bugs if member variable
+# doesn't exist...
+class Fonts:
+    pass
+
+
+class Sprites:
+    pass
+
+
+class Sfx:
+    pass
+
+
+def load_fonts() -> None:
+    path = "data/fonts/"
+
+    # Load fonts (ttf for web compatibility)
+    g.fonts.FONT = pygame.font.Font(path + "joystix.ttf", 10)
+
+
+def load_sprites() -> None:
+    path = "data/textures/"
+
+    # Load sprites (png, webp or jpg for web compatibility)
+    g.sprites.ICON = pygame.image.load(path + "icon.png")
+    g.sprites.MENU_BUTTONS = slice_sheet(path + "buttons.png", *c.BUTTON_SIZE)
+
+
+def load_sfx() -> None:
+    path = "data/sfx/"
+
+    # Load audio (ogg for web compatibility)
+    g.sfx.HOVER = pygame.mixer.Sound(path + "hover.ogg")
+    g.sfx.SELECT = pygame.mixer.Sound(path + "select.ogg")

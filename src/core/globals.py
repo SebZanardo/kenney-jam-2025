@@ -2,10 +2,16 @@
 # NOTE: These get init in setup
 window = None
 clock = None
+
 scene_manager = None
+
 mouse_buffer = None
 action_buffer = None
 last_action_pressed = None
+
+fonts = None
+sprites = None
+sfx = None
 
 # User settings
 default_settings = {

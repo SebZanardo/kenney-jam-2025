@@ -13,9 +13,6 @@ from components.audio import AudioChannel, play_sound, try_play_sound
 from utilities.math import clamp
 
 
-BUTTON_SIZE = (96, 16)
-
-
 @dataclass(slots=True)
 class Button:
     key: str
@@ -74,7 +71,7 @@ def slider_percent(slider: Slider) -> float:
 
 
 def slider_value_render(slider: Slider) -> None:
-    slider.value_render = a.DEBUG_FONT.render(
+    slider.value_render = a.FONT.render(
         str(int(slider.value)), False, c.WHITE)
 
 
@@ -112,7 +109,7 @@ def slider_set_value_mouse(slider: Slider, x: int) -> None:
 def button_render(
     surface: pygame.Surface, button: Button, selected: bool
 ) -> None:
-    surface.blit(a.MENU_BUTTONS[1 if selected else 0], button.rect.topleft)
+    surface.blit(g.sprites.MENU_BUTTONS[1 if selected else 0], button.rect.topleft)
     surface.blit(
         button.graphic,
         (
@@ -121,7 +118,7 @@ def button_render(
         ),
     )
     if selected:
-        surface.blit(a.MENU_BUTTONS[2], button.rect.topleft,
+        surface.blit(g.sprites.MENU_BUTTONS[2], button.rect.topleft,
                      special_flags=pygame.BLEND_RGB_ADD)
 
 
@@ -129,15 +126,15 @@ def slider_render(
     surface: pygame.Surface, slider: Slider, selected: bool
 ) -> None:
     surface.blit(slider.name_render, (slider.rect.left - 150, slider.rect.y))
-    surface.blit(a.MENU_BUTTONS[1 if selected else 0], slider.rect.topleft)
+    surface.blit(g.sprites.MENU_BUTTONS[1 if selected else 0], slider.rect.topleft)
     surface.blit(
-        a.MENU_BUTTONS[3], slider.rect.topleft, (
+        g.sprites.MENU_BUTTONS[3], slider.rect.topleft, (
             0, 0, slider.filled_rect[2], slider.filled_rect[3])
     )
     surface.blit(slider.value_render, (slider.rect.right + 20, slider.rect.y))
     if selected:
         surface.blit(
-            a.MENU_BUTTONS[2],
+            g.sprites.MENU_BUTTONS[2],
             (slider.rect.x, slider.rect.y),
             special_flags=pygame.BLEND_RGB_ADD
         )
@@ -150,7 +147,7 @@ def checkbox_render(
         checkbox.name_render,
         (checkbox.rect.x - 150, checkbox.rect.y)
     )
-    surface.blit(a.MENU_BUTTONS[1 if selected else 0], checkbox.rect.topleft)
+    surface.blit(g.sprites.MENU_BUTTONS[1 if selected else 0], checkbox.rect.topleft)
 
     if checkbox.enabled:
         half_width = checkbox.graphic_enabled.get_width() // 2
@@ -174,7 +171,7 @@ def checkbox_render(
         )
     if selected:
         surface.blit(
-            a.MENU_BUTTONS[2],
+            g.sprites.MENU_BUTTONS[2],
             (checkbox.rect.x, checkbox.rect.y),
             special_flags=pygame.BLEND_RGB_ADD,
         )
@@ -191,21 +188,21 @@ def ui_list_update_selection(
         for e, element in enumerate(ui_list):
             if element.rect.collidepoint(mouse_position):
                 if e != ui_index:
-                    try_play_sound(AudioChannel.UI, a.UI_HOVER)
+                    try_play_sound(AudioChannel.UI, g.sfx.HOVER)
                 return e
 
         return None
 
     else:
         # Check if direction pressed and move index
-        if i.is_pressed(action_buffer, i.Action.UP):
-            play_sound(AudioChannel.UI, a.UI_HOVER)
+        if i.is_pressed(i.Action.UP):
+            play_sound(AudioChannel.UI, g.sfx.HOVER)
             if ui_index is None:
                 return 0
             return (ui_index - 1) % len(ui_list)
 
-        if i.is_pressed(action_buffer, i.Action.DOWN):
-            play_sound(AudioChannel.UI, a.UI_HOVER)
+        if i.is_pressed(i.Action.DOWN):
+            play_sound(AudioChannel.UI, g.sfx.HOVER)
             if ui_index is None:
                 return 0
             return (ui_index + 1) % len(ui_list)

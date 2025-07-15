@@ -17,7 +17,8 @@ WINDOW_SETUP = {
 
 CAPTION = "kenney-jam-2025"
 FPS = 0  # 0 = Uncapped -> let VSYNC decide best tick speed if enabled
-MAX_DT = 1 / 60  # NOTE: if this is 60 then phone will be 1/2 speed as capped at 30FPS
+# NOTE: if this is 60 then phone will be 1/2 speed as capped at 30FPS
+MAX_DT = 1 / 60
 
 IS_WEB = sys.platform == "emscripten"
 
@@ -30,3 +31,6 @@ GREEN = pygame.Color(0, 255, 0)
 CYAN = pygame.Color(0, 255, 255)
 BLUE = pygame.Color(0, 0, 255)
 MAGENTA = pygame.Color(255, 0, 255)
+
+# Size constants
+BUTTON_SIZE = (96, 16)
