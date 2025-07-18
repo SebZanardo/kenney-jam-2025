@@ -1,6 +1,7 @@
 from enum import IntEnum
 import pygame
 
+from components.motion import Motion
 import core.constants as c
 import core.input as i
 import core.globals as g
@@ -30,7 +31,12 @@ class Menu(Scene):
         super().__init__(statemachine)
 
         self.current_state = MenuState.MAIN
-        self.camera = Camera.empty()
+        self.camera = Camera(
+            Motion.empty(),
+            pygame.Vector2(),
+            pygame.Vector2(),
+            pygame.Vector2(),
+        )
 
     def enter(self) -> None:
         play_music(g.NINTENDO_MUSIC, -1)
@@ -40,18 +46,12 @@ class Menu(Scene):
 
         g.window.fill(c.WHITE)
 
-        g.window.blit(
-            g.ICON,
-            camera_to_screen_shake(self.camera, 0, 0)
-        )
+        g.window.blit(g.ICON, camera_to_screen_shake(self.camera, 0, 0))
 
         if self.current_state == MenuState.MAIN:
             ui.im_reset_position(10, 200)
             if ui.im_button("play"):
-                statemachine_change_state(
-                    self.statemachine,
-                    manager.SceneState.GAME
-                )
+                statemachine_change_state(self.statemachine, manager.SceneState.GAME)
                 ui.im_new()
 
             if ui.im_button("settings"):
@@ -68,15 +68,12 @@ class Menu(Scene):
                     pygame.quit()
 
         elif self.current_state == MenuState.SETTINGS:
-            if (not settings_menu()):
+            if not settings_menu():
                 self.current_state = MenuState.MAIN
                 ui.im_new()
 
         elif self.current_state == MenuState.CREDITS:
-            if (
-                i.is_pressed(i.Action.START) or
-                i.mouse_pressed(i.MouseButton.LEFT)
-            ):
+            if i.is_pressed(i.Action.START) or i.mouse_pressed(i.MouseButton.LEFT):
                 self.current_state = MenuState.MAIN
                 ui.im_new()
 
@@ -84,10 +81,7 @@ class Menu(Scene):
             ui.im_text("Made for the Kenney Game Jam 2025")
             ui.im_text("By ProfDragon and SebZanardo")
 
-        if (
-            i.is_pressed(i.Action.START) or
-            i.mouse_pressed(i.MouseButton.LEFT)
-        ):
+        if i.is_pressed(i.Action.START) or i.mouse_pressed(i.MouseButton.LEFT):
             self.camera.trauma += 0.5
 
     def exit(self) -> None:

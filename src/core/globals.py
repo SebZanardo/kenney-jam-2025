@@ -56,7 +56,17 @@ FONT = pygame.font.Font(path + "Better VCR 9.0.1.ttf", 16)
 path = "data/textures/"
 ICON = pygame.image.load(path + "icon.png")
 MENU_BUTTONS = slice_sheet(path + "buttons.png", *c.BUTTON_SIZE)
-ONE_BIT_COLOR = pygame.image.load(path+"1bit-coloured.png")
+PATTERNS = pygame.image.load(path + "patterns.png")
+ONE_BIT_COLOR = pygame.image.load(path + "1bit-coloured.png")
+
+# I made a new folder for custom textures so we can keep track
+# of what was downloaded from Kenney directly and what was compiled
+# into new spritesheets. I also put the Aseprite source files there.
+path = "data/textures-src/"
+TERRAIN = slice_sheet(path + "terrain.png", 16, 16)
+HANDS = slice_sheet(path + "hands.png", 16, 16)
+POTIONS = slice_sheet(path + "potions.png", 16, 16)
+BLENDING_FX = slice_sheet(path + "blending-fx.png", 16, 16)
 
 # Load audio (ogg for web compatibility)
 path = "data/sfx/"
