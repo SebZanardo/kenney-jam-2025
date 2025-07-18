@@ -66,7 +66,7 @@ ONE_BIT_COLOR = pygame.image.load(path + "1bit-coloured.png")
 path = "data/textures-src/"
 TERRAIN = slice_sheet(path + "terrain.png", 16, 16)
 HANDS = slice_sheet(path + "hands.png", 16, 16)
-POTIONS = slice_sheet(path + "potions.png", 16, 16)
+TOWERS = slice_sheet(path + "towers.png", 16, 16)
 WIRES = slice_sheet(path + "wires.png", 16, 16)
 BLENDING_FX = slice_sheet(path + "blending-fx.png", 16, 16)
 
