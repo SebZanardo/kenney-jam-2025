@@ -77,53 +77,10 @@ class Game(Scene):
 
         # user interaction
         # place tower
-        # if i.mouse_pressed():
-        #     tower = Tower(tile_pos[:])
-        #     tower_create_animator(tower)
-        #     self.towers.append(tower)
+        game_mode_tower_create(self, tile_pos)
 
         # make wires
-        if i.mouse_pressed() and tile_pos is not None:
-            self.wire_draw_start = wire_find(self.wires, tile_pos)
-
-        if self.wire_draw_start is not None:
-            g.hand.type = HandType.GRAB
-            if g.mouse_buffer[i.MouseButton.LEFT] not in (i.InputState.PRESSED, i.InputState.HELD):
-                self.wire_draw_start = None
-                g.hand.type = HandType.DEFAULT
-            elif tile_pos != self.wire_draw_start.tile and tile_pos is not None:
-                sx, sy = self.wire_draw_start.tile
-                adjacent_sides = {
-                    (sx, sy - 1): c.UP,
-                    (sx - 1, sy): c.LEFT,
-                    (sx + 1, sy): c.RIGHT,
-                    (sx, sy + 1): c.DOWN,
-                }
-                if tile_pos in adjacent_sides:
-                    # place new wire
-                    if (overwrite := wire_find(self.wires, tile_pos)) is None:
-                        wire = Wire(
-                            tile_pos[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile_pos]], {}
-                        )
-                        self.wire_draw_start.outgoing_sides[adjacent_sides[tile_pos]] = wire
-                        self.wire_draw_start = wire
-                    # delete previous wire
-                    elif (
-                        not self.wire_draw_start.outgoing_sides
-                        and self.wire_draw_start in overwrite.outgoing_sides.values()
-                        and not self.wire_draw_start.is_permanent
-                    ):
-                        overwrite.outgoing_sides = {
-                            dir: node
-                            for dir, node in overwrite.outgoing_sides.items()
-                            if node != self.wire_draw_start
-                        }
-                        self.wire_draw_start = overwrite
-                    # crossing wires
-                    else:
-                        g.hand.type = HandType.NO
-                else:
-                    g.hand.type = HandType.NO
+        game_mode_wire_create(self, tile_pos)
 
         # towers
         for tower in self.towers:
@@ -172,3 +129,100 @@ class Game(Scene):
 
     def exit(self) -> None:
         pass
+
+
+## TOWERS
+
+
+def game_place_tower_on(self: Game, tower: Tower, parent: Wire):
+    tower_create_animator(tower)
+    parent.tower = tower
+    self.towers.append(tower)
+    self.money -= 5
+
+
+def game_delete_tower_from(self: Game, parent: Wire):
+    self.towers.remove(parent.tower)
+    parent.tower = None
+    self.money += 5
+
+
+def game_mode_tower_create(self: Game, tile_pos: Pos | None):
+    if i.mouse_pressed():
+        wire = wire_find(self.wires, tile_pos)
+        if wire is not None:
+            # place tower
+            if wire.tower is None:
+                if self.money >= 5:
+                    tower = Tower(tile_pos[:])
+                    game_place_tower_on(self, tower, wire)
+            # delete tower
+            else:
+                game_delete_tower_from(self, wire)
+
+
+## WIRES
+
+
+def game_place_wire(self: Game, wire: Wire, parent: Wire):
+    parent.outgoing_sides[c.INVERTED_DIRECTIONS[wire.incoming_side]] = wire
+    self.money -= 1
+
+
+def game_delete_wire(self: Game, wire: Wire, parent: Wire):
+    parent.outgoing_sides = {
+        dir: node for dir, node in parent.outgoing_sides.items() if node != wire
+    }
+    if wire.tower is not None:
+        game_delete_tower_from(self, wire)
+    self.money += 1
+
+
+def game_mode_wire_create(self: Game, tile_pos: Pos | None):
+    if i.mouse_pressed() and tile_pos is not None:
+        self.wire_draw_start = wire_find(self.wires, tile_pos)
+
+    if self.wire_draw_start is not None:
+        g.hand.type = HandType.GRAB
+        if g.mouse_buffer[i.MouseButton.LEFT] not in (i.InputState.PRESSED, i.InputState.HELD):
+            self.wire_draw_start = None
+            g.hand.type = HandType.DEFAULT
+
+        elif tile_pos != self.wire_draw_start.tile and tile_pos is not None:
+            sx, sy = self.wire_draw_start.tile
+            adjacent_sides = {
+                (sx, sy - 1): c.UP,
+                (sx - 1, sy): c.LEFT,
+                (sx + 1, sy): c.RIGHT,
+                (sx, sy + 1): c.DOWN,
+            }
+
+            # adjacent tile
+            if tile_pos in adjacent_sides:
+                # place new wire
+                if (overwrite := wire_find(self.wires, tile_pos)) is None:
+                    if self.money >= 1:
+                        wire = Wire(
+                            tile_pos[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile_pos]], {}
+                        )
+                        game_place_wire(self, wire, self.wire_draw_start)
+                        self.wire_draw_start = wire
+                    else:
+                        g.hand.type = HandType.NO
+
+                # delete previous wire
+                elif (
+                    not self.wire_draw_start.outgoing_sides
+                    and self.wire_draw_start in overwrite.outgoing_sides.values()
+                    and not self.wire_draw_start.is_permanent
+                ):
+                    game_delete_wire(self, self.wire_draw_start, overwrite)
+                    self.wire_draw_start = overwrite
+
+                # crossing wires
+                else:
+                    g.hand.type = HandType.NO
+
+            # cursor jumped, not an adjacent tile
+            else:
+                g.hand.type = HandType.NO
