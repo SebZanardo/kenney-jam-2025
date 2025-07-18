@@ -29,6 +29,14 @@ class Tower:
     animator: Animator = None
 
 
+# NOTE: These should be stats for all towers
+@dataclass(frozen=True)
+class TowerStat:
+    sell_price: int
+    reload_time: int
+    damage: int
+
+
 # Load animations once here
 tower_animations = []
 
@@ -38,6 +46,43 @@ for tower_type in list(TowerType):
     start = tower_type.value
     animation = Animation(g.TOWERS[start * 7: (start + 1) * 7], 0.1)
     tower_animations.append(animation)
+
+tower_purchase_price = {
+    TowerType.CORE: 30,
+    TowerType.NORMAL: 5,
+    TowerType.SLOW: 10,
+    TowerType.SPLASH: 20,
+    TowerType.ZAP: 50,
+}
+
+# NOTE: index in array is for stats for that level
+tower_stats = {
+    TowerType.CORE: [
+        TowerStat(20, 0, 0),
+        TowerStat(40, 0, 0),
+        TowerStat(60, 0, 0),
+    ],
+    TowerType.NORMAL: [
+        TowerStat(3, 0.1, 1),
+        TowerStat(6, 0.1, 3),
+        TowerStat(9, 0.05, 5),
+    ],
+    TowerType.SLOW: [
+        TowerStat(5, 0.2, 0),
+        TowerStat(10, 0.15, 0),
+        TowerStat(15, 0.1, 0),
+    ],
+    TowerType.SPLASH: [
+        TowerStat(15, 0.2, 5),
+        TowerStat(30, 0.15, 10),
+        TowerStat(45, 0.1, 15),
+    ],
+    TowerType.ZAP: [
+        TowerStat(30, 0.5, 16),
+        TowerStat(60, 0.45, 35),
+        TowerStat(90, 0.4, 50),
+    ],
+}
 
 
 def tower_create_animator(tower: Tower) -> None:
