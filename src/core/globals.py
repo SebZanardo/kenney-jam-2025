@@ -1,3 +1,4 @@
+import copy
 import platform
 import pygame
 
@@ -30,6 +31,7 @@ action_buffer = []
 last_action_pressed = []
 
 dt = 0.0
+mouse_pos = (-1, -1)
 
 settings = None
 
@@ -39,21 +41,19 @@ last_action_pressed = None
 
 # User settings
 default_setting_params = {
-    "music": 50,
-    "sfx": 30,
-    "fullscreen": False,
-    "vsync": True,
-    "screenshake": True,
+    "music": [50],
+    "sfx": [30],
+    "screenshake": [True],
 }
 
-setting_params = default_setting_params.copy()
+setting_params = copy.deepcopy(default_setting_params)
 
 # Dev settings
 pass
 
 # Load fonts (ttf for web compatibility)
 path = "data/fonts/"
-FONT = pygame.font.Font(path + "joystix.ttf", 10)
+FONT = pygame.font.Font(path + "Better VCR 9.0.1.ttf", 16)
 
 # Load sprites (png, webp or jpg for web compatibility)
 path = "data/textures/"

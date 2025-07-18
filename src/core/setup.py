@@ -1,3 +1,4 @@
+import platform
 import pygame
 import json
 
@@ -6,7 +7,7 @@ import core.input as i
 import core.globals as g
 
 from components.statemachine import statemachine_initialise
-from components.settings import Settings, settings_load
+# from components.settings import Settings, settings_load
 
 from scenes.manager import SCENE_MAPPING, SceneState
 
@@ -23,8 +24,8 @@ def setup() -> None:
     load_settings()
     print("Loaded settings")
 
-    g.settings = Settings()
-    settings_load()
+    # g.settings = Settings()
+    # settings_load()
 
 
 def load_settings() -> None:

@@ -6,22 +6,14 @@ import core.input as i
 import core.globals as g
 
 from components.statemachine import StateMachine, statemachine_change_state
-from components.audio import AudioChannel, play_sound, play_music, stop_music
-from components.ui import (
-    Button,
-    ui_list_render,
-    ui_list_update_selection,
-    button_activate
-)
-from components.settings import (
-    settings_update,
-    settings_render
-)
+from components.audio import play_music, stop_music
+import components.ui as ui
 from components.camera import (
     Camera,
     camera_update,
     camera_to_screen_shake,
 )
+from components.settings import settings_menu
 
 from scenes.scene import Scene
 from scenes import manager
@@ -38,106 +30,15 @@ class Menu(Scene):
         super().__init__(statemachine)
 
         self.current_state = MenuState.MAIN
-
-        # buttons
-        self.ui_start_button = Button(
-            "",
-            pygame.Rect(208, 190, *c.BUTTON_SIZE),
-            g.FONT.render("START", False, c.WHITE),
-            self.start_game,
-        )
-
-        self.ui_settings_button = Button(
-            "",
-            pygame.Rect(208, 210, *c.BUTTON_SIZE),
-            g.FONT.render("SETTINGS", False, c.WHITE),
-            self.switch_settings,
-        )
-
-        self.ui_credits_button = Button(
-            "",
-            pygame.Rect(208, 230, *c.BUTTON_SIZE),
-            g.FONT.render("CREDITS", False, c.WHITE),
-            self.switch_credit,
-        )
-
-        self.ui_quit_button = Button(
-            "",
-            pygame.Rect(208, 250, *c.BUTTON_SIZE),
-            g.FONT.render("QUIT", False, c.WHITE),
-            pygame.quit,
-        )
-
-        self.ui_index = 0
-
-        self.ui_list = [
-            self.ui_start_button,
-            self.ui_settings_button,
-            self.ui_credits_button,
-        ]
-
-        if not c.IS_WEB:
-            self.ui_list.append(self.ui_quit_button)
-
-        self.credit = g.FONT.render(
-            "Made for kenney jam 2025",
-            False,
-            c.BLACK
-        )
-
         self.camera = Camera.empty()
 
     def enter(self) -> None:
         play_music(g.NINTENDO_MUSIC, -1)
 
     def execute(self) -> None:
-        mouse_position = pygame.mouse.get_pos()
-
         camera_update(self.camera, g.dt)
 
-        if self.current_state == MenuState.MAIN:
-            self.ui_index = ui_list_update_selection(self.ui_list, self.ui_index)
-
-            # NOTE: Do we not already have this logic in settings?!!!
-            if g.mouse_buffer[i.MouseButton.LEFT] == i.InputState.PRESSED:
-                for element in self.ui_list:
-                    if element.rect.collidepoint(mouse_position):
-                        button_activate(element)
-                        play_sound(AudioChannel.UI, g.SELECT_SFX)
-
-            if self.ui_index is not None:
-                element = self.ui_list[self.ui_index]
-                if (
-                    i.is_pressed(i.Action.A)
-                    or i.is_pressed(i.Action.SELECT)
-                    or i.is_pressed(i.Action.START)
-                ):
-                    button_activate(element)
-                    play_sound(AudioChannel.UI, g.SELECT_SFX)
-
-        elif self.current_state == MenuState.SETTINGS:
-            settings_update()
-            if g.settings.should_exit:
-                self.current_state = MenuState.MAIN
-                g.settings.should_exit = False
-                return
-
-        elif self.current_state == MenuState.CREDITS:
-            if (
-                g.action_buffer[i.Action.START] == i.InputState.PRESSED or
-                g.mouse_buffer[i.MouseButton.LEFT] == i.InputState.PRESSED
-            ):
-                self.current_state = MenuState.MAIN
-                return
-
-        if (
-            g.action_buffer[i.Action.START] == i.InputState.PRESSED or
-            g.mouse_buffer[i.MouseButton.LEFT] == i.InputState.PRESSED
-        ):
-            self.camera.trauma += 0.5
-
-        # RENDER
-        g.window.fill(c.RED)
+        g.window.fill(c.WHITE)
 
         g.window.blit(
             g.ICON,
@@ -145,25 +46,48 @@ class Menu(Scene):
         )
 
         if self.current_state == MenuState.MAIN:
-            ui_list_render(self.ui_list, self.ui_index)
+            ui.im_reset_position(10, 200)
+            if ui.im_button("play"):
+                statemachine_change_state(
+                    self.statemachine,
+                    manager.SceneState.GAME
+                )
+                ui.im_new()
+
+            if ui.im_button("settings"):
+                self.current_state = MenuState.SETTINGS
+                ui.im_new()
+
+            if ui.im_button("credits"):
+                self.current_state = MenuState.CREDITS
+                ui.im_new()
+
+            if ui.im_button("quit"):
+                # TODO: terminate gracefully
+                pygame.quit()
 
         elif self.current_state == MenuState.SETTINGS:
-            settings_render()
+            if (not settings_menu()):
+                self.current_state = MenuState.MAIN
+                ui.im_new()
 
         elif self.current_state == MenuState.CREDITS:
-            g.window.blit(
-                self.credit,
-                (100, 100)
-            )
+            if (
+                i.is_pressed(i.Action.START) or
+                i.mouse_pressed(i.MouseButton.LEFT)
+            ):
+                self.current_state = MenuState.MAIN
+                ui.im_new()
+
+            ui.im_reset_position(80, 150)
+            ui.im_text("Made for the Kenney Game Jam 2025")
+            ui.im_text("By ProfDragon and SebZanardo")
+
+        if (
+            i.is_pressed(i.Action.START) or
+            i.mouse_pressed(i.MouseButton.LEFT)
+        ):
+            self.camera.trauma += 0.5
 
     def exit(self) -> None:
         stop_music()
-
-    def start_game(self) -> None:
-        statemachine_change_state(self.statemachine, manager.SceneState.GAME)
-
-    def switch_settings(self) -> None:
-        self.current_state = MenuState.SETTINGS
-
-    def switch_credit(self) -> None:
-        self.current_state = MenuState.CREDITS

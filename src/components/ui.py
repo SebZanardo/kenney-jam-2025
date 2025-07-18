@@ -1,227 +1,237 @@
 from dataclasses import dataclass
-from typing import Callable
 import pygame
 
-import core.setup as setup
-import core.constants as c
-import core.input as i
 import core.globals as g
-
-from components.audio import AudioChannel, play_sound, try_play_sound
-from utilities.math import clamp
+import core.input as i
 
 
-@dataclass(slots=True)
-class Button:
-    key: str
-    rect: pygame.Rect
-    graphic: pygame.Surface
-    callback: Callable
+Pos = tuple[int, int]
+Bbox = tuple[int, int, int, int]
+Colour = tuple[int, int, int]
 
 
 @dataclass(slots=True)
-class Checkbox:
-    key: str
-    rect: pygame.Rect
-    graphic_enabled: pygame.Surface
-    graphic_disabled: pygame.Surface
-    enabled: bool
-    name_render: pygame.Surface
-    callback: Callable
+class StyleUI:
+    button_dim: Pos = (100, 20)
+    checkbox_dim: Pos = (20, 20)
+    slider_dim: Pos = (300, 20)
+
+    padding_x: int = 5
+    padding_y: int = 5
+
+    background_colour: Colour = (0, 0, 0)
+    hovered_colour: Colour = (50, 50, 50)
+    clicked_colour: Colour = (100, 100, 100)
+    main_colour: Colour = (255, 0, 255)
+    text_colour: Colour = (255, 255, 255)
 
 
 @dataclass(slots=True)
-class Slider:
-    key: str
-    rect: pygame.Rect
-    min_value: int
-    max_value: int
-    value: int
-    filled_rect: pygame.Rect
-    name_render: pygame.Surface
-    value_render: pygame.Surface
-    callback: Callable
+class ContextUI:
+    rx: int = 0
+    ry: int = 0
+
+    # To track selected element for keyboard input and sliders
+    current_id: int = 0
+
+    # Where to render next element
+    x: int = 0
+    y: int = 0
+
+    # Stored incase you want the next element to sit next to the current one
+    tracked_id: int = -1
+    last_x: int = 0
+    last_y: int = 0
+
+    def bbox(self, width: int, height: int) -> Bbox:
+        rect = (
+                self.x,
+                self.y,
+                width,
+                height
+            )
+
+        self.last_x = self.x + width + style.padding_x
+        self.last_y = self.y
+
+        self.x = self.rx
+        self.y += height + style.padding_y
+
+        self.current_id += 1
+
+        return rect
+
+    def interact(self, bbox: bbox) -> tuple[bool, bool, bool]:
+        mx, my = g.mouse_pos
+        x, y, w, h = bbox
+
+        hovered = False
+        clicked = False
+        held = False
+
+        if self.tracked_id == self.current_id:
+            if i.mouse_held(i.MouseButton.LEFT):
+                held = True
+            else:
+                held = False
+                self.tracked_id = -1
+
+        elif mx >= x and my >= y and mx <= x + w and my <= y + h:
+            hovered = True
+            if (i.mouse_pressed(i.MouseButton.LEFT) and self.tracked_id == -1):
+                clicked = True
+                self.tracked_id = self.current_id
+
+        return hovered, clicked, held
 
 
-def button_activate(button: Button) -> None:
-    if callable(button.callback):
-        button.callback()
-    setup.write_settings()
+# GLOBALS #####################################################################
+style = StyleUI()
+context = ContextUI()
+###############################################################################
 
 
-def checkbox_set_enabled(checkbox: Checkbox, enabled: bool) -> None:
-    if checkbox.key:
-        g.setting_params[checkbox.key] = enabled
-
-    checkbox.enabled = enabled
-    if callable(checkbox.callback):
-        checkbox.callback(checkbox.enabled)
-    setup.write_settings()
+def im_text(label: str) -> None:
+    text = g.FONT.render(label, False, style.background_colour)
+    bbox = context.bbox(*text.get_size())
+    g.window.blit(text, (bbox[0], bbox[1]))
 
 
-def checkbox_toggle(checkbox: Checkbox) -> None:
-    checkbox_set_enabled(checkbox, not checkbox.enabled)
-
-
-def slider_percent(slider: Slider) -> float:
-    difference = slider.max_value - slider.min_value
-    return (slider.value - slider.min_value) / difference
-
-
-def slider_value_render(slider: Slider) -> None:
-    slider.value_render = g.FONT.render(
-        str(int(slider.value)), False, c.WHITE)
-
-
-def slider_set_value(slider: Slider, value: int) -> None:
-    slider.value = clamp(value, slider.min_value, slider.max_value)
-    slider.filled_rect = (
-        slider.rect.x,
-        slider.rect.y,
-        slider_percent(slider) * slider.rect.w,
-        slider.rect.h,
+def im_button(label: str) -> bool:
+    bbox = context.bbox(*style.button_dim)
+    hovered, clicked, held = context.interact(bbox)
+    pygame.draw.rect(
+        g.window,
+        style.background_colour,
+        bbox
     )
-    slider_value_render(slider)
-    if slider.key:
-        g.setting_params[slider.key] = slider.value
-    if callable(slider.callback):
-        slider.callback(slider.value)
-    setup.write_settings()
+    if clicked:
+        # pygame.draw.rect(
+        #     g.window,
+        #     style.clicked_colour,
+        #     bbox
+        # )
+        pass
+    elif held:
+        pygame.draw.rect(
+            g.window,
+            style.clicked_colour,
+            bbox
+        )
+    elif hovered:
+        pygame.draw.rect(
+            g.window,
+            style.hovered_colour,
+            bbox
+        )
+
+    text = g.FONT.render(label, False, style.text_colour)
+    g.window.blit(text, (bbox[0], bbox[1]))
+
+    return clicked
 
 
-def slider_set_value_mouse(slider: Slider) -> None:
-    x = pygame.mouse.get_pos()[0]
-    if x <= slider.rect.x:
-        slider_set_value(slider, slider.min_value)
-        return
+def im_checkbox(value: list[bool]) -> bool:
+    bbox = context.bbox(*style.checkbox_dim)
+    hovered, clicked, held = context.interact(bbox)
 
-    if x >= slider.rect.x + slider.rect.w:
-        slider_set_value(slider, slider.max_value)
-        return
-
-    difference = slider.max_value - slider.min_value
-    percent = (x - slider.rect.x) / slider.rect.w
-    value = int(percent * difference + slider.min_value)
-    slider_set_value(slider, value)
-
-
-def button_render(button: Button, selected: bool) -> None:
-    g.window.blit(
-        g.MENU_BUTTONS[1 if selected else 0],
-        button.rect.topleft
+    pygame.draw.rect(
+        g.window,
+        style.background_colour,
+        bbox
     )
-    g.window.blit(
-        button.graphic,
+
+    if clicked:
+        value[0] = not value[0]
+        # pygame.draw.rect(
+        #     g.window,
+        #     style.clicked_colour,
+        #     bbox
+        # )
+        pass
+    elif held:
+        pygame.draw.rect(
+            g.window,
+            style.clicked_colour,
+            bbox
+        )
+    elif hovered:
+        pygame.draw.rect(
+            g.window,
+            style.hovered_colour,
+            bbox
+        )
+
+    if value[0]:
+        pygame.draw.circle(
+            g.window,
+            style.main_colour,
+            (bbox[0] + bbox[2] // 2, bbox[1] + bbox[3] // 2),
+            8
+        )
+
+    return clicked
+
+
+def im_slider(value: list[float], lo: float, hi: float) -> bool:
+    bbox = context.bbox(*style.slider_dim)
+    hovered, clicked, held = context.interact(bbox)
+    pygame.draw.rect(
+        g.window,
+        style.background_colour,
+        bbox
+    )
+    if held:
+        percent = (g.mouse_pos[0] - bbox[0]) / style.slider_dim[0]
+        difference = hi - lo
+        value[0] = percent * difference + lo
+        value[0] = min(max(value[0], lo), hi)
+        pygame.draw.rect(
+            g.window,
+            style.clicked_colour,
+            bbox
+        )
+    elif hovered:
+        pygame.draw.rect(
+            g.window,
+            style.hovered_colour,
+            bbox
+        )
+
+    pygame.draw.rect(
+        g.window,
+        style.main_colour,
         (
-            button.rect.centerx - button.graphic.get_width() // 2,
-            button.rect.centery - button.graphic.get_height() // 2,
-        ),
-    )
-    if selected:
-        g.window.blit(
-            g.MENU_BUTTONS[2],
-            button.rect.topleft,
-            special_flags=pygame.BLEND_RGB_ADD
+            bbox[0],
+            bbox[1],
+            value[0] / hi * style.slider_dim[0],
+            bbox[3]
         )
-
-
-def slider_render(slider: Slider, selected: bool) -> None:
-    g.window.blit(
-        slider.name_render,
-        (slider.rect.left - 150, slider.rect.y)
-    )
-    g.window.blit(
-        g.MENU_BUTTONS[1 if selected else 0],
-        slider.rect.topleft
-    )
-    g.window.blit(
-        g.MENU_BUTTONS[3],
-        slider.rect.topleft,
-        (0, 0, slider.filled_rect[2], slider.filled_rect[3])
-    )
-    g.window.blit(slider.value_render, (slider.rect.right + 20, slider.rect.y))
-    if selected:
-        g.window.blit(
-            g.MENU_BUTTONS[2],
-            (slider.rect.x, slider.rect.y),
-            special_flags=pygame.BLEND_RGB_ADD
-        )
-
-
-def checkbox_render(checkbox: Checkbox, selected: bool) -> None:
-    g.window.blit(
-        checkbox.name_render,
-        (checkbox.rect.x - 150, checkbox.rect.y)
-    )
-    g.window.blit(
-        g.MENU_BUTTONS[1 if selected else 0],
-        checkbox.rect.topleft
     )
 
-    if checkbox.enabled:
-        half_width = checkbox.graphic_enabled.get_width() // 2
-        half_height = checkbox.graphic_enabled.get_height() // 2
-        g.window.blit(
-            checkbox.graphic_enabled,
-            (
-                checkbox.rect.centerx - half_width,
-                checkbox.rect.centery - half_height
-            ),
-        )
-    else:
-        half_width = checkbox.graphic_disabled.get_width() // 2
-        half_height = checkbox.graphic_disabled.get_height() // 2
-        g.window.blit(
-            checkbox.graphic_disabled,
-            (
-                checkbox.rect.centerx - half_width,
-                checkbox.rect.centery - half_height
-            ),
-        )
-    if selected:
-        g.window.blit(
-            g.MENU_BUTTONS[2],
-            (checkbox.rect.x, checkbox.rect.y),
-            special_flags=pygame.BLEND_RGB_ADD,
-        )
+    value_text = g.FONT.render(str(int(value[0])), False, style.text_colour)
+    g.window.blit(value_text, (bbox[0], bbox[1]))
+
+    return held
 
 
-def ui_list_update_selection(ui_list: list, ui_index: int) -> int | None:
-    mouse_position = pygame.mouse.get_pos()
-
-    # Check if mouse moved and is over rect
-    if mouse_position is not None:
-        for e, element in enumerate(ui_list):
-            if element.rect.collidepoint(mouse_position):
-                if e != ui_index:
-                    try_play_sound(AudioChannel.UI, g.HOVER_SFX)
-                return e
-
-        return None
-
-    else:
-        # Check if direction pressed and move index
-        if i.is_pressed(i.Action.UP):
-            play_sound(AudioChannel.UI, g.HOVER_SFX)
-            if ui_index is None:
-                return 0
-            return (ui_index - 1) % len(ui_list)
-
-        if i.is_pressed(i.Action.DOWN):
-            play_sound(AudioChannel.UI, g.HOVER_SFX)
-            if ui_index is None:
-                return 0
-            return (ui_index + 1) % len(ui_list)
-
-        return ui_index
+def im_same_line() -> None:
+    context.x = context.last_x
+    context.y = context.last_y
 
 
-def ui_list_render(ui_list: list, ui_index: int) -> None:
-    for e, element in enumerate(ui_list):
-        selected = e == ui_index
-        if isinstance(element, Slider):
-            slider_render(element, selected)
-        elif isinstance(element, Checkbox):
-            checkbox_render(element, selected)
-        elif isinstance(element, Button):
-            button_render(element, selected)
+def im_set_next_position(x: int, y: int) -> None:
+    context.x = x
+    context.y = y
+
+
+def im_reset_position(x: int, y: int) -> None:
+    context.rx = x
+    context.ry = y
+    context.x = context.rx
+    context.y = context.ry
+    context.current_id = 0
+
+
+def im_new() -> None:
+    context.tracked_id = -1

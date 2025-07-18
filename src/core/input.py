@@ -38,20 +38,36 @@ def input_init() -> None:
     g.last_action_pressed = [action_mappings[a][0] for a in Action]
 
 
-def is_pressed(input_enum: IntEnum) -> bool:
-    return g.action_buffer[input_enum] == InputState.PRESSED
+def mouse_pressed(button: MouseButton) -> bool:
+    return g.mouse_buffer[button] == InputState.PRESSED
 
 
-def is_held(input_enum: IntEnum) -> bool:
-    return g.action_buffer[input_enum] == InputState.HELD
+def mouse_held(button: MouseButton) -> bool:
+    return g.mouse_buffer[button] == InputState.HELD
 
 
-def is_released(input_enum: IntEnum) -> bool:
-    return g.action_buffer[input_enum] == InputState.RELEASED
+def mouse_released(button: MouseButton) -> bool:
+    return g.mouse_buffer[button] == InputState.RELEASED
 
 
-def is_nothing(input_enum: IntEnum) -> bool:
-    return g.action_buffer[input_enum] == InputState.NOTHING
+def mouse_nothing(button: MouseButton) -> bool:
+    return g.mouse_buffer[button] == InputState.NOTHING
+
+
+def is_pressed(action: Action) -> bool:
+    return g.action_buffer[action] == InputState.PRESSED
+
+
+def is_held(action: Action) -> bool:
+    return g.action_buffer[action] == InputState.HELD
+
+
+def is_released(action: Action) -> bool:
+    return g.action_buffer[action] == InputState.RELEASED
+
+
+def is_nothing(action: Action) -> bool:
+    return g.action_buffer[action] == InputState.NOTHING
 
 
 def input_event_queue() -> bool:
