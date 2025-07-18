@@ -4,6 +4,8 @@ import pygame
 import core.globals as g
 import core.input as i
 
+from components.audio import AudioChannel, play_sound
+
 
 Pos = tuple[int, int]
 Bbox = tuple[int, int, int, int]
@@ -33,13 +35,14 @@ class ContextUI:
 
     # To track selected element for keyboard input and sliders
     current_id: int = 0
+    hovered_id: int = -1
+    held_id: int = -1
 
     # Where to render next element
     x: int = 0
     y: int = 0
 
     # Stored incase you want the next element to sit next to the current one
-    tracked_id: int = -1
     last_x: int = 0
     last_y: int = 0
 
@@ -57,8 +60,6 @@ class ContextUI:
         self.x = self.rx
         self.y += height + style.padding_y
 
-        self.current_id += 1
-
         return rect
 
     def interact(self, bbox: bbox) -> tuple[bool, bool, bool]:
@@ -69,18 +70,26 @@ class ContextUI:
         clicked = False
         held = False
 
-        if self.tracked_id == self.current_id:
+        if self.held_id == self.current_id:
             if i.mouse_held(i.MouseButton.LEFT):
                 held = True
             else:
                 held = False
-                self.tracked_id = -1
+                self.held_id = -1
 
         elif mx >= x and my >= y and mx <= x + w and my <= y + h:
             hovered = True
-            if (i.mouse_pressed(i.MouseButton.LEFT) and self.tracked_id == -1):
+
+            if self.hovered_id != self.current_id:
+                play_sound(AudioChannel.UI, g.HOVER_SFX)
+                self.hovered_id = self.current_id
+
+            if (i.mouse_pressed(i.MouseButton.LEFT) and self.held_id == -1):
                 clicked = True
-                self.tracked_id = self.current_id
+                play_sound(AudioChannel.UI, g.SELECT_SFX)
+                self.held_id = self.current_id
+
+        self.current_id += 1
 
         return hovered, clicked, held
 
@@ -234,4 +243,4 @@ def im_reset_position(x: int, y: int) -> None:
 
 
 def im_new() -> None:
-    context.tracked_id = -1
+    context.held_id = -1
