@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from components.camera import Camera, camera_to_screen_shake
 import core.constants as c
 import core.globals as g
+from components.camera import Camera, camera_to_screen_shake
 from components.animation import Animation, Animator, animator_get_frame, animator_update
 from components.ui import Pos
 from utilities.sprite import rotate_sprite

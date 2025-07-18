@@ -37,6 +37,9 @@ UP = "up"
 LEFT = "left"
 RIGHT = "right"
 DOWN = "down"
+HORIZONTAL = (LEFT, RIGHT)
+VERTICAL = (UP, DOWN)
+INVERTED_DIRECTIONS = {UP: DOWN, LEFT: RIGHT, RIGHT: LEFT, DOWN: UP}
 
 # Size constants
 BUTTON_SIZE = (96, 16)

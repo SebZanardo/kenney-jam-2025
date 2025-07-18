@@ -51,6 +51,7 @@ pass
 # Load fonts (ttf for web compatibility)
 path = "data/fonts/"
 FONT = pygame.font.Font(path + "Better VCR 9.0.1.ttf", 16)
+DEBUG_FONT = pygame.font.SysFont("monospace", 10)
 
 # Load sprites (png, webp or jpg for web compatibility)
 path = "data/textures/"

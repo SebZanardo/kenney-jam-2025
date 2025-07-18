@@ -10,6 +10,8 @@ from components.animation import (
 from components.camera import Camera, camera_from_screen, camera_to_screen, camera_to_screen_shake
 from components.motion import Motion
 from components.tower import Tower, tower_create_animator, tower_render, tower_update
+from components.ui import Pos
+from components.wire import Wire, wire_find, wire_render_chain
 import core.constants as c
 import core.input as i
 import core.globals as g
@@ -38,8 +40,15 @@ class Game(Scene):
         # we can make this a 2d array if needed for pathfinding
         self.towers: list[Tower] = []
 
+        # wires
+        self.wires: list[Wire] = [
+            Wire((1, 0), c.UP, {}, True),
+            Wire((3, 17), c.DOWN, {}, True),
+        ]
+        self.wire_draw_start: Wire | None = None
+
         self.blending_anim = Animator()
-        animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX, 0.1)})
+        animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX, 0.15)})
 
     def execute(self) -> None:
         # UPDATE
@@ -53,11 +62,53 @@ class Game(Scene):
         # hovered tile pos
         tile_pos = (hand_pos[0] // c.TILE_SIZE, hand_pos[1] // c.TILE_SIZE)
 
-        # user interaction (place tower)
+        # user interaction
+        # place tower
+        # if i.mouse_pressed():
+        #     tower = Tower(tile_pos[:])
+        #     tower_create_animator(tower)
+        #     self.towers.append(tower)
+
+        # make wires
         if i.mouse_pressed():
-            tower = Tower(tile_pos[:])
-            tower_create_animator(tower)
-            self.towers.append(tower)
+            self.wire_draw_start = wire_find(self.wires, tile_pos)
+        elif self.wire_draw_start is not None:
+            if not i.mouse_held():
+                self.wire_draw_start = None
+            elif tile_pos != self.wire_draw_start.tile:
+                sx, sy = self.wire_draw_start.tile
+                adjacent_sides = {
+                    (sx, sy - 1): c.UP,
+                    (sx - 1, sy): c.LEFT,
+                    (sx + 1, sy): c.RIGHT,
+                    (sx, sy + 1): c.DOWN,
+                }
+                if tile_pos in adjacent_sides:
+                    # place new wire
+                    if (overwrite := wire_find(self.wires, tile_pos)) is None:
+                        wire = Wire(
+                            tile_pos[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile_pos]], {}
+                        )
+                        self.wire_draw_start.outgoing_sides[adjacent_sides[tile_pos]] = wire
+                        self.wire_draw_start = wire
+                    # delete previous wire
+                    elif (
+                        not self.wire_draw_start.outgoing_sides
+                        and self.wire_draw_start in overwrite.outgoing_sides.values()
+                    ):
+                        overwrite.outgoing_sides = {
+                            dir: node
+                            for dir, node in overwrite.outgoing_sides.items()
+                            if node != self.wire_draw_start
+                        }
+                        self.wire_draw_start = overwrite
+                    # crossing wires
+                    else:
+                        # make the cursor/hand an 'X'
+                        pass
+                else:
+                    # make the cursor/hand an 'X'
+                    pass
 
         # towers
         for tower in self.towers:
@@ -77,12 +128,16 @@ class Game(Scene):
                     camera_to_screen_shake(self.camera, x * c.TILE_SIZE, y * c.TILE_SIZE),
                 )
 
+        # wires
+        for wire in self.wires:
+            wire_render_chain(wire, self.camera)
+
         # enemies
         pass
 
-        # towers
+        # preview tile
         if 0 <= tile_pos[0] < c.GRID_WIDTH_TILES and 0 <= tile_pos[1] < c.GRID_HEIGHT_TILES:
-            tile_preview = g.POTIONS[0].copy()
+            tile_preview = g.WIRES[0].copy()
             tile_preview.set_alpha(200)
             tile_preview.blit(
                 animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
@@ -92,6 +147,7 @@ class Game(Scene):
                 camera_to_screen(self.camera, tile_pos[0] * c.TILE_SIZE, tile_pos[1] * c.TILE_SIZE),
             )
 
+        # towers
         for tower in self.towers:
             tower_render(tower, self.camera)
 
@@ -100,6 +156,8 @@ class Game(Scene):
         #     g.HANDS[0],
         #     camera_to_screen(self.camera, hand_pos[0] - 4, hand_pos[1] - 2),
         # )
+
+        g.window.blit(g.DEBUG_FONT.render(str(self.wire_draw_start), True, c.BLACK))
 
     def exit(self) -> None:
         pass
