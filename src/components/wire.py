@@ -8,14 +8,21 @@ import core.constants as c
 import core.globals as g
 from components.ui import Pos
 from components.camera import Camera, camera_to_screen_shake
+from components.tower import Tower
 
 
 @dataclass(slots=True)
 class Wire:
+    # position and nodes
     tile: Pos
     incoming_side: str
     outgoing_sides: dict[str, Wire]  # dir: node
+
+    # per-map config
     is_permanent: bool = False
+
+    # user additions
+    tower: Tower | None = None
 
 
 def wire_find(wires: Iterable[Wire], tile: Pos) -> Wire | None:
