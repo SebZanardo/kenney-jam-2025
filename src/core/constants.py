@@ -32,6 +32,12 @@ CYAN = pygame.Color(0, 255, 255)
 BLUE = pygame.Color(0, 0, 255)
 MAGENTA = pygame.Color(255, 0, 255)
 
+# Direction constants
+UP = "up"
+LEFT = "left"
+RIGHT = "right"
+DOWN = "down"
+
 # Size constants
 BUTTON_SIZE = (96, 16)
 TILE_SIZE = 16  # can easily be changed to 32x32

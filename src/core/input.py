@@ -38,19 +38,19 @@ def input_init() -> None:
     g.last_action_pressed = [action_mappings[a][0] for a in Action]
 
 
-def mouse_pressed(button: MouseButton) -> bool:
+def mouse_pressed(button: MouseButton = MouseButton.LEFT) -> bool:
     return g.mouse_buffer[button] == InputState.PRESSED
 
 
-def mouse_held(button: MouseButton) -> bool:
+def mouse_held(button: MouseButton = MouseButton.LEFT) -> bool:
     return g.mouse_buffer[button] == InputState.HELD
 
 
-def mouse_released(button: MouseButton) -> bool:
+def mouse_released(button: MouseButton = MouseButton.LEFT) -> bool:
     return g.mouse_buffer[button] == InputState.RELEASED
 
 
-def mouse_nothing(button: MouseButton) -> bool:
+def mouse_nothing(button: MouseButton = MouseButton.LEFT) -> bool:
     return g.mouse_buffer[button] == InputState.NOTHING
 
 
