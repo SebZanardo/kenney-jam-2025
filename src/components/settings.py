@@ -28,10 +28,10 @@ from components.ui import (
 @dataclass
 class Settings:
     def __init__(self) -> None:
-        self.title = g.fonts.FONT.render("SETTINGS", False, c.WHITE)
+        self.title = g.FONT.render("SETTINGS", False, c.WHITE)
 
-        self.graphic_enabled = g.fonts.FONT.render("Enabled", False, c.GREEN)
-        self.graphic_disabled = g.fonts.FONT.render("Disabled", False, c.RED)
+        self.graphic_enabled = g.FONT.render("Enabled", False, c.GREEN)
+        self.graphic_disabled = g.FONT.render("Disabled", False, c.RED)
 
         self.ui_music_slider = Slider(
             "music",
@@ -40,7 +40,7 @@ class Settings:
             100,
             0,
             None,
-            g.fonts.FONT.render("MUSIC VOLUME", False, c.WHITE),
+            g.FONT.render("MUSIC VOLUME", False, c.WHITE),
             None,
             lambda value: set_music_volume(value / 100.0),
         )
@@ -52,7 +52,7 @@ class Settings:
             100,
             0,
             None,
-            g.fonts.FONT.render("SFX VOLUME", False, c.WHITE),
+            g.FONT.render("SFX VOLUME", False, c.WHITE),
             None,
             lambda value: set_sfx_volume(value / 100.0),
         )
@@ -63,7 +63,7 @@ class Settings:
             self.graphic_enabled,
             self.graphic_disabled,
             False,
-            g.fonts.FONT.render("FULLSCREEN?", False, c.WHITE),
+            g.FONT.render("FULLSCREEN?", False, c.WHITE),
             None,
         )
 
@@ -73,7 +73,7 @@ class Settings:
             self.graphic_enabled,
             self.graphic_disabled,
             True,
-            g.fonts.FONT.render("VSYNC?", False, c.WHITE),
+            g.FONT.render("VSYNC?", False, c.WHITE),
             None,
         )
 
@@ -83,21 +83,21 @@ class Settings:
             self.graphic_enabled,
             self.graphic_disabled,
             True,
-            g.fonts.FONT.render("SCREENSHAKE?", False, c.WHITE),
+            g.FONT.render("SCREENSHAKE?", False, c.WHITE),
             None,
         )
 
         self.ui_default_button = Button(
             "",
             pygame.Rect(250, 150, *c.BUTTON_SIZE),
-            g.fonts.FONT.render("DEFAULT", False, c.WHITE),
+            g.FONT.render("DEFAULT", False, c.WHITE),
             lambda: settings_reset(),
         )
 
         self.ui_back_button = Button(
             "",
             pygame.Rect(250, 185, *c.BUTTON_SIZE),
-            g.fonts.FONT.render("< BACK", False, c.WHITE),
+            g.FONT.render("< BACK", False, c.WHITE),
             lambda: settings_exit(),
         )
 
@@ -146,7 +146,7 @@ def settings_update() -> None:
 
     if g.settings.selected_slider:
         if g.mouse_buffer[i.MouseButton.LEFT] == i.InputState.RELEASED:
-            play_sound(AudioChannel.UI, g.sfx.SELECT)
+            play_sound(AudioChannel.UI, g.SELECT_SFX)
             g.settings.selected_slider = None
         else:
             slider_set_value_mouse(g.settings.selected_slider)
@@ -172,10 +172,10 @@ def element_mouse_update() -> None:
         if element.rect.collidepoint(mouse_position):
             if isinstance(element, Button):
                 button_activate(element)
-                play_sound(AudioChannel.UI, g.sfx.SELECT)
+                play_sound(AudioChannel.UI, g.SELECT_SFX)
             elif isinstance(element, Checkbox):
                 checkbox_toggle(element)
-                play_sound(AudioChannel.UI, g.sfx.SELECT)
+                play_sound(AudioChannel.UI, g.SELECT_SFX)
             elif isinstance(element, Slider):
                 g.settings.selected_slider = element
 
@@ -186,7 +186,7 @@ def element_keyboard_update(element) -> None:
             button_activate(element)
         elif isinstance(element, Checkbox):
             checkbox_toggle(element)
-        play_sound(AudioChannel.UI, g.sfx.SELECT)
+        play_sound(AudioChannel.UI, g.SELECT_SFX)
     elif i.is_held(i.Action.LEFT):
         if isinstance(element, Slider):
             slider_set_value(element, element.value - 0.5)
@@ -195,10 +195,10 @@ def element_keyboard_update(element) -> None:
             slider_set_value(element, element.value + 0.5)
     elif i.is_released(i.Action.LEFT):
         if isinstance(element, Slider):
-            play_sound(AudioChannel.UI, g.sfx.SELECT)
+            play_sound(AudioChannel.UI, g.SELECT_SFX)
     elif i.is_released(i.Action.RIGHT):
         if isinstance(element, Slider):
-            play_sound(AudioChannel.UI, g.sfx.SELECT)
+            play_sound(AudioChannel.UI, g.SELECT_SFX)
 
 
 def settings_render() -> None:
@@ -208,8 +208,8 @@ def settings_render() -> None:
     )
 
     g.window.blit(
-        g.sprites.MENU_CONTROLS,
-        (g.window.get_width() // 2 - g.sprites.MENU_CONTROLS.get_width() // 2, 215)
+        g.MENU_CONTROLS,
+        (g.window.get_width() // 2 - g.MENU_CONTROLS.get_width() // 2, 215)
     )
 
     ui_list_render(g.settings.ui_list, g.settings.ui_index)

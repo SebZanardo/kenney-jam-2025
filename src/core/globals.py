@@ -1,29 +1,41 @@
+import platform
 import pygame
 
-import core.assets as a
+import core.constants as c
 
 from components.statemachine import StateMachine
 
+from utilities.sprite import slice_sheet
+
+
+def setup_window() -> pygame.Surface:
+    if c.IS_WEB:
+        platform.window.canvas.style.imageRendering = "pixelated"
+        return pygame.display.set_mode(c.WINDOW_SETUP["size"])
+    else:
+        return pygame.display.set_mode(**c.WINDOW_SETUP)
+
+
+pygame.init()
 
 # Pygame Globals
 # NOTE: These get initialised in setup. Typehints should help with autocomplete
-window: pygame.Window = None
-clock: pygame.time.Clock = None
+window = setup_window()
+clock = pygame.time.Clock()
 
-scene_manager: StateMachine = None
+scene_manager = StateMachine()
+
+mouse_buffer = []
+action_buffer = []
+last_action_pressed = []
+
+dt = 0.0
+
+settings = None
 
 mouse_buffer = None
 action_buffer = None
 last_action_pressed = None
-
-fonts: a.Fonts = None
-sprites: a.Sprites = None
-sfx: a.Sfx = None
-music: a.Music = None
-
-settings = None
-
-dt = 0.0
 
 # User settings
 default_setting_params = {
@@ -36,6 +48,22 @@ default_setting_params = {
 
 setting_params = default_setting_params.copy()
 
-
 # Dev settings
 pass
+
+# Load fonts (ttf for web compatibility)
+path = "data/fonts/"
+FONT = pygame.font.Font(path + "joystix.ttf", 10)
+
+# Load sprites (png, webp or jpg for web compatibility)
+path = "data/textures/"
+ICON = pygame.image.load(path + "icon.png")
+MENU_BUTTONS = slice_sheet(path + "buttons.png", *c.BUTTON_SIZE)
+MENU_CONTROLS = pygame.image.load(path + "controls.png")
+
+# Load audio (ogg for web compatibility)
+path = "data/sfx/"
+HOVER_SFX = pygame.mixer.Sound(path + "hover.ogg")
+SELECT_SFX = pygame.mixer.Sound(path + "select.ogg")
+
+NINTENDO_MUSIC = "data/music/theme.ogg"

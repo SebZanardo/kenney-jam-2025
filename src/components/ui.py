@@ -69,7 +69,7 @@ def slider_percent(slider: Slider) -> float:
 
 
 def slider_value_render(slider: Slider) -> None:
-    slider.value_render = g.fonts.FONT.render(
+    slider.value_render = g.FONT.render(
         str(int(slider.value)), False, c.WHITE)
 
 
@@ -107,7 +107,7 @@ def slider_set_value_mouse(slider: Slider) -> None:
 
 def button_render(button: Button, selected: bool) -> None:
     g.window.blit(
-        g.sprites.MENU_BUTTONS[1 if selected else 0],
+        g.MENU_BUTTONS[1 if selected else 0],
         button.rect.topleft
     )
     g.window.blit(
@@ -119,7 +119,7 @@ def button_render(button: Button, selected: bool) -> None:
     )
     if selected:
         g.window.blit(
-            g.sprites.MENU_BUTTONS[2],
+            g.MENU_BUTTONS[2],
             button.rect.topleft,
             special_flags=pygame.BLEND_RGB_ADD
         )
@@ -131,18 +131,18 @@ def slider_render(slider: Slider, selected: bool) -> None:
         (slider.rect.left - 150, slider.rect.y)
     )
     g.window.blit(
-        g.sprites.MENU_BUTTONS[1 if selected else 0],
+        g.MENU_BUTTONS[1 if selected else 0],
         slider.rect.topleft
     )
     g.window.blit(
-        g.sprites.MENU_BUTTONS[3],
+        g.MENU_BUTTONS[3],
         slider.rect.topleft,
         (0, 0, slider.filled_rect[2], slider.filled_rect[3])
     )
     g.window.blit(slider.value_render, (slider.rect.right + 20, slider.rect.y))
     if selected:
         g.window.blit(
-            g.sprites.MENU_BUTTONS[2],
+            g.MENU_BUTTONS[2],
             (slider.rect.x, slider.rect.y),
             special_flags=pygame.BLEND_RGB_ADD
         )
@@ -154,7 +154,7 @@ def checkbox_render(checkbox: Checkbox, selected: bool) -> None:
         (checkbox.rect.x - 150, checkbox.rect.y)
     )
     g.window.blit(
-        g.sprites.MENU_BUTTONS[1 if selected else 0],
+        g.MENU_BUTTONS[1 if selected else 0],
         checkbox.rect.topleft
     )
 
@@ -180,7 +180,7 @@ def checkbox_render(checkbox: Checkbox, selected: bool) -> None:
         )
     if selected:
         g.window.blit(
-            g.sprites.MENU_BUTTONS[2],
+            g.MENU_BUTTONS[2],
             (checkbox.rect.x, checkbox.rect.y),
             special_flags=pygame.BLEND_RGB_ADD,
         )
@@ -194,7 +194,7 @@ def ui_list_update_selection(ui_list: list, ui_index: int) -> int | None:
         for e, element in enumerate(ui_list):
             if element.rect.collidepoint(mouse_position):
                 if e != ui_index:
-                    try_play_sound(AudioChannel.UI, g.sfx.HOVER)
+                    try_play_sound(AudioChannel.UI, g.HOVER_SFX)
                 return e
 
         return None
@@ -202,13 +202,13 @@ def ui_list_update_selection(ui_list: list, ui_index: int) -> int | None:
     else:
         # Check if direction pressed and move index
         if i.is_pressed(i.Action.UP):
-            play_sound(AudioChannel.UI, g.sfx.HOVER)
+            play_sound(AudioChannel.UI, g.HOVER_SFX)
             if ui_index is None:
                 return 0
             return (ui_index - 1) % len(ui_list)
 
         if i.is_pressed(i.Action.DOWN):
-            play_sound(AudioChannel.UI, g.sfx.HOVER)
+            play_sound(AudioChannel.UI, g.HOVER_SFX)
             if ui_index is None:
                 return 0
             return (ui_index + 1) % len(ui_list)

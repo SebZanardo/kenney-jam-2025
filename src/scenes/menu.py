@@ -43,28 +43,28 @@ class Menu(Scene):
         self.ui_start_button = Button(
             "",
             pygame.Rect(208, 190, *c.BUTTON_SIZE),
-            g.fonts.FONT.render("START", False, c.WHITE),
+            g.FONT.render("START", False, c.WHITE),
             self.start_game,
         )
 
         self.ui_settings_button = Button(
             "",
             pygame.Rect(208, 210, *c.BUTTON_SIZE),
-            g.fonts.FONT.render("SETTINGS", False, c.WHITE),
+            g.FONT.render("SETTINGS", False, c.WHITE),
             self.switch_settings,
         )
 
         self.ui_credits_button = Button(
             "",
             pygame.Rect(208, 230, *c.BUTTON_SIZE),
-            g.fonts.FONT.render("CREDITS", False, c.WHITE),
+            g.FONT.render("CREDITS", False, c.WHITE),
             self.switch_credit,
         )
 
         self.ui_quit_button = Button(
             "",
             pygame.Rect(208, 250, *c.BUTTON_SIZE),
-            g.fonts.FONT.render("QUIT", False, c.WHITE),
+            g.FONT.render("QUIT", False, c.WHITE),
             pygame.quit,
         )
 
@@ -79,7 +79,7 @@ class Menu(Scene):
         if not c.IS_WEB:
             self.ui_list.append(self.ui_quit_button)
 
-        self.credit = g.fonts.FONT.render(
+        self.credit = g.FONT.render(
             "Made for kenney jam 2025",
             False,
             c.BLACK
@@ -88,7 +88,7 @@ class Menu(Scene):
         self.camera = Camera.empty()
 
     def enter(self) -> None:
-        play_music(g.music.NINTENDO, -1)
+        play_music(g.NINTENDO_MUSIC, -1)
 
     def execute(self) -> None:
         mouse_position = pygame.mouse.get_pos()
@@ -103,7 +103,7 @@ class Menu(Scene):
                 for element in self.ui_list:
                     if element.rect.collidepoint(mouse_position):
                         button_activate(element)
-                        play_sound(AudioChannel.UI, g.sfx.SELECT)
+                        play_sound(AudioChannel.UI, g.SELECT_SFX)
 
             if self.ui_index is not None:
                 element = self.ui_list[self.ui_index]
@@ -113,7 +113,7 @@ class Menu(Scene):
                     or i.is_pressed(i.Action.START)
                 ):
                     button_activate(element)
-                    play_sound(AudioChannel.UI, g.sfx.SELECT)
+                    play_sound(AudioChannel.UI, g.SELECT_SFX)
 
         elif self.current_state == MenuState.SETTINGS:
             settings_update()
@@ -140,7 +140,7 @@ class Menu(Scene):
         g.window.fill(c.RED)
 
         g.window.blit(
-            g.sprites.ICON,
+            g.ICON,
             camera_to_screen_shake(self.camera, 0, 0)
         )
 

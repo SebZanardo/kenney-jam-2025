@@ -32,6 +32,12 @@ class Action(IntEnum):
 InputBuffer = list[InputState]
 
 
+def input_init() -> None:
+    g.mouse_buffer = [InputState.NOTHING for _ in MouseButton]
+    g.action_buffer = [InputState.NOTHING for _ in Action]
+    g.last_action_pressed = [action_mappings[a][0] for a in Action]
+
+
 def is_pressed(input_enum: IntEnum) -> bool:
     return g.action_buffer[input_enum] == InputState.PRESSED
 
