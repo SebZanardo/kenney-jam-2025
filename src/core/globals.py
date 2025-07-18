@@ -66,6 +66,7 @@ path = "data/textures-src/"
 TERRAIN = slice_sheet(path + "terrain.png", 16, 16)
 HANDS = slice_sheet(path + "hands.png", 16, 16)
 POTIONS = slice_sheet(path + "potions.png", 16, 16)
+WIRES = slice_sheet(path + "wires.png", 16, 16)
 BLENDING_FX = slice_sheet(path + "blending-fx.png", 16, 16)
 
 # Load audio (ogg for web compatibility)

@@ -5,11 +5,13 @@ import core.constants as c
 import core.globals as g
 from components.animation import Animation, Animator, animator_get_frame, animator_update
 from components.ui import Pos
+from utilities.sprite import rotate_sprite
 
 
 @dataclass(slots=True)
 class Tower:
     tile: Pos
+    direction: str = c.UP
     animator: Animator = None
     is_fast: bool = False
     is_splash: bool = False
@@ -34,6 +36,6 @@ def tower_update(tower: Tower) -> None:
 
 def tower_render(tower: Tower, camera: Camera) -> None:
     g.window.blit(
-        animator_get_frame(tower.animator),
+        rotate_sprite(animator_get_frame(tower.animator), tower.direction),
         camera_to_screen_shake(camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
     )
