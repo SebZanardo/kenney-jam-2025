@@ -3,7 +3,7 @@ import platform
 import pygame
 
 import core.constants as c
-
+from components.hand import Hand
 from components.statemachine import StateMachine
 
 from utilities.sprite import slice_sheet
@@ -76,3 +76,6 @@ HOVER_SFX = pygame.mixer.Sound(path + "hover.ogg")
 SELECT_SFX = pygame.mixer.Sound(path + "select.ogg")
 
 NINTENDO_MUSIC = "data/music/theme.ogg"
+
+# the hand
+hand = Hand()

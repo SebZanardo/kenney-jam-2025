@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import random
 import pygame
 
+from components.ui import Pos
 import core.constants as c
 import core.globals as g
 
@@ -61,7 +62,7 @@ def camera_update(camera: Camera, dt: float) -> None:
     motion_update(camera.motion, dt)
 
 
-def camera_to_screen(camera: Camera, x: float, y: float) -> tuple[int, int]:
+def camera_to_screen(camera: Camera, x: float, y: float) -> Pos:
     # round to reduce jitter.
     return (
         round(x - camera.motion.position.x + camera.offset.x),
@@ -69,7 +70,7 @@ def camera_to_screen(camera: Camera, x: float, y: float) -> tuple[int, int]:
     )
 
 
-def camera_to_screen_shake(camera: Camera, x: float, y: float) -> tuple[int, int]:
+def camera_to_screen_shake(camera: Camera, x: float, y: float) -> Pos:
     return camera_to_screen(camera, x + camera.shake_offset.x, y + camera.shake_offset.y)
 
 
@@ -86,7 +87,7 @@ def camera_to_screen_shake_rect(
     )
 
 
-def camera_from_screen(camera: Camera, x: float, y: float) -> tuple[int, int]:
+def camera_from_screen(camera: Camera, x: float, y: float) -> Pos:
     return (
         round(x + camera.motion.position.x - camera.offset.x),
         round(y + camera.motion.position.y - camera.offset.y),

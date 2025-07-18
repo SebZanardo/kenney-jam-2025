@@ -1,5 +1,8 @@
 import pygame
 
+import core.constants as c
+import core.input as i
+import core.globals as g
 from components.animation import (
     Animation,
     Animator,
@@ -8,13 +11,11 @@ from components.animation import (
     animator_update,
 )
 from components.camera import Camera, camera_from_screen, camera_to_screen, camera_to_screen_shake
+from components.hand import HandType, hand_render
 from components.motion import Motion
 from components.tower import Tower, tower_create_animator, tower_render, tower_update
 from components.ui import Pos
 from components.wire import Wire, wire_find, wire_render_chain
-import core.constants as c
-import core.input as i
-import core.globals as g
 
 from components.statemachine import StateMachine, statemachine_change_state
 
@@ -37,13 +38,23 @@ class Game(Scene):
             pygame.Vector2(30, 30),
         )
 
+        # resources
+        self.money: int = 20
+
         # we can make this a 2d array if needed for pathfinding
         self.towers: list[Tower] = []
 
         # wires
         self.wires: list[Wire] = [
             Wire((1, 0), c.UP, {}, True),
-            Wire((3, 17), c.DOWN, {}, True),
+            Wire(
+                (3, 17),
+                c.DOWN,
+                {
+                    c.UP: Wire((3, 16), c.DOWN, {}, True),
+                },
+                True,
+            ),
         ]
         self.wire_draw_start: Wire | None = None
 
@@ -61,6 +72,8 @@ class Game(Scene):
 
         # hovered tile pos
         tile_pos = (hand_pos[0] // c.TILE_SIZE, hand_pos[1] // c.TILE_SIZE)
+        if not (0 <= tile_pos[0] < c.GRID_WIDTH_TILES and 0 <= tile_pos[1] < c.GRID_HEIGHT_TILES):
+            tile_pos = None
 
         # user interaction
         # place tower
@@ -70,12 +83,15 @@ class Game(Scene):
         #     self.towers.append(tower)
 
         # make wires
-        if i.mouse_pressed():
+        if i.mouse_pressed() and tile_pos is not None:
             self.wire_draw_start = wire_find(self.wires, tile_pos)
-        elif self.wire_draw_start is not None:
-            if not i.mouse_held():
+
+        if self.wire_draw_start is not None:
+            g.hand.type = HandType.GRAB
+            if g.mouse_buffer[i.MouseButton.LEFT] not in (i.InputState.PRESSED, i.InputState.HELD):
                 self.wire_draw_start = None
-            elif tile_pos != self.wire_draw_start.tile:
+                g.hand.type = HandType.DEFAULT
+            elif tile_pos != self.wire_draw_start.tile and tile_pos is not None:
                 sx, sy = self.wire_draw_start.tile
                 adjacent_sides = {
                     (sx, sy - 1): c.UP,
@@ -95,6 +111,7 @@ class Game(Scene):
                     elif (
                         not self.wire_draw_start.outgoing_sides
                         and self.wire_draw_start in overwrite.outgoing_sides.values()
+                        and not self.wire_draw_start.is_permanent
                     ):
                         overwrite.outgoing_sides = {
                             dir: node
@@ -104,11 +121,9 @@ class Game(Scene):
                         self.wire_draw_start = overwrite
                     # crossing wires
                     else:
-                        # make the cursor/hand an 'X'
-                        pass
+                        g.hand.type = HandType.NO
                 else:
-                    # make the cursor/hand an 'X'
-                    pass
+                    g.hand.type = HandType.NO
 
         # towers
         for tower in self.towers:
@@ -136,7 +151,7 @@ class Game(Scene):
         pass
 
         # preview tile
-        if 0 <= tile_pos[0] < c.GRID_WIDTH_TILES and 0 <= tile_pos[1] < c.GRID_HEIGHT_TILES:
+        if tile_pos is not None:
             tile_preview = g.WIRES[0].copy()
             tile_preview.set_alpha(200)
             tile_preview.blit(
@@ -151,13 +166,9 @@ class Game(Scene):
         for tower in self.towers:
             tower_render(tower, self.camera)
 
-        # If we want to replace the cursor with the Kenney hand:
-        # g.window.blit(
-        #     g.HANDS[0],
-        #     camera_to_screen(self.camera, hand_pos[0] - 4, hand_pos[1] - 2),
-        # )
+        hand_render(g.hand)
 
-        g.window.blit(g.DEBUG_FONT.render(str(self.wire_draw_start), True, c.BLACK))
+        g.window.blit(g.FONT.render(f"${self.money}", False, c.BLACK), (0, 0))
 
     def exit(self) -> None:
         pass

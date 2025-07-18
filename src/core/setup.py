@@ -16,8 +16,7 @@ def setup() -> None:
     # These must be done after assets have been loaded
     pygame.display.set_caption(c.CAPTION)
     pygame.display.set_icon(g.ICON)
-    # If we want to replace the cursor with the Kenney hand:
-    # pygame.mouse.set_visible(False)
+    pygame.mouse.set_visible(False)
     statemachine_initialise(g.scene_manager, SCENE_MAPPING, SceneState.MENU)
 
     # Try load settings from web
