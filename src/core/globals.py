@@ -57,6 +57,7 @@ path = "data/textures/"
 ICON = pygame.image.load(path + "icon.png")
 MENU_BUTTONS = slice_sheet(path + "buttons.png", *c.BUTTON_SIZE)
 MENU_CONTROLS = pygame.image.load(path + "controls.png")
+ONE_BIT_COLOR = pygame.image.load(path+"1bit-coloured.png")
 
 # Load audio (ogg for web compatibility)
 path = "data/sfx/"
