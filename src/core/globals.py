@@ -20,7 +20,6 @@ def setup_window() -> pygame.Surface:
 pygame.init()
 
 # Pygame Globals
-# NOTE: These get initialised in setup. Typehints should help with autocomplete
 window = setup_window()
 clock = pygame.time.Clock()
 
@@ -32,8 +31,6 @@ last_action_pressed = []
 
 dt = 0.0
 mouse_pos = (-1, -1)
-
-settings = None
 
 mouse_buffer = None
 action_buffer = None

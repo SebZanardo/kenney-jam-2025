@@ -62,9 +62,10 @@ class Menu(Scene):
                 self.current_state = MenuState.CREDITS
                 ui.im_new()
 
-            if ui.im_button("quit"):
-                # TODO: terminate gracefully
-                pygame.quit()
+            if not c.IS_WEB:
+                if ui.im_button("quit"):
+                    # TODO: terminate gracefully
+                    pygame.quit()
 
         elif self.current_state == MenuState.SETTINGS:
             if (not settings_menu()):
