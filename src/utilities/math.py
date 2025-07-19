@@ -1,3 +1,8 @@
+Pos = tuple[int, int]
+Bbox = tuple[int, int, int, int]
+Color = tuple[int, int, int]
+
+
 def clamp(value: int | float, minimum: int | float, maximum: int | float) -> int | float:
     return min(max(value, minimum), maximum)
 

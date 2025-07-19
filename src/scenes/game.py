@@ -18,7 +18,7 @@ from components.camera import (
     camera_to_screen_shake,
     camera_update,
 )
-from components.hand import HandType, hand, hand_render
+from components.hand import HandType, Tooltip, hand, hand_render
 from components.motion import Motion
 from components.particles import (
     Particle,
@@ -35,17 +35,19 @@ from components.tower import (
     tower_render,
     tower_update,
 )
-from components.player import player, player_reset
+from components.player import GameMode, SpeedType, player, player_reset
+from components.statemachine import StateMachine, statemachine_change_state
 from components.wave import wave_update, wave_reset
 import components.pathing as p
 import components.enemy as e
-from components.ui import Pos
+from components import ui
+from components.wave import wave_data
 from components.wire import Wire, wire_find, wire_render_chain
-
-from components.statemachine import StateMachine, statemachine_change_state
+from utilities.math import Pos
 
 from scenes.scene import Scene
 from scenes import manager
+from utilities.sprite import dim_sprite
 
 
 class Game(Scene):
@@ -82,10 +84,10 @@ class Game(Scene):
         self.wires: list[Wire] = [
             Wire((1, 0), c.UP, {}, True),
             Wire(
-                (3, 7),
+                (3, 8),
                 c.DOWN,
                 {
-                    c.UP: Wire((3, 6), c.DOWN, {}, True),
+                    c.UP: Wire((3, 7), c.DOWN, {}, True),
                 },
                 True,
             ),
@@ -110,42 +112,69 @@ class Game(Scene):
         hand.type = HandType.DEFAULT
         if self.wire_draw_start is not None or self.dragging_tower_type is not None:
             hand.type = HandType.GRAB
+        hand.tooltip = None
 
         # mouse pos in camera space
         last_hand_pos = camera_from_screen(g.camera, *g.last_mouse_pos)
         hand_pos = camera_from_screen(g.camera, *g.mouse_pos)
 
         # hovered tile pos
-        tile_pos = p.coord_to_tile(*hand_pos)
+        hov_tile = p.coord_to_tile(*hand_pos)
+
+        # hovered wire
+        hov_wire, hov_wire_parent = wire_find(self.wires, hov_tile)
 
         if player.health > 0:
             # user interaction
-            # place tower
-            game_mode_tower_create(self, tile_pos)
+            game_mode_tower_create(self, hov_tile, hov_wire)
 
-            # make wires (interp mouse pos)
-            interp_hand_pos = last_hand_pos[:]
-            while True:
-                diff = (hand_pos[0] - interp_hand_pos[0], hand_pos[1] - interp_hand_pos[1])
-                size = math.sqrt(diff[0] * diff[0] + diff[1] * diff[1])
-                if size < c.TILE_SIZE:
-                    game_mode_wire_create(self, tile_pos)
-                    break
-                unit = (diff[0] / size, diff[1] / size)
-                interp_hand_pos = (
-                    interp_hand_pos[0] + unit[0] * c.TILE_SIZE / 2,
-                    interp_hand_pos[1] + unit[1] * c.TILE_SIZE / 2,
-                )
-                if (interp_tile_pos := p.coord_to_tile(*interp_hand_pos)) is None:
-                    break
-                game_mode_wire_create(self, interp_tile_pos)
+            if player.mode == GameMode.VIEW:
+                pass  # TODO: view towers
 
-            # towers
-            for tower in self.towers:
-                tower_update(tower)
+            elif player.mode == GameMode.WIRING:
+                # make wires (interp mouse pos)
+                if hov_wire is not None and self.wire_draw_start is None:
+                    hand.type = HandType.HOVER
+                interp_hand_pos = last_hand_pos[:]
+                while True:
+                    diff = (hand_pos[0] - interp_hand_pos[0], hand_pos[1] - interp_hand_pos[1])
+                    size = math.sqrt(diff[0] * diff[0] + diff[1] * diff[1])
+                    if size < c.TILE_SIZE:
+                        game_mode_wire_create(self, hov_tile, hov_wire)
+                        break
+                    unit = (diff[0] / size, diff[1] / size)
+                    interp_hand_pos = (
+                        interp_hand_pos[0] + unit[0] * c.TILE_SIZE / 2,
+                        interp_hand_pos[1] + unit[1] * c.TILE_SIZE / 2,
+                    )
+                    if (interp_tile := p.coord_to_tile(*interp_hand_pos)) is None:
+                        break
+                    game_mode_wire_create(self, interp_tile, hov_wire)
 
-            # wave & enemy update
-            wave_update()
+            elif player.mode == GameMode.DESTROY:
+                game_mode_wire_destroy(self, hov_wire, hov_wire_parent)
+
+            # wave, enemy, tower update
+            for _ in range(player.speed.value):
+                wave_update()
+                for tower in self.towers:
+                    tower_update(tower)
+
+            # tower tooltips
+            if player.mode in (GameMode.VIEW, GameMode.DESTROY):
+                for tower in self.towers:
+                    if tower.tile != hov_tile:
+                        continue
+                    if player.mode == GameMode.DESTROY:
+                        hand.tooltip = Tooltip(f"{tower.type.name}\n${TOWER_PRICES[tower.type]}")
+                        hand.type = HandType.HOVER
+                        if t.mouse_pressed():
+                            if hov_wire is not None:
+                                game_delete_tower_from(self, hov_wire)
+                            else:
+                                game_delete_tower(self, tower)
+                    else:
+                        hand.tooltip = Tooltip(f"{tower.type.name}")
 
             # misc
             animator_update(self.blending_anim, g.dt)
@@ -156,6 +185,8 @@ class Game(Scene):
                     self.particles.pop(i)
                 else:
                     i += 1
+
+        # game over
         else:
             if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
                 statemachine_change_state(self.statemachine, manager.SceneState.MENU)
@@ -163,19 +194,19 @@ class Game(Scene):
             pass
 
         # RENDER
-        g.window.fill(c.WHITE)
+        g.window.fill(c.BLACK)
 
         # background grid
         for x in range(c.GRID_WIDTH_TILES):
             for y in range(c.GRID_HEIGHT_TILES):
                 g.window.blit(
-                    g.TERRAIN[(x + y) % 2],
+                    g.TERRAIN[8 if (x, y) in (p.PATH_START_TILE, p.PATH_END_TILE) else (x + y) % 2],
                     camera_to_screen_shake(g.camera, x * c.TILE_SIZE, y * c.TILE_SIZE),
                 )
 
         # wires
         for wire in self.wires:
-            wire_render_chain(wire, g.camera)
+            wire_render_chain(wire)
 
         # enemies
         for i in range(e.active_enemies):
@@ -183,60 +214,121 @@ class Game(Scene):
 
         # towers
         for tower in self.towers:
-            tower_render(tower, g.camera)
-
+            tower_render(tower)
 
         # preview tile
-        preview_tile: pygame.Surface | None = None
-        if self.dragging_tower_type is not None:
-            preview_tile = TOWER_ANIMATIONS[self.dragging_tower_type.value].frames[0]
-        else:
-            if tile_pos is not None:
-                preview_tile = g.WIRES[0]
+        if player.health > 0:
+            preview_tile: pygame.Surface | None = None
+            if self.dragging_tower_type is not None:
+                preview_tile = TOWER_ANIMATIONS[self.dragging_tower_type.value].frames[0]
+            elif player.mode == GameMode.WIRING:
+                if hov_wire is not None:
+                    preview_tile = g.WIRES[0]
 
-        if preview_tile is not None:
-            if tile_pos is None:
-                g.window.blit(preview_tile, g.mouse_pos)
-            else:
-                g.window.blit(
-                    tile_preview(preview_tile, self.blending_anim),
-                    camera_to_screen(
-                        g.camera, tile_pos[0] * c.TILE_SIZE, tile_pos[1] * c.TILE_SIZE
-                    ),
-                )
+            if preview_tile is not None:
+                if hov_tile is None:
+                    g.window.blit(preview_tile, g.mouse_pos)
+                else:
+                    g.window.blit(
+                        tile_preview(preview_tile, self.blending_anim),
+                        camera_to_screen(
+                            g.camera, hov_tile[0] * c.TILE_SIZE, hov_tile[1] * c.TILE_SIZE
+                        ),
+                    )
 
         # particles
         for particle in self.particles:
             particle_render(particle, g.camera)
 
-        # sidebars (immediate mode)
-        if not (c.TILE_SIZE < g.mouse_pos[0] < c.WINDOW_WIDTH - c.TILE_SIZE):
+        # hud
+        if hov_tile is None:
             self.wire_draw_start = None
 
+        # top and bottom
+        for x in range(c.WINDOW_WIDTH // 14):
+            g.window.blit(g.TERRAIN[3], (x * 14 - 1, 3))
+            g.window.blit(g.TERRAIN[2], (x * 14 - 1, c.WINDOW_HEIGHT - c.TILE_SIZE - 4))
+
+        last_speed, last_mode = player.speed, player.mode
+        ui.im_reset_position(c.TILE_SIZE, 0)
+        if last_speed == SpeedType.PAUSED:
+            if ui.im_button_image(g.BUTTONS_INV[9], "Paused"):
+                player.speed = SpeedType.NORMAL
+        else:
+            if ui.im_button_image(g.BUTTONS[9], "Pause"):
+                player.speed = SpeedType.PAUSED
+        ui.im_same_line()
+        if last_speed == SpeedType.FAST:
+            if ui.im_button_image(g.BUTTONS_INV[12], "Fast forwarding"):
+                player.speed = SpeedType.NORMAL
+        else:
+            if ui.im_button_image(g.BUTTONS[12], "Fast forward"):
+                player.speed = SpeedType.FAST
+
+        ui.im_set_next_position(c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE)
+        if ui.im_button_image(
+            (g.BUTTONS_INV if last_mode == GameMode.VIEW else g.BUTTONS)[0], "View"
+        ):
+            player.mode = GameMode.VIEW
+        ui.im_same_line()
+        if ui.im_button_image(
+            (g.BUTTONS_INV if last_mode == GameMode.WIRING else g.BUTTONS)[1], "Lay wire"
+        ):
+            player.mode = GameMode.WIRING
+        ui.im_same_line()
+        if ui.im_button_image(
+            (g.BUTTONS_INV if last_mode == GameMode.DESTROY else g.BUTTONS)[2], "Destroy"
+        ):
+            player.mode = GameMode.DESTROY
+
+        text_y, icon_y, icon_w = 7, 8, 18
+        wave_text = g.FONT.render(f"WAVE {wave_data.number + 1}", False, c.WHITE)
+        g.window.blit(wave_text, (c.WINDOW_WIDTH // 2 - wave_text.get_width() // 2, text_y))
+        money_text = g.FONT.render(f"${player.money}", False, c.WHITE)
+        g.window.blit(
+            g.ICONS[0], (c.WINDOW_WIDTH // 4 - (money_text.get_width() + icon_w) // 2, icon_y)
+        )
+        g.window.blit(
+            money_text,
+            (c.WINDOW_WIDTH // 4 - (money_text.get_width() + icon_w) // 2 + icon_w, text_y),
+        )
+        health_text = g.FONT.render(f"{player.health}", False, c.WHITE)
+        g.window.blit(
+            g.ICONS[1], (c.WINDOW_WIDTH // 4 * 3 - (health_text.get_width() + icon_w) // 2, icon_y)
+        )
+        g.window.blit(
+            health_text,
+            (c.WINDOW_WIDTH // 4 * 3 - (health_text.get_width() + icon_w) // 2 + icon_w, text_y),
+        )
+
+        # right
         last_dragging_tower_type = self.dragging_tower_type
         for i, tower_type in enumerate(TowerType):
             if tower_type == last_dragging_tower_type:
+                ui.context.current_id += 1
                 continue
-            bbox = (c.WINDOW_WIDTH - c.TILE_SIZE, i * c.TILE_SIZE, c.TILE_SIZE, c.TILE_SIZE)
-            if (
-                bbox[0] <= g.mouse_pos[0] <= bbox[0] + bbox[2]
-                and bbox[1] <= g.mouse_pos[1] <= bbox[1] + bbox[3]
+            ui.im_set_next_position(
+                c.WINDOW_WIDTH - c.TILE_SIZE, i * (c.TILE_SIZE + 4) + c.TILE_SIZE + 4
+            )
+            surf = TOWER_ANIMATIONS[tower_type.value].frames[0]
+            if ui.im_button_image(
+                [dim_sprite(surf), surf], f"{tower_type.name}\n${TOWER_PRICES[tower_type]}"
             ):
-                hand.type = HandType.UP
-                if t.mouse_pressed():
-                    self.dragging_tower_type = tower_type
+                self.dragging_tower_type = tower_type
 
+        # heading
+        if player.health <= 0:
+            heading = g.FONT_LARGE.render("GAME OVER", False, c.WHITE)
             g.window.blit(
-                TOWER_ANIMATIONS[tower_type.value].frames[0],
-                (bbox[0], bbox[1]),
+                heading,
+                (
+                    c.WINDOW_WIDTH // 2 - heading.get_width() // 2,
+                    c.WINDOW_HEIGHT // 2 - heading.get_height() // 2,
+                ),
             )
 
+        # hand
         hand_render()
-
-        g.window.blit(g.FONT.render(f"${player.money}", False, c.BLACK), (0, 0))
-        g.window.blit(g.FONT.render(f"<3 {player.health}", False, c.BLACK), (100, 0))
-        if player.health <= 0:
-            g.window.blit(g.FONT.render(f"GAMEOVER", False, c.MAGENTA), (50, 100))
 
     def exit(self) -> None:
         pass
@@ -264,16 +356,9 @@ def tile_particle_burst(type: ParticleSpriteType, tile: Pos) -> list[Particle]:
 
 
 # TOWERS
-def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
-    tower = Tower(
-        parent.tile[:],
-        type,
-        1,
-        c.UP,
-        Animator(),
-    )
+def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
+    tower = Tower(tile[:], type, 1, c.UP, Animator())
     animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[type.value]})
-    parent.tower = tower
     self.towers.append(tower)
 
     p.collision_grid[tower.tile[1]][tower.tile[0]] = True
@@ -285,32 +370,61 @@ def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
     self.particles.extend(tile_particle_burst(ParticleSpriteType.BUILD, tower.tile))
     g.camera.trauma = 0.35
 
+    return tower
 
-def game_delete_tower_from(self: Game, parent: Wire):
-    self.towers.remove(parent.tower)
-    p.collision_grid[parent.tile[1]][parent.tile[0]] = False
+
+def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
+    parent.tower = game_place_tower_at(self, type, parent.tile)
+
+
+def game_delete_tower(self: Game, tower: Tower):
+    self.towers.remove(tower)
+    p.collision_grid[tower.tile[1]][tower.tile[0]] = False
     p.flowfield_regenerate(p.flowfield)
     p.debug_print()
 
-    player.money += TOWER_PRICES[parent.tower.type]
+    player.money += TOWER_PRICES[tower.type]
 
-    self.particles.extend(tile_particle_burst(ParticleSpriteType.DELETE, parent.tower.tile))
+    self.particles.extend(tile_particle_burst(ParticleSpriteType.DELETE, tower.tile))
     g.camera.trauma = 0.35
+
+
+def game_delete_tower_from(self: Game, parent: Wire):
+    game_delete_tower(self, parent.tower)
     parent.tower = None
 
+    # delete wires coming from cores
+    if parent.incoming_side is None:
+        assert parent in self.wires
+        self.wires.remove(parent)
+        stack = list(parent.outgoing_sides.values())
+        while stack:
+            wire = stack.pop()
+            stack.extend(wire.outgoing_sides.values())
+            game_delete_wire(self, wire, None)
 
-def game_mode_tower_create(self: Game, tile_pos: Pos | None):
+
+def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
     if self.dragging_tower_type is None:
         return
 
-    if g.mouse_buffer[t.MouseButton.LEFT] not in (t.InputState.PRESSED, t.InputState.HELD):
-        if tile_pos is not None:
-            wire = wire_find(self.wires, tile_pos)
-            if wire is not None and wire.tower is None:
-                if player.money >= TOWER_PRICES[self.dragging_tower_type]:
-                    game_place_tower_on(self, self.dragging_tower_type, wire)
+    if g.mouse_buffer[t.MouseButton.LEFT] in (t.InputState.PRESSED, t.InputState.HELD):
+        return
 
-        self.dragging_tower_type = None
+    if (
+        tile not in (None, p.PATH_START_TILE, p.PATH_END_TILE)
+        and player.money >= TOWER_PRICES[self.dragging_tower_type]
+    ):
+        if self.dragging_tower_type != TowerType.CORE:
+            if hov_wire is not None and hov_wire.tower is None:
+                game_place_tower_on(self, self.dragging_tower_type, hov_wire)
+        else:
+            if hov_wire is None:
+                tower = game_place_tower_at(self, self.dragging_tower_type, tile)
+                self.wires.append(Wire(tile, None, {}, True, tower))
+                player.mode = GameMode.WIRING
+
+    self.dragging_tower_type = None
 
 
 # WIRES
@@ -320,10 +434,11 @@ def game_place_wire(self: Game, wire: Wire, parent: Wire):
     self.particles.extend(tile_particle_burst(ParticleSpriteType.CREATE, wire.tile))
 
 
-def game_delete_wire(self: Game, wire: Wire, parent: Wire):
-    parent.outgoing_sides = {
-        dir: node for dir, node in parent.outgoing_sides.items() if node != wire
-    }
+def game_delete_wire(self: Game, wire: Wire, parent: Wire | None):
+    if parent is not None:
+        parent.outgoing_sides = {
+            dir: node for dir, node in parent.outgoing_sides.items() if node != wire
+        }
     player.money += 1
     if wire.tower is not None:
         game_delete_tower_from(self, wire)
@@ -331,9 +446,9 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire):
         self.particles.extend(tile_particle_burst(ParticleSpriteType.SHINY, wire.tile))
 
 
-def game_mode_wire_create(self: Game, tile_pos: Pos | None):
-    if t.mouse_pressed() and tile_pos is not None:
-        self.wire_draw_start = wire_find(self.wires, tile_pos)
+def game_mode_wire_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
+    if t.mouse_pressed() and tile is not None:
+        self.wire_draw_start = hov_wire
 
     if self.wire_draw_start is None:
         return
@@ -341,7 +456,7 @@ def game_mode_wire_create(self: Game, tile_pos: Pos | None):
     if g.mouse_buffer[t.MouseButton.LEFT] not in (t.InputState.PRESSED, t.InputState.HELD):
         self.wire_draw_start = None
 
-    elif tile_pos != self.wire_draw_start.tile and tile_pos is not None:
+    elif tile != self.wire_draw_start.tile and tile is not None:
         sx, sy = self.wire_draw_start.tile
         adjacent_sides = {
             (sx, sy - 1): c.UP,
@@ -351,11 +466,11 @@ def game_mode_wire_create(self: Game, tile_pos: Pos | None):
         }
 
         # adjacent tile
-        if tile_pos in adjacent_sides:
+        if tile in adjacent_sides:
             # place new wire
-            if (overwrite := wire_find(self.wires, tile_pos)) is None:
+            if (overwrite := wire_find(self.wires, tile)[0]) is None:
                 if player.money >= 1:
-                    wire = Wire(tile_pos[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile_pos]], {})
+                    wire = Wire(tile[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile]], {})
                     game_place_wire(self, wire, self.wire_draw_start)
                     self.wire_draw_start = wire
                 else:
@@ -377,3 +492,25 @@ def game_mode_wire_create(self: Game, tile_pos: Pos | None):
         # cursor jumped, not an adjacent tile
         else:
             hand.type = HandType.NO
+
+
+def game_mode_wire_destroy(self: Game, hov_wire: Wire | None, hov_wire_parent: Wire | None):
+    if hov_wire is None:
+        return
+
+    if hov_wire.tower is not None:
+        return
+
+    if hov_wire.is_permanent:
+        hand.type = HandType.NO
+        return
+
+    hand.type = HandType.HOVER
+
+    if t.mouse_pressed():
+        stack = list(hov_wire.outgoing_sides.values())
+        while stack:
+            wire = stack.pop()
+            stack.extend(wire.outgoing_sides.values())
+            game_delete_wire(self, wire, None)
+        game_delete_wire(self, hov_wire, hov_wire_parent)

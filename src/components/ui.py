@@ -1,30 +1,27 @@
 from dataclasses import dataclass
 
+import pygame
+
 import core.globals as g
 import core.input as t
 
 from components.audio import AudioChannel, play_sound
-
-
-Pos = tuple[int, int]
-Bbox = tuple[int, int, int, int]
-Colour = tuple[int, int, int]
+from components.hand import HandType, Tooltip, hand
+from utilities.math import Bbox, Color, Pos
 
 
 @dataclass(slots=True)
 class StyleUI:
-    button_dim: Pos = (48, 16)
-    checkbox_dim: Pos = (16, 16)
-    slider_dim: Pos = (48, 16)
+    button_dim: Pos = (128, 32)
+    checkbox_dim: Pos = (32, 32)
+    slider_dim: Pos = (128, 32)
 
-    padding_x: int = 5
-    padding_y: int = 5
+    padding_x: int = 1
+    padding_y: int = 1
 
-    background_colour: Colour = (0, 0, 0)
-    hovered_colour: Colour = (50, 50, 50)
-    clicked_colour: Colour = (100, 100, 100)
-    main_colour: Colour = (255, 0, 255)
-    text_colour: Colour = (255, 255, 255)
+    background_colour: Color = (0, 0, 0)
+    text_colour: Color = (255, 255, 255)
+    text_colour_dim: Color = (210, 210, 210)
 
 
 @dataclass(slots=True)
@@ -65,6 +62,8 @@ class ContextUI:
         held = False
 
         if self.held_id == self.current_id:
+            hovered = True
+
             if t.mouse_held(t.MouseButton.LEFT):
                 held = True
             else:
@@ -88,25 +87,44 @@ class ContextUI:
         return hovered, clicked, held
 
 
-# GLOBALS #####################################################################
 style = StyleUI()
 context = ContextUI()
-###############################################################################
 
 
-def im_text(label: str) -> None:
-    text = g.FONT.render(label, False, style.background_colour)
-    bbox = context.bbox(*text.get_size())
-    g.window.blit(text, (bbox[0], bbox[1]))
+def im_text(label: str, justify: float = -1.0, same_line: bool = False) -> None:
+    text = g.FONT.render(label, False, style.text_colour)
+    if same_line:
+        bbox = (context.x, context.y, *text.get_size())
+    else:
+        bbox = context.bbox(*text.get_size())
+    g.window.blit(text, (bbox[0] - bbox[2] * (justify / 2 + 0.5), bbox[1] + 7))
 
 
-def im_button(label: str) -> bool:
+def im_button_text(label: str) -> bool:
     bbox = context.bbox(*style.button_dim)
     hovered, clicked, held = context.interact(bbox)
-    g.window.blit(g.BUTTONS[0][hovered], (bbox[0], bbox[1]), (0, 0, *style.button_dim))
+    g.window.blit(g.BIG_BUTTONS[0][hovered], (bbox[0], bbox[1]))
 
-    text = g.FONT.render(label, False, style.text_colour)
-    g.window.blit(text, (bbox[0] + 16, bbox[1]))
+    text = g.FONT.render(label, False, style.text_colour if hovered else style.text_colour_dim)
+    g.window.blit(text, (bbox[0] + bbox[2] // 2 - text.get_width() // 2, bbox[1] + 7))
+
+    if hovered:
+        hand.type = HandType.HOVER
+
+    return clicked
+
+
+def im_button_image(
+    sprites: tuple[pygame.Surface, pygame.Surface], tooltip: str | None = None
+) -> bool:
+    bbox = context.bbox(*sprites[0].get_size())
+    hovered, clicked, held = context.interact(bbox)
+    g.window.blit(sprites[hovered], (bbox[0], bbox[1]), (0, 0, *sprites[0].get_size()))
+
+    if hovered:
+        hand.type = HandType.HOVER
+        if tooltip is not None:
+            hand.tooltip = Tooltip(tooltip)
 
     return clicked
 
@@ -120,17 +138,16 @@ def im_checkbox(value: list[bool]) -> bool:
 
     g.window.blit(g.BUTTONS[7 - value[0]][hovered], (bbox[0], bbox[1]), (0, 0, *style.checkbox_dim))
 
+    if hovered:
+        hand.type = HandType.HOVER
+
     return clicked
 
 
 def im_slider(value: list[float], lo: float, hi: float) -> bool:
     bbox = context.bbox(*style.slider_dim)
     hovered, clicked, held = context.interact(bbox)
-    g.window.blit(g.BUTTONS[2][0], (bbox[0], bbox[1]), (0, 0, *style.slider_dim))
-    g.window.blit(g.BUTTONS[3][0], (bbox[0] + 16, bbox[1]), (0, 0, *style.slider_dim))
-    g.window.blit(g.BUTTONS[5][0], (bbox[0] + 32, bbox[1]), (0, 0, *style.slider_dim))
-
-    # TODO: show hover feedback somehow
+    g.window.blit(g.BIG_BUTTONS[1][hovered], (bbox[0], bbox[1] + 6))
 
     if held:
         percent = (g.mouse_pos[0] - bbox[0]) / style.slider_dim[0]
@@ -139,12 +156,13 @@ def im_slider(value: list[float], lo: float, hi: float) -> bool:
         value[0] = min(max(value[0], lo), hi)
 
     w = value[0] / hi * style.slider_dim[0]
-    g.window.blit(g.BUTTONS[2][1], (bbox[0], bbox[1]), (0, 0, w, style.slider_dim[1]))
-    g.window.blit(g.BUTTONS[3][1], (bbox[0] + 16, bbox[1]), (0, 0, w - 16, style.slider_dim[1]))
-    g.window.blit(g.BUTTONS[5][1], (bbox[0] + 32, bbox[1]), (0, 0, w - 32, style.slider_dim[1]))
+    g.window.blit(g.BUTTONS[4][hovered], (bbox[0] - 16 + w, bbox[1] + 6))
 
     value_text = g.FONT.render(str(int(value[0])), False, style.text_colour)
-    g.window.blit(value_text, (bbox[0], bbox[1]))
+    g.window.blit(value_text, (bbox[0], bbox[1] - 1))
+
+    if hovered:
+        hand.type = HandType.HOVER
 
     return held
 

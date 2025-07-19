@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from components.ui import Pos
+import pygame
+
+import core.constants as c
 import core.globals as g
+from utilities.math import Pos
 
 
 @dataclass(slots=True)
@@ -22,12 +25,20 @@ class HandType(Enum):
     POINTER_SLIM = HandTypeData(8, (1, 1))
     NO = HandTypeData(9, (6, 6))
 
-    DEFAULT = POINTER
+    DEFAULT = POINTER_HEAVY
+    HOVER = UP
+
+
+@dataclass(slots=True)
+class Tooltip:
+    text: str
+    icon: pygame.Surface | None = None
 
 
 @dataclass(slots=True)
 class Hand:
     type: HandType = HandType.DEFAULT
+    tooltip: Tooltip | None = None
 
 
 hand = Hand()
@@ -39,3 +50,17 @@ def hand_render():
         g.HANDS[data.sprite_index],
         (g.mouse_pos[0] - data.render_offset[0], g.mouse_pos[1] - data.render_offset[1]),
     )
+
+    if hand.tooltip is not None:
+        data = hand.tooltip
+        text = g.FONT.render(hand.tooltip.text, False, c.WHITE, c.BLACK)
+        rx, ry = g.mouse_pos
+        if g.mouse_pos[0] + text.get_width() > c.WINDOW_WIDTH - c.TILE_SIZE:
+            rx -= text.get_width() + 4
+        else:
+            rx += 12
+        if g.mouse_pos[1] + text.get_height() > c.WINDOW_HEIGHT - c.TILE_SIZE:
+            ry -= text.get_height() + 4
+        else:
+            ry += 12
+        g.window.blit(text, (rx, ry))

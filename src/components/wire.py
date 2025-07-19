@@ -6,16 +6,16 @@ import pygame
 
 import core.constants as c
 import core.globals as g
-from components.ui import Pos
 from components.camera import Camera, camera_to_screen_shake
 from components.tower import Tower
+from utilities.math import Pos
 
 
 @dataclass(slots=True)
 class Wire:
     # position and nodes
     tile: Pos
-    incoming_side: str
+    incoming_side: str | None
     outgoing_sides: dict[str, Wire]  # dir: node
 
     # per-map config
@@ -25,16 +25,25 @@ class Wire:
     tower: Tower | None = None
 
 
-def wire_find(wires: Iterable[Wire], tile: Pos) -> Wire | None:
+def wire_find(
+    wires: Iterable[Wire], tile: Pos, parent: Wire | None = None
+) -> tuple[Wire | None, Wire | None]:
     for wire in wires:
         if wire.tile == tile:
-            return wire
-        node = wire_find(wire.outgoing_sides.values(), tile)
+            return (wire, parent)
+        node, node_parent = wire_find(wire.outgoing_sides.values(), tile, wire)
         if node is not None:
-            return node
+            return (node, node_parent)
+
+    return (None, None)
 
 
-def wire_render_comp(wire: Wire, camera: Camera) -> None:
+def wire_render_comp(wire: Wire) -> None:
+    if wire.tower is not None:
+        return
+
+    assert wire.incoming_side is not None, "Wire has no incoming sides and no tower"
+
     index: int = 0
     rot: int = 0
 
@@ -77,11 +86,11 @@ def wire_render_comp(wire: Wire, camera: Camera) -> None:
 
     g.window.blit(
         pygame.transform.rotate(g.WIRES[index], rot * -90),
-        camera_to_screen_shake(camera, wire.tile[0] * c.TILE_SIZE, wire.tile[1] * c.TILE_SIZE),
+        camera_to_screen_shake(g.camera, wire.tile[0] * c.TILE_SIZE, wire.tile[1] * c.TILE_SIZE),
     )
 
 
-def wire_render_chain(wire: Wire, camera: Camera) -> None:
-    wire_render_comp(wire, camera)
-    for dir, node in wire.outgoing_sides.items():
-        wire_render_chain(node, camera)
+def wire_render_chain(wire: Wire) -> None:
+    wire_render_comp(wire)
+    for node in wire.outgoing_sides.values():
+        wire_render_chain(node)

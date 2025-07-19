@@ -5,7 +5,7 @@ import core.constants as c
 import core.globals as g
 from components.camera import Camera, camera_to_screen_shake
 from components.animation import Animation, Animator, animator_get_frame, animator_update
-from components.ui import Pos
+from utilities.math import Pos
 
 
 class TowerType(IntEnum):
@@ -87,8 +87,8 @@ def tower_update(tower: Tower) -> None:
     animator_update(tower.animator, g.dt)
 
 
-def tower_render(tower: Tower, camera: Camera) -> None:
+def tower_render(tower: Tower) -> None:
     g.window.blit(
         animator_get_frame(tower.animator),
-        camera_to_screen_shake(camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
+        camera_to_screen_shake(g.camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
     )
