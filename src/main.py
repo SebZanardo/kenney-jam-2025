@@ -2,7 +2,7 @@ import asyncio
 import pygame
 
 import core.constants as c
-import core.input as i
+import core.input as t
 import core.globals as g
 
 from core.setup import setup
@@ -23,14 +23,14 @@ async def main() -> None:
 
         g.last_mouse_pos = g.mouse_pos[:]
         g.mouse_pos = pygame.mouse.get_pos()
-        i.update_action_buffer()
+        t.update_action_buffer()
 
-        running = i.input_event_queue()
+        running = t.input_event_queue()
 
         if not running:
             terminate()
 
-        i.update_mouse_buffer()
+        t.update_mouse_buffer()
 
         statemachine_execute(g.scene_manager)
 

@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-import pygame
 
 import core.globals as g
-import core.input as i
+import core.input as t
 
 from components.audio import AudioChannel, play_sound
 
@@ -47,12 +46,7 @@ class ContextUI:
     last_y: int = 0
 
     def bbox(self, width: int, height: int) -> Bbox:
-        rect = (
-                self.x,
-                self.y,
-                width,
-                height
-            )
+        rect = (self.x, self.y, width, height)
 
         self.last_x = self.x + width + style.padding_x
         self.last_y = self.y
@@ -71,7 +65,7 @@ class ContextUI:
         held = False
 
         if self.held_id == self.current_id:
-            if i.mouse_held(i.MouseButton.LEFT):
+            if t.mouse_held(t.MouseButton.LEFT):
                 held = True
             else:
                 held = False
@@ -84,7 +78,7 @@ class ContextUI:
                 play_sound(AudioChannel.UI, g.HOVER_SFX)
                 self.hovered_id = self.current_id
 
-            if (i.mouse_pressed(i.MouseButton.LEFT) and self.held_id == -1):
+            if t.mouse_pressed(t.MouseButton.LEFT) and self.held_id == -1:
                 clicked = True
                 play_sound(AudioChannel.UI, g.SELECT_SFX)
                 self.held_id = self.current_id
@@ -156,7 +150,9 @@ def im_slider(value: list[float], lo: float, hi: float) -> bool:
     elif hovered:
         g.window.blit(g.MENU_BUTTONS[1], (bbox[0], bbox[1]), (0, 0, *style.slider_dim))
 
-    g.window.blit(g.MENU_BUTTONS[2], (bbox[0], bbox[1]), (0, 0, value[0] / hi * style.slider_dim[0], bbox[3]))
+    g.window.blit(
+        g.MENU_BUTTONS[2], (bbox[0], bbox[1]), (0, 0, value[0] / hi * style.slider_dim[0], bbox[3])
+    )
 
     value_text = g.FONT.render(str(int(value[0])), False, style.text_colour)
     g.window.blit(value_text, (bbox[0], bbox[1]))

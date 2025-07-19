@@ -55,11 +55,10 @@ TOWER_PRICES = {
     TowerType.ZAP: 50,
 }
 
-
 MAX_TOWER_LEVEL = 3
 
 # NOTE: index in array is for stats for that level
-tower_stats = {
+TOWER_STATS = {
     TowerType.CORE: [
         TowerStat(20, 0, 0),
         TowerStat(40, 0, 0),

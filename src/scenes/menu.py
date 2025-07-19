@@ -4,7 +4,7 @@ import pygame
 from components.hand import hand_render
 from components.motion import Motion
 import core.constants as c
-import core.input as i
+import core.input as t
 import core.globals as g
 
 from components.statemachine import StateMachine, statemachine_change_state
