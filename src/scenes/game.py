@@ -1,7 +1,9 @@
+from enum import IntEnum, auto
 import math
 import random
 import pygame
 
+from components.settings import settings_menu
 import core.constants as c
 import core.input as t
 import core.globals as g
@@ -54,13 +56,18 @@ from scenes import manager
 from utilities.sprite import dim_sprite
 
 
+class MenuState(IntEnum):
+    GAME = 0
+    SETTINGS = auto()
+
+
 class Game(Scene):
     def __init__(self, statemachine: StateMachine) -> None:
         super().__init__(statemachine)
 
     # runs when game starts (or is resumed but thats not a thing)
     def enter(self) -> None:
-        # should we really be using g.camera and not self.camera??
+        self.current_state = MenuState.GAME
         g.camera = Camera(
             Motion.empty(),
             pygame.Vector2(
@@ -101,19 +108,28 @@ class Game(Scene):
         animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.15)})
 
     def execute(self) -> None:
-        # UPDATE
-        if g.action_buffer[t.Action.START] == t.InputState.PRESSED:
-            statemachine_change_state(self.statemachine, manager.SceneState.MENU)
-            return
-
-        # camera
-        camera_update(g.camera, g.dt)
-
-        # generic hand sprite
         hand.type = HandType.DEFAULT
         if self.wire_draw_start is not None or self.dragging_tower_type is not None:
             hand.type = HandType.GRAB
         hand.tooltip = None
+
+        camera_update(g.camera, g.dt)
+
+        # SETTINGS
+        if self.current_state == MenuState.SETTINGS:
+            g.window.fill(c.BLACK)
+
+            if not settings_menu():
+                self.current_state = MenuState.GAME
+                ui.im_new()
+
+            hand_render()
+            return
+
+        # UPDATE
+        if g.action_buffer[t.Action.START] == t.InputState.PRESSED:
+            statemachine_change_state(self.statemachine, manager.SceneState.MENU)
+            return
 
         # mouse pos in camera space
         last_hand_pos = camera_from_screen(g.camera, *g.last_mouse_pos)
@@ -263,6 +279,11 @@ class Game(Scene):
             (g.BUTTONS_INV if last_mode == GameMode.DESTROY else g.BUTTONS)[2], "Destroy"
         ):
             player.mode = GameMode.DESTROY
+
+        ui.im_set_next_position(c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE)
+        if ui.im_button_image(g.BUTTONS[3], "Settings"):
+            ui.im_new()
+            self.current_state = MenuState.SETTINGS
 
         text_y, icon_y, icon_w = 7, 8, 18
         wave_text = g.FONT.render(f"WAVE {wave_data.number + 1}", False, c.WHITE)

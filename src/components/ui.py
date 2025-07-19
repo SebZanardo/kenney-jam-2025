@@ -155,7 +155,7 @@ def im_slider(value: list[float], lo: float, hi: float) -> bool:
         value[0] = percent * difference + lo
         value[0] = min(max(value[0], lo), hi)
 
-    w = value[0] / hi * style.slider_dim[0]
+    w = value[0] / hi * (style.slider_dim[0] - 8) + 4
     g.window.blit(g.BUTTONS[4][hovered], (bbox[0] - 16 + w, bbox[1] + 6))
 
     value_text = g.FONT.render(str(int(value[0])), False, style.text_colour)
