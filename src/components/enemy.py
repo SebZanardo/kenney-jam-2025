@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import IntEnum, auto
 
+import core.globals as g
 import core.constants as c
 
 from components.pathing import (
@@ -33,15 +34,18 @@ class Enemy:
 # TODO: Change to array later once enum is stable
 enemy_max_health = {
     EnemyType.NONE: 0,
-    EnemyType.GROUND: 10,
-    EnemyType.FLYING: 10,
+    EnemyType.GROUND_WEAK: 10,
+    EnemyType.GROUND_FAST: 15,
+    EnemyType.GROUND_HEAVY: 50,
 }
 
 # TODO: Change to array later once enum is stable
+# NOTE: Values must be a unit fraction 1/X
 enemy_speed = {
     EnemyType.NONE: 0,
-    EnemyType.GROUND: 0.1,
-    EnemyType.FLYING: 0.1,
+    EnemyType.GROUND_WEAK: 0.1,
+    EnemyType.GROUND_FAST: 0.2,
+    EnemyType.GROUND_HEAVY: 0.05,
 }
 
 
@@ -74,6 +78,7 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
     new_enemy.health = enemy_max_health[enemy_type] * enemy_health_multiplier
 
     active_enemies += 1
+    print("Spawned: ", enemy_type)
 
     return True
 
@@ -92,6 +97,8 @@ def enemy_remove(i: int) -> None:
 
     enemies[i] = enemies[active_enemies]
     enemies[active_enemies] = temp
+
+    print("Removed: ", i)
 
 
 def enemy_update(i: int) -> bool:
@@ -125,7 +132,7 @@ def enemy_update(i: int) -> bool:
             return True
 
     # Reached next cell pos
-    elif (int(e.x), int(e.y)) != (e.cx, e.cy):
+    else:
         # Move e.x and e.y
         dx, dy = c.DIRECTION_OPPOSITES[flowfield[e.cy][e.cx]]
 
@@ -137,3 +144,12 @@ def enemy_update(i: int) -> bool:
             e.cy = int(e.y)
 
     return False
+
+
+def enemy_render(i: int) -> None:
+    e = enemies[i]
+
+    rx = e.x * c.TILE_SIZE + c.TILE_SIZE // 2
+    ry = e.y * c.TILE_SIZE + c.TILE_SIZE // 2
+
+    g.window.blit(g.ENEMIES[e.enemy_type.value - 1], (rx, ry))

@@ -36,10 +36,9 @@ from components.tower import (
     tower_update,
 )
 from components.player import player, player_reset
-from components.pathing import (
-    collision_grid, flowfield,
-    pathing_reset, coord_to_tile, flowfield_regenerate, debug_print
-)
+from components.wave import wave_update
+import components.pathing as p
+import components.enemy as e
 from components.ui import Pos
 from components.wire import Wire, wire_find, wire_render_chain
 
@@ -68,9 +67,9 @@ class Game(Scene):
         player_reset()
 
         # map
-        pathing_reset()
-        flowfield_regenerate(flowfield)
-        debug_print()
+        p.pathing_reset()
+        p.flowfield_regenerate(p.flowfield)
+        p.debug_print()
 
         # towers
         self.towers: list[Tower] = []
@@ -114,42 +113,46 @@ class Game(Scene):
         hand_pos = camera_from_screen(self.camera, *g.mouse_pos)
 
         # hovered tile pos
-        tile_pos = coord_to_tile(*hand_pos)
+        tile_pos = p.coord_to_tile(*hand_pos)
 
-        # user interaction
-        # place tower
-        game_mode_tower_create(self, tile_pos)
+        if player.health > 0:
+            # user interaction
+            # place tower
+            game_mode_tower_create(self, tile_pos)
 
-        # make wires (interp mouse pos)
-        interp_hand_pos = last_hand_pos[:]
-        while True:
-            diff = (hand_pos[0] - interp_hand_pos[0], hand_pos[1] - interp_hand_pos[1])
-            size = math.sqrt(diff[0] * diff[0] + diff[1] * diff[1])
-            if size < c.TILE_SIZE:
-                game_mode_wire_create(self, tile_pos)
-                break
-            unit = (diff[0] / size, diff[1] / size)
-            interp_hand_pos = (
-                interp_hand_pos[0] + unit[0] * c.TILE_SIZE / 2,
-                interp_hand_pos[1] + unit[1] * c.TILE_SIZE / 2,
-            )
-            if (interp_tile_pos := coord_to_tile(*interp_hand_pos)) is None:
-                break
-            game_mode_wire_create(self, interp_tile_pos)
+            # make wires (interp mouse pos)
+            interp_hand_pos = last_hand_pos[:]
+            while True:
+                diff = (hand_pos[0] - interp_hand_pos[0], hand_pos[1] - interp_hand_pos[1])
+                size = math.sqrt(diff[0] * diff[0] + diff[1] * diff[1])
+                if size < c.TILE_SIZE:
+                    game_mode_wire_create(self, tile_pos)
+                    break
+                unit = (diff[0] / size, diff[1] / size)
+                interp_hand_pos = (
+                    interp_hand_pos[0] + unit[0] * c.TILE_SIZE / 2,
+                    interp_hand_pos[1] + unit[1] * c.TILE_SIZE / 2,
+                )
+                if (interp_tile_pos := p.coord_to_tile(*interp_hand_pos)) is None:
+                    break
+                game_mode_wire_create(self, interp_tile_pos)
 
-        # towers
-        for tower in self.towers:
-            tower_update(tower)
+            # towers
+            for tower in self.towers:
+                tower_update(tower)
 
-        # misc
-        animator_update(self.blending_anim, g.dt)
-        i = 0
-        while i < len(self.particles):
-            particle_update(self.particles[i])
-            if self.particles[i].lifetime >= self.particles[i].lifespan:
-                self.particles.pop(i)
-            else:
-                i += 1
+            # wave & enemy update
+            wave_update()
+
+            # misc
+            animator_update(self.blending_anim, g.dt)
+            i = 0
+            while i < len(self.particles):
+                particle_update(self.particles[i])
+                if self.particles[i].lifetime >= self.particles[i].lifespan:
+                    self.particles.pop(i)
+                else:
+                    i += 1
 
         # RENDER
         g.window.fill(c.WHITE)
@@ -167,11 +170,13 @@ class Game(Scene):
             wire_render_chain(wire, self.camera)
 
         # enemies
-        pass
+        for i in range(e.active_enemies):
+            e.enemy_render(i)
 
         # towers
         for tower in self.towers:
             tower_render(tower, self.camera)
+
 
         # preview tile
         preview_tile: pygame.Surface | None = None
@@ -221,6 +226,9 @@ class Game(Scene):
         hand_render()
 
         g.window.blit(g.FONT.render(f"${player.money}", False, c.BLACK), (0, 0))
+        g.window.blit(g.FONT.render(f"<3 {player.health}", False, c.BLACK), (100, 0))
+        if player.health <= 0:
+            g.window.blit(g.FONT.render(f"GAMEOVER", False, c.MAGENTA), (50, 100))
 
     def exit(self) -> None:
         pass
@@ -259,7 +267,7 @@ def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
     animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[type.value]})
     parent.tower = tower
     self.towers.append(tower)
-    collision_grid[tower.tile[1]][tower.tile[0]] = True
+    p.collision_grid[tower.tile[1]][tower.tile[0]] = True
     player.money -= TOWER_PRICES[tower.type]
     self.particles.extend(tile_particle_burst(ParticleSpriteType.BUILD, tower.tile))
     self.camera.trauma = 0.35
@@ -267,7 +275,7 @@ def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
 
 def game_delete_tower_from(self: Game, parent: Wire):
     self.towers.remove(parent.tower)
-    collision_grid[parent.tile[1]][parent.tile[0]] = False
+    p.collision_grid[parent.tile[1]][parent.tile[0]] = False
     player.money += TOWER_PRICES[parent.tower.type]
     self.particles.extend(tile_particle_burst(ParticleSpriteType.DELETE, parent.tower.tile))
     self.camera.trauma = 0.35

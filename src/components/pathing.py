@@ -5,7 +5,7 @@ import core.constants as c
 
 # These are outside grid
 half_height = int(c.GRID_HEIGHT_TILES/2)
-outside = 64
+outside = 5
 SPAWN_POS = (-outside, half_height)
 GOAL_POS = (c.GRID_WIDTH_TILES + outside, half_height)
 
@@ -74,10 +74,9 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
     Flood fill BFS algorithm that starts at end and fills to start
     '''
 
-    # Zero out the field
     for y in range(c.GRID_HEIGHT_TILES):
         for x in range(c.GRID_WIDTH_TILES):
-            field[y][x] = 0
+            field[y][x] = -1
 
     complete = False
 
@@ -89,7 +88,6 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
     while q:
         for _ in range(len(q)):
             x, y = q.popleft()
-            print(x, y)
 
             for i, d in enumerate(c.DIRECTIONS):
                 dx, dy = d
@@ -104,7 +102,7 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
                     continue
 
                 # Already been visited
-                if field[ny][nx] == -1:
+                if field[ny][nx] != -1:
                     continue
 
                 if (nx, ny) == START_POS:

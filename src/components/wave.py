@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-import core.constants as c
-
 import components.enemy as e
 
 
@@ -13,7 +11,7 @@ class Wave:
     spawn_tick: float
 
 
-@dataclass(slots=True)
+@dataclass
 class WaveData:
     number: int = 0
 
@@ -27,9 +25,13 @@ class WaveData:
 
 
 # This stores all wave data
-waves: tuple[tuple[Wave]] = (
-    Wave()
-)
+# NOTE: can't be tuple cause python goofy ass can't have tuple with single element
+waves: list[list[Wave]] = [
+    [Wave(e.EnemyType.GROUND_WEAK, 8, 10)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 10, 8)],
+    [Wave(e.EnemyType.GROUND_FAST, 30, 4)],
+    [Wave(e.EnemyType.GROUND_WEAK, 8, 10), Wave(e.EnemyType.GROUND_FAST, 30, 4)]
+]
 WAVE_COUNT = len(waves)
 wave_data = WaveData()
 
@@ -74,7 +76,7 @@ def wave_new() -> None:
     print(f"New wave: {wave_data.number}")
 
     # Increase enemy health multiplier
-    e.enemy_health_multiplier = 1 + wave_data / WAVE_COUNT
+    e.enemy_health_multiplier = 1 + wave_data.number / WAVE_COUNT
 
     wave_data.spawn_instruction_index: int = 0
     wave_data.spawn_done = False
@@ -82,15 +84,15 @@ def wave_new() -> None:
 
 
 def wave_instruction_new() -> None:
-    wave = waves[wave_data.number % WAVE_COUNT]
+    w = waves[wave_data.number % WAVE_COUNT]
 
-    if wave_data.spawn_instruction_index >= len(wave):
+    if wave_data.spawn_instruction_index >= len(w):
         # Signal that spawn wave is done
         wave_data.spawn_done = True
         print("Current wave spawning complete")
         return
 
-    wave_instruction: Wave = wave[wave_data.spawn_instruction_index]
+    wave_instruction: Wave = w[wave_data.spawn_instruction_index]
 
     wave_data.spawn_enemy_type = wave_instruction.enemy_type
     wave_data.spawn_remaining = wave_instruction.count
