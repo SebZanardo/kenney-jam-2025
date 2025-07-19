@@ -29,6 +29,7 @@ from components.tower import (
     tower_update,
 )
 from components.player import player, player_reset
+from components.pathing import flowfield, collision_grid, pathing_reset
 from components.ui import Pos
 from components.wire import Wire, wire_find, wire_render_chain
 
@@ -57,9 +58,7 @@ class Game(Scene):
         player_reset()
 
         # map
-        self.collision_grid: list[list[bool]] = [
-            [False] * c.GRID_WIDTH for _ in range(c.GRID_HEIGHT)
-        ]
+        pathing_reset()
 
         # we can make this a 2d array if needed for pathfinding
         self.towers: list[Tower] = []
@@ -193,13 +192,13 @@ def game_place_tower_on(self: Game, parent: Wire):
     )
     parent.tower = tower
     self.towers.append(tower)
-    self.collision_grid[tower.tile[1]][tower.tile[0]] = True
+    collision_grid[tower.tile[1]][tower.tile[0]] = True
     player.money -= TOWER_PRICES[tower.type]
 
 
 def game_delete_tower_from(self: Game, parent: Wire):
     self.towers.remove(parent.tower)
-    self.collision_grid[parent.tile[1]][parent.tile[0]] = False
+    collision_grid[parent.tile[1]][parent.tile[0]] = False
     player.money += TOWER_PRICES[parent.tower.type]
     parent.tower = None
 
