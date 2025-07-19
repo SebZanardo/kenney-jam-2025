@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import IntEnum
 import math
 import random
 
@@ -9,9 +10,15 @@ import core.globals as g
 from components.motion import Motion, motion_update
 
 
+class ParticleSpriteType(IntEnum):
+    SHINY = 0
+    CREATE = 1
+    DELETE = 2
+
+
 @dataclass(slots=True)
 class Particle:
-    sprite_index: int
+    sprite_type: ParticleSpriteType
     motion: Motion
     rotation: float
     rotational_velocity: float
@@ -70,7 +77,7 @@ def particle_update(particle: Particle) -> None:
 
 
 def particle_render(particle: Particle, camera: Camera) -> None:
-    surf = pygame.transform.rotate(g.PARTICLES[particle.sprite_index], -particle.rotation)
+    surf = pygame.transform.rotate(g.PARTICLES[particle.sprite_type.value], -particle.rotation)
     surf.set_alpha((1 - particle.lifetime / particle.lifespan) * 255)
     g.window.blit(
         surf,

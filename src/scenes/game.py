@@ -20,7 +20,13 @@ from components.camera import (
 from components.grid import coord_to_tile
 from components.hand import HandType, hand, hand_render
 from components.motion import Motion
-from components.particles import Particle, particle_burst, particle_render, particle_update
+from components.particles import (
+    Particle,
+    ParticleSpriteType,
+    particle_burst,
+    particle_render,
+    particle_update,
+)
 from components.tower import (
     TOWER_ANIMATIONS,
     TOWER_PRICES,
@@ -220,7 +226,7 @@ def game_place_wire(self: Game, wire: Wire, parent: Wire):
     player.money -= 1
     self.particles.extend(
         particle_burst(
-            0,
+            ParticleSpriteType.CREATE,
             8,
             position=((wire.tile[0] + 0.5) * c.TILE_SIZE, (wire.tile[1] + 0.5) * c.TILE_SIZE),
             position_variance=4,
@@ -239,6 +245,18 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire):
     if wire.tower is not None:
         game_delete_tower_from(self, wire)
     player.money += 1
+    self.particles.extend(
+        particle_burst(
+            ParticleSpriteType.SHINY,
+            8,
+            position=((wire.tile[0] + 0.5) * c.TILE_SIZE, (wire.tile[1] + 0.5) * c.TILE_SIZE),
+            position_variance=4,
+            velocity=80,
+            velocity_variance=10,
+            lifespan=10,
+            lifespan_variance=2,
+        )
+    )
 
 
 def game_mode_wire_create(self: Game, tile_pos: Pos | None):
