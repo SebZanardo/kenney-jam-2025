@@ -11,7 +11,7 @@ from components.animation import (
     animator_update,
 )
 from components.camera import Camera, camera_from_screen, camera_to_screen, camera_to_screen_shake
-from components.hand import HandType, hand_render
+from components.hand import HandType, hand, hand_render
 from components.motion import Motion
 from components.tower import Tower, tower_create_animator, tower_render, tower_update
 from components.ui import Pos
@@ -123,7 +123,7 @@ class Game(Scene):
         for tower in self.towers:
             tower_render(tower, self.camera)
 
-        hand_render(g.hand)
+        hand_render()
 
         g.window.blit(g.FONT.render(f"${self.money}", False, c.BLACK), (0, 0))
 
@@ -183,10 +183,10 @@ def game_mode_wire_create(self: Game, tile_pos: Pos | None):
         self.wire_draw_start = wire_find(self.wires, tile_pos)
 
     if self.wire_draw_start is not None:
-        g.hand.type = HandType.GRAB
+        hand.type = HandType.GRAB
         if g.mouse_buffer[i.MouseButton.LEFT] not in (i.InputState.PRESSED, i.InputState.HELD):
             self.wire_draw_start = None
-            g.hand.type = HandType.DEFAULT
+            hand.type = HandType.DEFAULT
 
         elif tile_pos != self.wire_draw_start.tile and tile_pos is not None:
             sx, sy = self.wire_draw_start.tile
@@ -208,7 +208,7 @@ def game_mode_wire_create(self: Game, tile_pos: Pos | None):
                         game_place_wire(self, wire, self.wire_draw_start)
                         self.wire_draw_start = wire
                     else:
-                        g.hand.type = HandType.NO
+                        hand.type = HandType.NO
 
                 # delete previous wire
                 elif (
@@ -221,8 +221,8 @@ def game_mode_wire_create(self: Game, tile_pos: Pos | None):
 
                 # crossing wires
                 else:
-                    g.hand.type = HandType.NO
+                    hand.type = HandType.NO
 
             # cursor jumped, not an adjacent tile
             else:
-                g.hand.type = HandType.NO
+                hand.type = HandType.NO

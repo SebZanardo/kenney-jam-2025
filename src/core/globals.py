@@ -29,7 +29,7 @@ mouse_buffer = []
 action_buffer = []
 last_action_pressed = []
 
-dt = c.MAX_DT  # We want fixed dt
+dt = 1 / c.FPS  # We want fixed dt
 mouse_pos = (-1, -1)
 
 mouse_buffer = None
@@ -76,6 +76,3 @@ HOVER_SFX = pygame.mixer.Sound(path + "hover.ogg")
 SELECT_SFX = pygame.mixer.Sound(path + "select.ogg")
 
 NINTENDO_MUSIC = "data/music/theme.ogg"
-
-# the hand
-hand = Hand()

@@ -30,7 +30,10 @@ class Hand:
     type: HandType = HandType.DEFAULT
 
 
-def hand_render(hand: Hand):
+hand = Hand()
+
+
+def hand_render():
     data = hand.type.value
     g.window.blit(
         g.HANDS[data.sprite_index],

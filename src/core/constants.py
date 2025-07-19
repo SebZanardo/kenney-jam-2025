@@ -18,7 +18,6 @@ WINDOW_SETUP = {
 CAPTION = "kenney-jam-2025"
 FPS = 30  # 0 = Uncapped -> let VSYNC decide best tick speed if enabled
 # NOTE: Capped at 30FPS on mobile so that is our fixed update
-MAX_DT = 1 / 30
 
 IS_WEB = sys.platform == "emscripten"
 
