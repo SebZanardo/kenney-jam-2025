@@ -16,7 +16,7 @@ class HandType(Enum):
     DOWN = HandTypeData(1, (4, 15))
     TWO_FINGER = HandTypeData(2, (4, 1))
     THREE_FINGER = HandTypeData(3, (4, 1))
-    GRAB = HandTypeData(4, (4, 1))
+    GRAB = HandTypeData(4, (4, 3))
     POINTER = HandTypeData(5, (1, 1))
     POINTER_HEAVY = HandTypeData(7, (1, 1))
     POINTER_SLIM = HandTypeData(8, (1, 1))
@@ -30,7 +30,10 @@ class Hand:
     type: HandType = HandType.DEFAULT
 
 
-def hand_render(hand: Hand):
+hand = Hand()
+
+
+def hand_render():
     data = hand.type.value
     g.window.blit(
         g.HANDS[data.sprite_index],

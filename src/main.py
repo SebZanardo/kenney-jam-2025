@@ -21,6 +21,7 @@ async def main() -> None:
         # g.dt = min(g.dt, c.MAX_DT)  # Clamp delta time
         # dt *= g.time_dilation
 
+        g.last_mouse_pos = g.mouse_pos[:]
         g.mouse_pos = pygame.mouse.get_pos()
         i.update_action_buffer()
 

@@ -2,8 +2,8 @@ import sys
 import pygame
 
 # Pygame constants
-WINDOW_WIDTH = 540
-WINDOW_HEIGHT = 360
+WINDOW_WIDTH = 320
+WINDOW_HEIGHT = 180
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 WINDOW_CENTRE = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
 
@@ -18,7 +18,6 @@ WINDOW_SETUP = {
 CAPTION = "kenney-jam-2025"
 FPS = 30  # 0 = Uncapped -> let VSYNC decide best tick speed if enabled
 # NOTE: Capped at 30FPS on mobile so that is our fixed update
-MAX_DT = 1 / 30
 
 IS_WEB = sys.platform == "emscripten"
 
@@ -43,6 +42,6 @@ INVERTED_DIRECTIONS = {UP: DOWN, LEFT: RIGHT, RIGHT: LEFT, DOWN: UP}
 
 # Size constants
 BUTTON_SIZE = (96, 16)
-TILE_SIZE = 16  # can easily be changed to 32x32
-GRID_WIDTH_TILES, GRID_HEIGHT_TILES = 28, 18
+TILE_SIZE = 16
+GRID_WIDTH_TILES, GRID_HEIGHT_TILES = 16, 8
 GRID_WIDTH, GRID_HEIGHT = GRID_WIDTH_TILES * TILE_SIZE, GRID_HEIGHT_TILES * TILE_SIZE

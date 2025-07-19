@@ -85,7 +85,7 @@ class Menu(Scene):
         if i.is_pressed(i.Action.START) or i.mouse_pressed(i.MouseButton.LEFT):
             self.camera.trauma += 0.5
 
-        hand_render(g.hand)
+        hand_render()
 
     def exit(self) -> None:
         stop_music()

@@ -29,8 +29,9 @@ mouse_buffer = []
 action_buffer = []
 last_action_pressed = []
 
-dt = c.MAX_DT  # We want fixed dt
+dt = 1 / c.FPS  # We want fixed dt
 mouse_pos = (-1, -1)
+last_mouse_pos = (-1, -1)  # for interpolating at low dt
 
 mouse_buffer = None
 action_buffer = None
@@ -50,8 +51,8 @@ pass
 
 # Load fonts (ttf for web compatibility)
 path = "data/fonts/"
-FONT = pygame.font.Font(path + "Better VCR 9.0.1.ttf", 16)
-DEBUG_FONT = pygame.font.SysFont("monospace", 10)
+FONT = pygame.font.Font(path + "Better VCR 9.0.1.ttf", 11)
+DEBUG_FONT = pygame.font.SysFont("monospace", 8)
 
 # Load sprites (png, webp or jpg for web compatibility)
 path = "data/textures/"
@@ -76,6 +77,3 @@ HOVER_SFX = pygame.mixer.Sound(path + "hover.ogg")
 SELECT_SFX = pygame.mixer.Sound(path + "select.ogg")
 
 NINTENDO_MUSIC = "data/music/theme.ogg"
-
-# the hand
-hand = Hand()
