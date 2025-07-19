@@ -10,6 +10,7 @@ from components.animation import (
     Animator,
     animator_get_frame,
     animator_initialise,
+    animator_switch_animation,
     animator_update,
 )
 from components.audio import play_music
@@ -23,11 +24,10 @@ from components.camera import (
 from components.hand import HandType, Tooltip, hand, hand_render
 from components.motion import Motion
 from components.particles import (
-    Particle,
     ParticleSpriteType,
     particle_burst,
-    particle_render,
-    particle_update,
+    particles_render,
+    particles_update,
 )
 from components.tower import (
     MAX_TOWER_LEVEL,
@@ -97,9 +97,8 @@ class Game(Scene):
         self.wire_draw_start: Wire | None = None
 
         # vfx
-        self.particles: list[Particle] = []
         self.blending_anim = Animator()
-        animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX, 0.15)})
+        animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.15)})
 
     def execute(self) -> None:
         # UPDATE
@@ -161,14 +160,8 @@ class Game(Scene):
             game_mode_tower_create(self, hov_tile, hov_wire)
 
             # misc
+            particles_update()
             animator_update(self.blending_anim, g.dt)
-            i = 0
-            while i < len(self.particles):
-                particle_update(self.particles[i])
-                if self.particles[i].lifetime >= self.particles[i].lifespan:
-                    self.particles.pop(i)
-                else:
-                    i += 1
 
         # game over
         else:
@@ -215,16 +208,20 @@ class Game(Scene):
                 if hov_tile is None:
                     g.window.blit(preview_tile, g.mouse_pos)
                 else:
+                    surf = preview_tile.copy()
+                    surf.set_alpha(200)
+                    surf.blit(
+                        animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
+                    )
                     g.window.blit(
-                        tile_preview(preview_tile, self.blending_anim),
+                        surf,
                         camera_to_screen(
                             g.camera, hov_tile[0] * c.TILE_SIZE, hov_tile[1] * c.TILE_SIZE
                         ),
                     )
 
         # particles
-        for particle in self.particles:
-            particle_render(particle, g.camera)
+        particles_render()
 
         # hud
         if hov_tile is None:
@@ -331,15 +328,8 @@ class Game(Scene):
 
 
 # UTILS (SHOULD MOVE SOMEWHERE ELSE)
-def tile_preview(surf: pygame.Surface, animator: Animator) -> pygame.Surface:
-    preview = surf.copy()
-    preview.set_alpha(200)
-    preview.blit(animator_get_frame(animator), special_flags=pygame.BLEND_MULT)
-    return preview
-
-
-def tile_particle_burst(type: ParticleSpriteType, tile: Pos) -> list[Particle]:
-    return particle_burst(
+def tile_particle_burst(type: ParticleSpriteType, tile: Pos) -> None:
+    particle_burst(
         type,
         count=8,
         position=((tile[0] + 0.5) * c.TILE_SIZE, (tile[1] + 0.5) * c.TILE_SIZE),
@@ -353,8 +343,9 @@ def tile_particle_burst(type: ParticleSpriteType, tile: Pos) -> list[Particle]:
 
 # TOWERS
 def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
-    tower = Tower(tile[:], type, 0, c.UP, Animator())
+    tower = Tower(tile[:], type, 0, c.UP, Animator(), Animator())
     animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[type.value]})
+    animator_initialise(tower.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.08)})
     self.towers.append(tower)
 
     p.collision_grid[tower.tile[1]][tower.tile[0]] = True
@@ -362,7 +353,7 @@ def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
 
     player.money -= TOWER_PRICES[tower.type]
 
-    self.particles.extend(tile_particle_burst(ParticleSpriteType.BUILD, tower.tile))
+    tile_particle_burst(ParticleSpriteType.BUILD, tower.tile)
     g.camera.trauma = 0.35
 
     return tower
@@ -379,7 +370,7 @@ def game_delete_tower(self: Game, tower: Tower):
 
     player.money += TOWER_STATS[tower.type][tower.level].sell_price
 
-    self.particles.extend(tile_particle_burst(ParticleSpriteType.DELETE, tower.tile))
+    tile_particle_burst(ParticleSpriteType.DELETE, tower.tile)
     g.camera.trauma = 0.35
 
 
@@ -400,10 +391,11 @@ def game_delete_tower_from(self: Game, parent: Wire):
 
 def game_upgrade_tower(self: Game, tower: Tower):
     tower.level += 1
+    # animator_switch_animation(tower.blending_anim, tower.level)
 
     player.money -= TOWER_PRICES[tower.type]
 
-    self.particles.extend(tile_particle_burst(ParticleSpriteType.BUILD, tower.tile))
+    tile_particle_burst(ParticleSpriteType.BUILD, tower.tile)
     g.camera.trauma = 0.35
 
 
@@ -491,7 +483,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 def game_place_wire(self: Game, wire: Wire, parent: Wire):
     parent.outgoing_sides[c.INVERTED_DIRECTIONS[wire.incoming_side]] = wire
     player.money -= 1
-    self.particles.extend(tile_particle_burst(ParticleSpriteType.CREATE, wire.tile))
+    tile_particle_burst(ParticleSpriteType.CREATE, wire.tile)
 
 
 def game_delete_wire(self: Game, wire: Wire, parent: Wire | None):
@@ -503,7 +495,7 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire | None):
     if wire.tower is not None:
         game_delete_tower_from(self, wire)
     else:
-        self.particles.extend(tile_particle_burst(ParticleSpriteType.SHINY, wire.tile))
+        tile_particle_burst(ParticleSpriteType.SHINY, wire.tile)
 
 
 def game_mode_wire_create(self: Game, tile: Pos | None, hov_wire: Wire | None):

@@ -1,11 +1,15 @@
 from dataclasses import dataclass
 from enum import IntEnum
 
+import pygame
+
+from components.particles import ParticleSpriteType, particle_burst
 import core.constants as c
 import core.globals as g
-from components.camera import Camera, camera_to_screen_shake
+import components.enemy as e
+from components.camera import camera_to_screen_shake
 from components.animation import Animation, Animator, animator_get_frame, animator_update
-from utilities.math import Pos
+from utilities.math import Pos, point_in_circle
 
 
 class TowerType(IntEnum):
@@ -23,7 +27,8 @@ class Tower:
     type: TowerType
     level: int
     direction: str
-    animator: Animator = None
+    animator: Animator
+    blending_anim: Animator
 
 
 # NOTE: These should be stats for all towers
@@ -61,34 +66,70 @@ TOWER_STATS = {
         TowerStat(60, 0, 0, 0),
     ],
     TowerType.NORMAL: [
-        TowerStat(3, 0.1, 1, 32),
-        TowerStat(6, 0.1, 3, 32),
-        TowerStat(9, 0.05, 5, 32),
+        TowerStat(3, 0.1, 1, 80),
+        TowerStat(6, 0.1, 3, 80),
+        TowerStat(9, 0.05, 5, 80),
     ],
     TowerType.SLOW: [
-        TowerStat(5, 0.2, 0, 32),
-        TowerStat(10, 0.15, 0, 32),
-        TowerStat(15, 0.1, 0, 32),
+        TowerStat(5, 0.2, 0, 80),
+        TowerStat(10, 0.15, 0, 80),
+        TowerStat(15, 0.1, 0, 80),
     ],
     TowerType.SPLASH: [
-        TowerStat(15, 0.2, 5, 32),
-        TowerStat(30, 0.15, 10, 32),
-        TowerStat(45, 0.1, 15, 32),
+        TowerStat(15, 0.2, 5, 80),
+        TowerStat(30, 0.15, 10, 80),
+        TowerStat(45, 0.1, 15, 80),
     ],
     TowerType.ZAP: [
-        TowerStat(30, 0.5, 16, 32),
-        TowerStat(60, 0.45, 35, 32),
-        TowerStat(90, 0.4, 50, 32),
+        TowerStat(30, 0.5, 16, 80),
+        TowerStat(60, 0.45, 35, 80),
+        TowerStat(90, 0.4, 50, 80),
     ],
 }
 
 
 def tower_update(tower: Tower) -> None:
     animator_update(tower.animator, g.dt)
+    animator_update(tower.blending_anim, g.dt)
+
+    r = TOWER_STATS[tower.type][tower.level].radius
+
+    if r == 0:
+        return
+
+    tx, ty = (tower.tile[0] + 0.5) * c.TILE_SIZE, (tower.tile[1] + 0.5) * c.TILE_SIZE
+
+    # TODO: targeting enemies
+    i = 0
+    while i < e.active_enemies:
+        enemy = e.enemies[i]
+
+        if point_in_circle(enemy.x, enemy.y, tx, ty, r):
+            for particle_type in (ParticleSpriteType.ATTACK_BIG, ParticleSpriteType.ATTACK_SMALL):
+                particle_burst(
+                    particle_type,
+                    count=2,
+                    position=(enemy.x, enemy.y),
+                    position_variance=c.TILE_SIZE // 2,
+                    velocity=0,
+                    velocity_variance=0,
+                    lifespan=10,
+                    lifespan_variance=2,
+                )
+
+        i += 1
 
 
 def tower_render(tower: Tower) -> None:
+    surf = animator_get_frame(tower.animator)
+
+    if tower.level > 0:
+        surf = surf.copy()
+        surf.blit(animator_get_frame(tower.blending_anim), special_flags=pygame.BLEND_MULT)
+        if tower.level > 1:
+            surf.fill((128, 128, 128), special_flags=pygame.BLEND_ADD)
+
     g.window.blit(
-        animator_get_frame(tower.animator),
+        surf,
         camera_to_screen_shake(g.camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
     )
