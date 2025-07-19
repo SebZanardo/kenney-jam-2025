@@ -1,14 +1,15 @@
 from dataclasses import dataclass
 from enum import IntEnum
-
 import pygame
 
 from components.particles import ParticleSpriteType, particle_burst
 import core.constants as c
 import core.globals as g
+
 import components.enemy as e
 from components.camera import camera_to_screen_shake
 from components.animation import Animation, Animator, animator_get_frame, animator_update
+
 from utilities.math import Pos, point_in_circle
 
 
@@ -28,6 +29,8 @@ class Tower:
     direction: str
     animator: Animator
     blending_anim: Animator
+
+    target: e.Enemy = None
 
 
 # NOTE: These should be stats for all towers
@@ -141,3 +144,22 @@ def tower_render(tower: Tower) -> None:
         surf,
         camera_to_screen_shake(g.camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
     )
+
+    # TODO: Move this to on view hover ########################################
+    radius = TOWER_STATS[tower.type.value][tower.level].radius
+    diameter = radius * 2
+    position = (
+        tower.tile[0] * c.TILE_SIZE - radius + c.TILE_SIZE // 2,
+        tower.tile[1] * c.TILE_SIZE - radius + c.TILE_SIZE // 2
+    )
+
+    resized_radius = pygame.transform.scale(g.RADIUS, (diameter, diameter))
+
+    temp = pygame.Surface((diameter, diameter)).convert()
+    temp.set_colorkey(c.MAGENTA)
+    temp.fill(c.MAGENTA)
+    temp.blit(resized_radius, (0, 0))
+    temp.set_alpha(50)
+
+    g.window.blit(temp, camera_to_screen_shake(g.camera, *position))
+    ###########################################################################

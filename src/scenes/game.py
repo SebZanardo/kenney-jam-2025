@@ -467,7 +467,6 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 
         elif p.player.mode == p.GameMode.VIEW:
             hand.tooltip = Tooltip(f"{name}")
-
         break
 
     # placing
