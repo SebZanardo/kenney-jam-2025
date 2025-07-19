@@ -5,10 +5,10 @@ import pygame
 import core.constants as c
 from components.statemachine import StateMachine
 
-from utilities.sprite import slice_sheet
+from utilities.sprite import dim_sprite, slice_sheet
 
 
-def setup_window() -> pygame.Surface:
+def _setup_window() -> pygame.Surface:
     if c.IS_WEB:
         platform.window.canvas.style.imageRendering = "pixelated"
         return pygame.display.set_mode(c.WINDOW_SETUP["size"])
@@ -19,7 +19,7 @@ def setup_window() -> pygame.Surface:
 pygame.init()
 
 # Pygame Globals
-window = setup_window()
+window = _setup_window()
 clock = pygame.time.Clock()
 
 scene_manager = StateMachine()
@@ -73,9 +73,7 @@ BLENDING_FX = slice_sheet(path + "blending-fx.png", 16, 16)
 PARTICLES = slice_sheet(path + "particles.png", 8, 8)
 BUTTONS: list[pygame.Surface] = []
 for surf in slice_sheet(path + "buttons.png", 16, 16):
-    dim = surf.copy()
-    dim.fill((210, 210, 210, 255), special_flags=pygame.BLEND_MULT)
-    BUTTONS.append((dim, surf))
+    BUTTONS.append((dim_sprite(surf), surf))
 
 # Load audio (ogg for web compatibility)
 path = "data/sfx/"

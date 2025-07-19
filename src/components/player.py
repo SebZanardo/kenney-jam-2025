@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import IntEnum
 
 
 # STARTING_MONEY = 15
@@ -7,11 +8,18 @@ STARTING_MONEY = 100
 STARTING_HEALTH = 100
 
 
+# value of the enum = number of fixed updates per frame
+class SpeedType(IntEnum):
+    PAUSED = 0
+    NORMAL = 1
+    FAST = 3
+
+
 @dataclass(slots=True)
 class Player:
     money: int = 0
     health: int = 0
-    # TODO: maybe add state too (paused, fastforward, settings)
+    speed: SpeedType = SpeedType.NORMAL
 
 
 player: Player = Player()
@@ -20,3 +28,4 @@ player: Player = Player()
 def player_reset() -> None:
     player.money = STARTING_MONEY
     player.health = STARTING_HEALTH
+    player.speed = SpeedType.NORMAL

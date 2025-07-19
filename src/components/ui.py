@@ -1,9 +1,12 @@
 from dataclasses import dataclass
 
+import pygame
+
 import core.globals as g
 import core.input as t
 
 from components.audio import AudioChannel, play_sound
+from utilities.sprite import dim_sprite
 
 
 Pos = tuple[int, int]
@@ -107,6 +110,14 @@ def im_button(label: str) -> bool:
 
     text = g.FONT.render(label, False, style.text_colour)
     g.window.blit(text, (bbox[0] + 16, bbox[1]))
+
+    return clicked
+
+
+def im_button_image(sprites: tuple[pygame.Surface, pygame.Surface]) -> bool:
+    bbox = context.bbox(*sprites[0].get_size())
+    hovered, clicked, held = context.interact(bbox)
+    g.window.blit(sprites[hovered], (bbox[0], bbox[1]), (0, 0, *sprites[0].get_size()))
 
     return clicked
 

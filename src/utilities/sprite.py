@@ -34,6 +34,12 @@ def get_sprite_from_sheet(
     return sprite
 
 
+def dim_sprite(surf: pygame.Surface, value: float = 0.8) -> pygame.Surface:
+    dim = surf.copy()
+    dim.fill((value * 255, value * 255, value * 255, 255), special_flags=pygame.BLEND_MULT)
+    return dim
+
+
 # rotates a sprite to match the given direction, assuming it is initially facing up
 def rotate_sprite(sprite: pygame.Surface, new_direction: str) -> pygame.Surface:
     if new_direction == c.UP:

@@ -1,6 +1,8 @@
+from enum import IntEnum
 import math
 import pygame
 
+from components import ui
 import core.constants as c
 import core.input as t
 import core.globals as g
@@ -35,7 +37,7 @@ from components.tower import (
     tower_render,
     tower_update,
 )
-from components.player import player, player_reset
+from components.player import SpeedType, player, player_reset
 from components.wave import wave_update, wave_reset
 import components.pathing as p
 import components.enemy as e
@@ -145,7 +147,8 @@ class Game(Scene):
                 tower_update(tower)
 
             # wave & enemy update
-            wave_update()
+            for _ in range(player.speed.value):
+                wave_update()
 
             # misc
             animator_update(self.blending_anim, g.dt)
@@ -185,7 +188,6 @@ class Game(Scene):
         for tower in self.towers:
             tower_render(tower, g.camera)
 
-
         # preview tile
         preview_tile: pygame.Surface | None = None
         if self.dragging_tower_type is not None:
@@ -209,10 +211,27 @@ class Game(Scene):
         for particle in self.particles:
             particle_render(particle, g.camera)
 
-        # sidebars (immediate mode)
-        if not (c.TILE_SIZE < g.mouse_pos[0] < c.WINDOW_WIDTH - c.TILE_SIZE):
+        # hud
+        if tile_pos is None:
             self.wire_draw_start = None
 
+        # top
+        ui.im_reset_position(c.TILE_SIZE, 0)
+        if player.speed == SpeedType.PAUSED:
+            if ui.im_button_image(g.BUTTONS[8]):
+                player.speed = SpeedType.NORMAL
+        else:
+            if ui.im_button_image(g.BUTTONS[9]):
+                player.speed = SpeedType.PAUSED
+        ui.im_same_line()
+        if player.speed == SpeedType.FAST:
+            if ui.im_button_image(g.BUTTONS[8]):
+                player.speed = SpeedType.NORMAL
+        else:
+            if ui.im_button_image(g.BUTTONS[12]):
+                player.speed = SpeedType.FAST
+
+        # right
         last_dragging_tower_type = self.dragging_tower_type
         for i, tower_type in enumerate(TowerType):
             if tower_type == last_dragging_tower_type:
@@ -231,6 +250,7 @@ class Game(Scene):
                 (bbox[0], bbox[1]),
             )
 
+        # hand
         hand_render()
 
         g.window.blit(g.FONT.render(f"${player.money}", False, c.BLACK), (0, 0))
