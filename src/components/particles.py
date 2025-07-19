@@ -28,8 +28,8 @@ class Particle:
 
 def particle_burst(
     sprite_index: int,
-    count: int,
     *,
+    count: int,
     position: tuple[float, float],
     position_variance: float,
     velocity: float,

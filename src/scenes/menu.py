@@ -74,7 +74,7 @@ class Menu(Scene):
                 ui.im_new()
 
         elif self.current_state == MenuState.CREDITS:
-            if i.is_pressed(i.Action.START) or i.mouse_pressed(i.MouseButton.LEFT):
+            if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
                 self.current_state = MenuState.MAIN
                 ui.im_new()
 
@@ -82,7 +82,7 @@ class Menu(Scene):
             ui.im_text("Made for the Kenney Game Jam 2025")
             ui.im_text("By ProfDragon and SebZanardo")
 
-        if i.is_pressed(i.Action.START) or i.mouse_pressed(i.MouseButton.LEFT):
+        if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
             self.camera.trauma += 0.5
 
         hand_render()

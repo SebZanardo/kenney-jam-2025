@@ -176,6 +176,9 @@ class Game(Scene):
         for particle in self.particles:
             particle_render(particle, self.camera)
 
+        # hud
+        # TODO: sidebars
+
         hand_render()
 
         g.window.blit(g.FONT.render(f"${player.money}", False, c.BLACK), (0, 0))
@@ -227,7 +230,7 @@ def game_place_wire(self: Game, wire: Wire, parent: Wire):
     self.particles.extend(
         particle_burst(
             ParticleSpriteType.CREATE,
-            8,
+            count=8,
             position=((wire.tile[0] + 0.5) * c.TILE_SIZE, (wire.tile[1] + 0.5) * c.TILE_SIZE),
             position_variance=4,
             velocity=80,
@@ -248,7 +251,7 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire):
     self.particles.extend(
         particle_burst(
             ParticleSpriteType.SHINY,
-            8,
+            count=8,
             position=((wire.tile[0] + 0.5) * c.TILE_SIZE, (wire.tile[1] + 0.5) * c.TILE_SIZE),
             position_variance=4,
             velocity=80,
