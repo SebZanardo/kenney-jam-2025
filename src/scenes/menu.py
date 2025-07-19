@@ -51,7 +51,7 @@ class Menu(Scene):
 
         if self.current_state == MenuState.MAIN:
             ui.im_reset_position(10, 10)
-            if ui.im_button("play"):
+            if ui.im_button("play") or t.is_pressed(t.Action.START):
                 statemachine_change_state(self.statemachine, manager.SceneState.GAME)
                 ui.im_new()
 

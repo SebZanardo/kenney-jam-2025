@@ -3,9 +3,11 @@ from queue import deque
 import core.constants as c
 
 
-# These are outside grid
 half_height = int(c.GRID_HEIGHT_TILES/2)
+
+# how far outside is run
 outside = 5
+
 SPAWN_POS = (-outside, half_height)
 GOAL_POS = (c.GRID_WIDTH_TILES + outside, half_height)
 

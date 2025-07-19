@@ -36,6 +36,20 @@ WAVE_COUNT = len(waves)
 wave_data = WaveData()
 
 
+def wave_reset() -> None:
+    e.active_enemies = 0
+
+    wave_data.number = 0
+
+    # For wave we are on
+    wave_data.spawn_enemy_type = e.EnemyType.NONE
+    wave_data.spawn_remaining = 0
+    wave_data.spawn_tick = 0
+    wave_data.spawn_tick_counter = 0
+    wave_data.spawn_instruction_index = -1
+    wave_data.spawn_done = False
+
+
 def wave_update() -> None:
     if wave_data.spawn_done:
         # If wave has finished spawning and all enemies died, spawn next wave
@@ -44,9 +58,7 @@ def wave_update() -> None:
             return
     else:
         # Continue spawning current wave
-        while (
-            wave_data.spawn_tick_counter >= wave_data.spawn_tick
-        ):
+        while (wave_data.spawn_tick_counter >= wave_data.spawn_tick):
             # If we spawned all the enemies, increment to next instruction
             if wave_data.spawn_remaining <= 0:
                 wave_data.spawn_instruction_index += 1

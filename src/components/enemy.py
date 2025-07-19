@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from enum import IntEnum, auto
 
@@ -8,6 +9,7 @@ from components.pathing import (
     SPAWN_POS, START_POS, GOAL_POS, END_POS, flowfield
 )
 from components.player import player
+from components.camera import camera_to_screen
 
 
 class EnemyType(IntEnum):
@@ -22,8 +24,8 @@ class EnemyType(IntEnum):
 @dataclass(slots=True)
 class Enemy:
     enemy_type: EnemyType = EnemyType.NONE
-    x: float = 0
-    y: float = 0
+    x: int = 0
+    y: int = 0
 
     cx: int = 0
     cy: int = 0
@@ -120,13 +122,13 @@ def enemy_update(i: int) -> bool:
     # Travelling to start
     if (e.cx, e.cy) == SPAWN_POS:
         e.x += speed  # Move to right
-        if (int(e.x), int(e.y)) == START_POS:
+        if int(e.x) == START_POS[0] and int(e.y) == START_POS[1]:
             e.cx, e.cy = START_POS
 
     # Travelling to goal
     elif (e.cx, e.cy) == END_POS:
         e.x += speed  # Move to right
-        if (int(e.x), int(e.y)) == GOAL_POS:
+        if int(e.x) == GOAL_POS[0] and int(e.y) == GOAL_POS[1]:
             # Hurt player
             player.health -= 1
             return True
@@ -139,9 +141,13 @@ def enemy_update(i: int) -> bool:
         e.x += dx * speed
         e.y += dy * speed
 
-        if (int(e.x), int(e.y)) != (e.cx, e.cy):
-            e.cx = int(e.x)
-            e.cy = int(e.y)
+        # TODO: there is a bug here and i don't know how to fix
+        rx = int(e.x)
+        ry = int(e.y)
+
+        if rx != e.cx or rx != e.cy:
+            e.cx = rx
+            e.cy = ry
 
     return False
 
@@ -149,7 +155,10 @@ def enemy_update(i: int) -> bool:
 def enemy_render(i: int) -> None:
     e = enemies[i]
 
-    rx = e.x * c.TILE_SIZE + c.TILE_SIZE // 2
-    ry = e.y * c.TILE_SIZE + c.TILE_SIZE // 2
+    rx = (e.x) * c.TILE_SIZE
+    ry = (e.y) * c.TILE_SIZE
 
-    g.window.blit(g.ENEMIES[e.enemy_type.value - 1], (rx, ry))
+    g.window.blit(
+        g.ENEMIES[e.enemy_type.value - 1],
+        camera_to_screen(g.camera, rx, ry)
+    )

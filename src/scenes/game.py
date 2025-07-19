@@ -36,7 +36,7 @@ from components.tower import (
     tower_update,
 )
 from components.player import player, player_reset
-from components.wave import wave_update
+from components.wave import wave_update, wave_reset
 import components.pathing as p
 import components.enemy as e
 from components.ui import Pos
@@ -54,7 +54,7 @@ class Game(Scene):
 
     # runs when game starts (or is resumed but thats not a thing)
     def enter(self) -> None:
-        self.camera = Camera(
+        g.camera = Camera(
             Motion.empty(),
             pygame.Vector2(
                 c.WINDOW_WIDTH // 2 - c.GRID_WIDTH // 2, c.WINDOW_HEIGHT // 2 - c.GRID_HEIGHT // 2
@@ -70,6 +70,9 @@ class Game(Scene):
         p.pathing_reset()
         p.flowfield_regenerate(p.flowfield)
         p.debug_print()
+
+        # wave
+        wave_reset()
 
         # towers
         self.towers: list[Tower] = []
@@ -101,7 +104,7 @@ class Game(Scene):
             return
 
         # camera
-        camera_update(self.camera, g.dt)
+        camera_update(g.camera, g.dt)
 
         # generic hand sprite
         hand.type = HandType.DEFAULT
@@ -109,8 +112,8 @@ class Game(Scene):
             hand.type = HandType.GRAB
 
         # mouse pos in camera space
-        last_hand_pos = camera_from_screen(self.camera, *g.last_mouse_pos)
-        hand_pos = camera_from_screen(self.camera, *g.mouse_pos)
+        last_hand_pos = camera_from_screen(g.camera, *g.last_mouse_pos)
+        hand_pos = camera_from_screen(g.camera, *g.mouse_pos)
 
         # hovered tile pos
         tile_pos = p.coord_to_tile(*hand_pos)
@@ -153,6 +156,11 @@ class Game(Scene):
                     self.particles.pop(i)
                 else:
                     i += 1
+        else:
+            if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
+                statemachine_change_state(self.statemachine, manager.SceneState.MENU)
+                return
+            pass
 
         # RENDER
         g.window.fill(c.WHITE)
@@ -162,12 +170,12 @@ class Game(Scene):
             for y in range(c.GRID_HEIGHT_TILES):
                 g.window.blit(
                     g.TERRAIN[(x + y) % 2],
-                    camera_to_screen_shake(self.camera, x * c.TILE_SIZE, y * c.TILE_SIZE),
+                    camera_to_screen_shake(g.camera, x * c.TILE_SIZE, y * c.TILE_SIZE),
                 )
 
         # wires
         for wire in self.wires:
-            wire_render_chain(wire, self.camera)
+            wire_render_chain(wire, g.camera)
 
         # enemies
         for i in range(e.active_enemies):
@@ -175,7 +183,7 @@ class Game(Scene):
 
         # towers
         for tower in self.towers:
-            tower_render(tower, self.camera)
+            tower_render(tower, g.camera)
 
 
         # preview tile
@@ -193,13 +201,13 @@ class Game(Scene):
                 g.window.blit(
                     tile_preview(preview_tile, self.blending_anim),
                     camera_to_screen(
-                        self.camera, tile_pos[0] * c.TILE_SIZE, tile_pos[1] * c.TILE_SIZE
+                        g.camera, tile_pos[0] * c.TILE_SIZE, tile_pos[1] * c.TILE_SIZE
                     ),
                 )
 
         # particles
         for particle in self.particles:
-            particle_render(particle, self.camera)
+            particle_render(particle, g.camera)
 
         # sidebars (immediate mode)
         if not (c.TILE_SIZE < g.mouse_pos[0] < c.WINDOW_WIDTH - c.TILE_SIZE):
@@ -267,18 +275,27 @@ def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
     animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[type.value]})
     parent.tower = tower
     self.towers.append(tower)
+
     p.collision_grid[tower.tile[1]][tower.tile[0]] = True
+    p.flowfield_regenerate(p.flowfield)
+    p.debug_print()
+
     player.money -= TOWER_PRICES[tower.type]
+
     self.particles.extend(tile_particle_burst(ParticleSpriteType.BUILD, tower.tile))
-    self.camera.trauma = 0.35
+    g.camera.trauma = 0.35
 
 
 def game_delete_tower_from(self: Game, parent: Wire):
     self.towers.remove(parent.tower)
     p.collision_grid[parent.tile[1]][parent.tile[0]] = False
+    p.flowfield_regenerate(p.flowfield)
+    p.debug_print()
+
     player.money += TOWER_PRICES[parent.tower.type]
+
     self.particles.extend(tile_particle_burst(ParticleSpriteType.DELETE, parent.tower.tile))
-    self.camera.trauma = 0.35
+    g.camera.trauma = 0.35
     parent.tower = None
 
 

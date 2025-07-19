@@ -36,6 +36,8 @@ mouse_buffer = None
 action_buffer = None
 last_action_pressed = None
 
+camera = None
+
 # User settings
 default_setting_params = {
     "music": [50],
