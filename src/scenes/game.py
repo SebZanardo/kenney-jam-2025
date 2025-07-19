@@ -12,6 +12,7 @@ from components.animation import (
     animator_initialise,
     animator_update,
 )
+from components.audio import play_music
 from components.camera import (
     Camera,
     camera_from_screen,
@@ -59,6 +60,7 @@ class Game(Scene):
 
     # runs when game starts (or is resumed but thats not a thing)
     def enter(self) -> None:
+        # should we really be using g.camera and not self.camera??
         g.camera = Camera(
             Motion.empty(),
             pygame.Vector2(
@@ -67,6 +69,8 @@ class Game(Scene):
             pygame.Vector2(),
             pygame.Vector2(30, 30),
         )
+
+        play_music(g.GAME_MUSIC, -1)
 
         # player resources
         player_reset()
