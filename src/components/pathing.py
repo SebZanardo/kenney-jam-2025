@@ -3,9 +3,11 @@ from queue import deque
 import core.constants as c
 
 
-# These are outside grid
 half_height = int(c.GRID_HEIGHT_TILES/2)
-outside = 30
+
+# how far outside is run
+outside = 5
+
 SPAWN_POS = (-outside, half_height)
 GOAL_POS = (c.GRID_WIDTH_TILES + outside, half_height)
 
@@ -16,13 +18,13 @@ END_POS = (c.GRID_WIDTH_TILES - 1, half_height)
 
 # Flowfield the enemies path off. Must always be valid path.
 flowfield: list[list[int]] = [
-    [0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
+    [-1] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
 ]
 
 # Flowfield the player can place towers off. It takes into account current
 # enemy positions. Expected to be invalid often
 placement_flowfield: list[list[int]] = [
-    [0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
+    [-1] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
 ]
 
 # 2D array for where towers have been placed
@@ -41,8 +43,8 @@ def pathing_reset() -> None:
 
     for y in range(c.GRID_HEIGHT_TILES):
         for x in range(c.GRID_WIDTH_TILES):
-            flowfield[y][x] = 0
-            placement_flowfield[y][x] = 0
+            flowfield[y][x] = -1
+            placement_flowfield[y][x] = -1
             collision_grid[y][x] = False
             crowded_grid[y][x] = 0.0
 
@@ -74,27 +76,23 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
     Flood fill BFS algorithm that starts at end and fills to start
     '''
 
-    # Zero out the field
     for y in range(c.GRID_HEIGHT_TILES):
         for x in range(c.GRID_WIDTH_TILES):
-            field[y][x] = 0
+            field[y][x] = -1
 
     complete = False
 
     q = deque()
-    step = 1
 
     q.append(END_POS)
-    field[END_POS[1]][END_POS[0]] = step
+    field[END_POS[1]][END_POS[0]] = 1  # 1 is right but anything != 0 is fine
 
     while q:
-        step += 1
         for _ in range(len(q)):
             x, y = q.popleft()
-            print(x, y)
 
-            for d in list(c.Direction):
-                dx, dy = d.value
+            for i, d in enumerate(c.DIRECTIONS):
+                dx, dy = d
                 nx = x + dx
                 ny = y + dy
 
@@ -106,7 +104,7 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
                     continue
 
                 # Already been visited
-                if field[ny][nx] != 0:
+                if field[ny][nx] != -1:
                     continue
 
                 if (nx, ny) == START_POS:
@@ -114,7 +112,7 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
                     # Don't break cause we want to fill everything
 
                 q.append((nx, ny))
-                field[ny][nx] = step
+                field[ny][nx] = i
 
     return complete
 
