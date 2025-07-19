@@ -1,7 +1,7 @@
 import pygame
 
 import core.constants as c
-import core.input as i
+import core.input as t
 import core.globals as g
 
 from components.statemachine import statemachine_initialise
@@ -11,7 +11,7 @@ from scenes.manager import SCENE_MAPPING, SceneState
 
 
 def setup() -> None:
-    i.input_init()
+    t.input_init()
 
     # These must be done after assets have been loaded
     pygame.display.set_caption(c.CAPTION)
