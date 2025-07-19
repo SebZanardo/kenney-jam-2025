@@ -10,7 +10,10 @@ from components.audio import set_music_volume, set_sfx_volume
 
 
 def settings_menu() -> bool:
-    ui.im_reset_position(c.WINDOW_WIDTH // 2, c.WINDOW_HEIGHT // 2 - 50)
+    ui.im_reset_position(c.WINDOW_WIDTH // 2, c.WINDOW_HEIGHT // 2 - 100)
+    ui.im_text("Settings", 0)
+
+    ui.im_set_next_position(c.WINDOW_WIDTH // 2, c.WINDOW_HEIGHT // 2 - 50)
 
     ui.im_text("Music Volume ", 1, True)
     if ui.im_slider(g.setting_params["music"], 0, 100):

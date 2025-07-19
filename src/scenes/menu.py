@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, auto
 import pygame
 
 from components.hand import HandType, hand, hand_render
@@ -19,8 +19,8 @@ from scenes import manager
 
 class MenuState(IntEnum):
     MAIN = 0
-    SETTINGS = 1
-    CREDITS = 2
+    SETTINGS = auto()
+    CREDITS = auto()
 
 
 class Menu(Scene):
