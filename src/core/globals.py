@@ -55,8 +55,8 @@ DEBUG_FONT = pygame.font.SysFont("monospace", 8)
 
 # Load sprites (png, webp or jpg for web compatibility)
 path = "data/textures/"
-ICON = pygame.image.load(path + "icon.png")
-PATTERNS = load_image(path + "patterns.png")
+ICON = pygame.image.load(path + "icon.png").convert_alpha()
+PATTERNS = load_image(path + "patterns.png").convert_alpha()
 
 # I made a new folder for custom textures so we can keep track
 # of what was downloaded from Kenney directly and what was compiled
@@ -80,6 +80,7 @@ for dim, surf in BUTTONS:
 BIG_BUTTONS: list[pygame.Surface] = []
 for surf in load_spritesheet(path + "big-buttons.png", 128, 32, double_size=False):
     BIG_BUTTONS.append((dim_sprite(surf), surf))
+RADIUS = pygame.image.load(path + "radius.png").convert_alpha()
 
 # Load audio (ogg for web compatibility)
 path = "data/sfx/"
