@@ -11,9 +11,17 @@ from components.animation import (
     animator_update,
 )
 from components.camera import Camera, camera_from_screen, camera_to_screen, camera_to_screen_shake
+from components.grid import inside_grid
 from components.hand import HandType, hand, hand_render
 from components.motion import Motion
-from components.tower import Tower, tower_create_animator, tower_render, tower_update
+from components.tower import (
+    TOWER_ANIMATIONS,
+    TOWER_PRICES,
+    Tower,
+    TowerType,
+    tower_render,
+    tower_update,
+)
 from components.ui import Pos
 from components.wire import Wire, wire_find, wire_render_chain
 
@@ -41,6 +49,11 @@ class Game(Scene):
         # resources
         self.money: int = 20
 
+        # map
+        self.collision_grid: list[list[bool]] = [
+            [False] * c.GRID_WIDTH for _ in range(c.GRID_HEIGHT)
+        ]
+
         # we can make this a 2d array if needed for pathfinding
         self.towers: list[Tower] = []
 
@@ -48,10 +61,10 @@ class Game(Scene):
         self.wires: list[Wire] = [
             Wire((1, 0), c.UP, {}, True),
             Wire(
-                (3, 17),
+                (3, 7),
                 c.DOWN,
                 {
-                    c.UP: Wire((3, 16), c.DOWN, {}, True),
+                    c.UP: Wire((3, 6), c.DOWN, {}, True),
                 },
                 True,
             ),
@@ -72,7 +85,7 @@ class Game(Scene):
 
         # hovered tile pos
         tile_pos = (hand_pos[0] // c.TILE_SIZE, hand_pos[1] // c.TILE_SIZE)
-        if not (0 <= tile_pos[0] < c.GRID_WIDTH_TILES and 0 <= tile_pos[1] < c.GRID_HEIGHT_TILES):
+        if not inside_grid(*tile_pos):
             tile_pos = None
 
         # user interaction
@@ -107,6 +120,10 @@ class Game(Scene):
         # enemies
         pass
 
+        # towers
+        for tower in self.towers:
+            tower_render(tower, self.camera)
+
         # preview tile
         if tile_pos is not None:
             tile_preview = g.WIRES[0].copy()
@@ -119,10 +136,6 @@ class Game(Scene):
                 camera_to_screen(self.camera, tile_pos[0] * c.TILE_SIZE, tile_pos[1] * c.TILE_SIZE),
             )
 
-        # towers
-        for tower in self.towers:
-            tower_render(tower, self.camera)
-
         hand_render()
 
         g.window.blit(g.FONT.render(f"${self.money}", False, c.BLACK), (0, 0))
@@ -134,17 +147,26 @@ class Game(Scene):
 ## TOWERS
 
 
-def game_place_tower_on(self: Game, tower: Tower, parent: Wire):
-    tower_create_animator(tower)
+def game_place_tower_on(self: Game, parent: Wire):
+    tower = Tower(
+        parent.tile[:],
+        TowerType.NORMAL,
+        1,
+        c.UP,
+        Animator(),
+    )
+    animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[TowerType.NORMAL.value]})
     parent.tower = tower
     self.towers.append(tower)
-    self.money -= 5
+    self.collision_grid[tower.tile[1]][tower.tile[0]] = True
+    self.money -= TOWER_PRICES[tower.type]
 
 
 def game_delete_tower_from(self: Game, parent: Wire):
     self.towers.remove(parent.tower)
+    self.collision_grid[parent.tile[1]][parent.tile[0]] = False
+    self.money += TOWER_PRICES[parent.tower.type]
     parent.tower = None
-    self.money += 5
 
 
 def game_mode_tower_create(self: Game, tile_pos: Pos | None):
@@ -154,8 +176,7 @@ def game_mode_tower_create(self: Game, tile_pos: Pos | None):
             # place tower
             if wire.tower is None:
                 if self.money >= 5:
-                    tower = Tower(tile_pos[:])
-                    game_place_tower_on(self, tower, wire)
+                    game_place_tower_on(self, wire)
             # delete tower
             else:
                 game_delete_tower_from(self, wire)
