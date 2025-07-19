@@ -15,6 +15,8 @@ class ParticleSpriteType(IntEnum):
     CREATE = 1
     DELETE = 2
     BUILD = 3
+    ATTACK_BIG = 4
+    ATTACK_SMALL = 5
 
 
 @dataclass(slots=True)
@@ -27,6 +29,9 @@ class Particle:
     lifetime: int = 0  # current frame
 
 
+particles: list[Particle] = []
+
+
 def particle_burst(
     sprite_index: int,
     *,
@@ -37,9 +42,7 @@ def particle_burst(
     velocity_variance: float,
     lifespan: int,
     lifespan_variance: int,
-) -> list[Particle]:
-
-    particles: list[Particle] = []
+) -> None:
 
     for _ in range(count):
         # randomise motion
@@ -68,13 +71,21 @@ def particle_burst(
         )
         particles.append(particle)
 
-    return particles
-
 
 def particle_update(particle: Particle) -> None:
     particle.lifetime += 1
     motion_update(particle.motion, g.dt)
     particle.rotation = (particle.rotation + particle.rotational_velocity * g.dt) % 360
+
+
+def particles_update() -> None:
+    i = 0
+    while i < len(particles):
+        particle_update(particles[i])
+        if particles[i].lifetime >= particles[i].lifespan:
+            particles.pop(i)
+        else:
+            i += 1
 
 
 def particle_render(particle: Particle, camera: Camera) -> None:
@@ -88,3 +99,8 @@ def particle_render(particle: Particle, camera: Camera) -> None:
             particle.motion.position[1] - surf.get_height() // 2,
         ),
     )
+
+
+def particles_render() -> None:
+    for particle in particles:
+        particle_render(particle, g.camera)

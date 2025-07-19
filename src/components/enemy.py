@@ -137,6 +137,7 @@ def enemy_update(i: int) -> bool:
         # Reached end of screen
         if e.x >= PATH_END_POS[0]:
             player.health -= 1
+            g.camera.trauma = 0.3
             return True
 
     # Reached next cell pos

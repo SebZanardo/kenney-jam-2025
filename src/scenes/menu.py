@@ -73,13 +73,19 @@ class Menu(Scene):
                 ui.im_new()
 
         elif self.current_state == MenuState.CREDITS:
-            if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
-                self.current_state = MenuState.MAIN
-                ui.im_new()
-
-            ui.im_reset_position(c.WINDOW_WIDTH // 2, c.WINDOW_HEIGHT // 2)
+            ui.im_reset_position(c.WINDOW_WIDTH // 2, c.WINDOW_HEIGHT // 2 - 50)
             ui.im_text("Made for the Kenney Game Jam 2025", 0)
             ui.im_text("By ProfDragon and SebZanardo", 0)
+            ui.im_text("", 0)
+            ui.im_text("Textures - Kenney", 0)
+            ui.im_text("Music - Darren Curtis", 0)
+
+            ui.im_set_next_position(
+                c.WINDOW_WIDTH // 2 - ui.style.button_dim[0] // 2, c.WINDOW_HEIGHT - 80
+            )
+            if ui.im_button_text("back"):
+                self.current_state = MenuState.MAIN
+                ui.im_new()
 
         if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
             self.camera.trauma += 0.5
