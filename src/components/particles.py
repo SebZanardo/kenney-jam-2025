@@ -14,6 +14,7 @@ class ParticleSpriteType(IntEnum):
     SHINY = 0
     CREATE = 1
     DELETE = 2
+    BUILD = 3
 
 
 @dataclass(slots=True)
