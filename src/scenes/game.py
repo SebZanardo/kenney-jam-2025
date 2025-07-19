@@ -29,6 +29,7 @@ from components.tower import (
     tower_render,
     tower_update,
 )
+from components.player import player, player_reset
 from components.ui import Pos
 from components.wire import Wire, wire_find, wire_render_chain
 
@@ -53,8 +54,8 @@ class Game(Scene):
             pygame.Vector2(30, 30),
         )
 
-        # resources
-        self.money: int = 50
+        # player resources
+        player_reset()
 
         # map
         self.collision_grid: list[list[bool]] = [
@@ -171,15 +172,13 @@ class Game(Scene):
 
         hand_render()
 
-        g.window.blit(g.FONT.render(f"${self.money}", False, c.BLACK), (0, 0))
+        g.window.blit(g.FONT.render(f"${player.money}", False, c.BLACK), (0, 0))
 
     def exit(self) -> None:
         pass
 
 
-## TOWERS
-
-
+# TOWERS
 def game_place_tower_on(self: Game, parent: Wire):
     tower = Tower(
         parent.tile[:],
@@ -192,13 +191,13 @@ def game_place_tower_on(self: Game, parent: Wire):
     parent.tower = tower
     self.towers.append(tower)
     self.collision_grid[tower.tile[1]][tower.tile[0]] = True
-    self.money -= TOWER_PRICES[tower.type]
+    player.money -= TOWER_PRICES[tower.type]
 
 
 def game_delete_tower_from(self: Game, parent: Wire):
     self.towers.remove(parent.tower)
     self.collision_grid[parent.tile[1]][parent.tile[0]] = False
-    self.money += TOWER_PRICES[parent.tower.type]
+    player.money += TOWER_PRICES[parent.tower.type]
     parent.tower = None
 
 
@@ -208,19 +207,17 @@ def game_mode_tower_create(self: Game, tile_pos: Pos | None):
         if wire is not None:
             # place tower
             if wire.tower is None:
-                if self.money >= 5:
+                if player.money >= 5:
                     game_place_tower_on(self, wire)
             # delete tower
             else:
                 game_delete_tower_from(self, wire)
 
 
-## WIRES
-
-
+# WIRES
 def game_place_wire(self: Game, wire: Wire, parent: Wire):
     parent.outgoing_sides[c.INVERTED_DIRECTIONS[wire.incoming_side]] = wire
-    self.money -= 1
+    player.money -= 1
     self.particles.extend(
         particle_burst(
             0,
@@ -241,7 +238,7 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire):
     }
     if wire.tower is not None:
         game_delete_tower_from(self, wire)
-    self.money += 1
+    player.money += 1
 
 
 def game_mode_wire_create(self: Game, tile_pos: Pos | None):
@@ -269,7 +266,7 @@ def game_mode_wire_create(self: Game, tile_pos: Pos | None):
         if tile_pos in adjacent_sides:
             # place new wire
             if (overwrite := wire_find(self.wires, tile_pos)) is None:
-                if self.money >= 1:
+                if player.money >= 1:
                     wire = Wire(tile_pos[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile_pos]], {})
                     game_place_wire(self, wire, self.wire_draw_start)
                     self.wire_draw_start = wire
