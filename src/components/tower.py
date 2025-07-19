@@ -13,7 +13,6 @@ from utilities.math import Pos, point_in_circle
 
 
 class TowerType(IntEnum):
-    # don't use auto() since the value of the enum is equal to the animation the tower uses
     CORE = 0
     NORMAL = 1
     SLOW = 2
@@ -48,51 +47,60 @@ for tower_type in TowerType:
     animation = Animation(g.TOWERS[start * 7 : (start + 1) * 7], 0.1)
     TOWER_ANIMATIONS.append(animation)
 
-TOWER_PRICES = {
-    TowerType.CORE: 30,
-    TowerType.NORMAL: 5,
-    TowerType.SLOW: 10,
-    TowerType.SPLASH: 20,
-    TowerType.ZAP: 50,
-}
+TOWER_PRICES = [
+    # TowerType.CORE
+    10,
+    # TowerType.NORMAL
+    5,
+    # TowerType.SLOW
+    10,
+    # TowerType.SPLASH
+    20,
+    # TowerType.ZAP
+    50,
+]
 
 MAX_TOWER_LEVEL = 2
 
-# NOTE: index in array is for stats for that level
-TOWER_STATS = {
-    TowerType.CORE: [
+TOWER_STATS = (
+    # TowerType.CORE
+    (
+        TowerStat(10, 0, 0, 0),
         TowerStat(20, 0, 0, 0),
-        TowerStat(40, 0, 0, 0),
-        TowerStat(60, 0, 0, 0),
-    ],
-    TowerType.NORMAL: [
+        TowerStat(30, 0, 0, 0),
+    ),
+    # TowerType.NORMAL
+    (
         TowerStat(3, 0.1, 1, 80),
         TowerStat(6, 0.1, 3, 80),
         TowerStat(9, 0.05, 5, 80),
-    ],
-    TowerType.SLOW: [
+    ),
+    # TowerType.SLOW
+    (
         TowerStat(5, 0.2, 0, 80),
         TowerStat(10, 0.15, 0, 80),
         TowerStat(15, 0.1, 0, 80),
-    ],
-    TowerType.SPLASH: [
+    ),
+    # TowerType.SPLASH
+    (
         TowerStat(15, 0.2, 5, 80),
         TowerStat(30, 0.15, 10, 80),
         TowerStat(45, 0.1, 15, 80),
-    ],
-    TowerType.ZAP: [
+    ),
+    # TowerType.ZAP
+    (
         TowerStat(30, 0.5, 16, 80),
         TowerStat(60, 0.45, 35, 80),
         TowerStat(90, 0.4, 50, 80),
-    ],
-}
+    ),
+)
 
 
 def tower_update(tower: Tower) -> None:
     animator_update(tower.animator, g.dt)
     animator_update(tower.blending_anim, g.dt)
 
-    r = TOWER_STATS[tower.type][tower.level].radius
+    r = TOWER_STATS[tower.type.value][tower.level].radius
 
     if r == 0:
         return

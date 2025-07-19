@@ -1,4 +1,5 @@
 import math
+from components.player import GameMode, SpeedType, player, player_reset
 from dataclasses import dataclass
 from enum import IntEnum, auto
 
@@ -14,7 +15,7 @@ from components.pathing import (
     PATH_END_TILE,
     flowfield,
 )
-from components.player import player
+import components.player as p
 from components.camera import camera_to_screen
 from utilities.math import clamp
 
@@ -136,7 +137,7 @@ def enemy_update(i: int) -> bool:
         e.x += speed
         # Reached end of screen
         if e.x >= PATH_END_POS[0]:
-            player.health -= 1
+            p.player.health -= 1
             g.camera.trauma = 0.3
             return True
 
