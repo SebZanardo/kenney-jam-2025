@@ -84,10 +84,10 @@ class Game(Scene):
         self.wires: list[Wire] = [
             Wire((1, 0), c.UP, {}, True),
             Wire(
-                (3, 7),
+                (3, 8),
                 c.DOWN,
                 {
-                    c.UP: Wire((3, 6), c.DOWN, {}, True),
+                    c.UP: Wire((3, 7), c.DOWN, {}, True),
                 },
                 True,
             ),
@@ -166,7 +166,7 @@ class Game(Scene):
             pass
 
         # RENDER
-        g.window.fill(c.WHITE)
+        g.window.fill(c.BLACK)
 
         # background grid
         for x in range(c.GRID_WIDTH_TILES):
@@ -216,6 +216,9 @@ class Game(Scene):
             self.wire_draw_start = None
 
         # top
+        for x in range(c.WINDOW_WIDTH // c.TILE_SIZE):
+            g.window.blit(g.TERRAIN[3], (x * c.TILE_SIZE, 0))
+            g.window.blit(g.TERRAIN[2], (x * c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE))
         ui.im_reset_position(c.TILE_SIZE, 0)
         if player.speed == SpeedType.PAUSED:
             if ui.im_button_image(g.BUTTONS[8]):
