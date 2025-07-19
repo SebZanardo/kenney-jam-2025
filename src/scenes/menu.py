@@ -50,7 +50,7 @@ class Menu(Scene):
         g.window.blit(g.ICON, camera_to_screen_shake(self.camera, 0, 0))
 
         if self.current_state == MenuState.MAIN:
-            ui.im_reset_position(10, 200)
+            ui.im_reset_position(10, 10)
             if ui.im_button("play"):
                 statemachine_change_state(self.statemachine, manager.SceneState.GAME)
                 ui.im_new()
@@ -78,7 +78,7 @@ class Menu(Scene):
                 self.current_state = MenuState.MAIN
                 ui.im_new()
 
-            ui.im_reset_position(80, 150)
+            ui.im_reset_position(10, 10)
             ui.im_text("Made for the Kenney Game Jam 2025")
             ui.im_text("By ProfDragon and SebZanardo")
 

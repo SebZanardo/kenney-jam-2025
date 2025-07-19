@@ -13,7 +13,7 @@ from components.audio import (
 
 
 def settings_menu() -> bool:
-    ui.im_reset_position(10, 100)
+    ui.im_reset_position(10, 10)
 
     ui.im_text("Music Volume: ")
     ui.im_same_line()

@@ -28,6 +28,7 @@ from components.tower import (
     tower_render,
     tower_update,
 )
+from components.player import player, player_reset
 from components.ui import Pos
 from components.wire import Wire, wire_find, wire_render_chain
 
@@ -52,8 +53,8 @@ class Game(Scene):
             pygame.Vector2(30, 30),
         )
 
-        # resources
-        self.money: int = 50
+        # player resources
+        player_reset()
 
         # map
         self.collision_grid: list[list[bool]] = [
@@ -78,12 +79,16 @@ class Game(Scene):
         self.wire_draw_start: Wire | None = None
 
         self.blending_anim = Animator()
-        animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX, 0.15)})
+        animator_initialise(
+            self.blending_anim, {0: Animation(g.BLENDING_FX, 0.15)}
+        )
 
     def execute(self) -> None:
         # UPDATE
         if g.action_buffer[i.Action.START] == i.InputState.PRESSED:
-            statemachine_change_state(self.statemachine, manager.SceneState.MENU)
+            statemachine_change_state(
+                self.statemachine, manager.SceneState.MENU
+            )
             return
 
         # mouse pos in camera space
@@ -100,7 +105,10 @@ class Game(Scene):
         # make wires (interp mouse pos)
         interp_hand_pos = last_hand_pos[:]
         while True:
-            diff = (hand_pos[0] - interp_hand_pos[0], hand_pos[1] - interp_hand_pos[1])
+            diff = (
+                hand_pos[0] - interp_hand_pos[0],
+                hand_pos[1] - interp_hand_pos[1]
+            )
             size = math.sqrt(diff[0] * diff[0] + diff[1] * diff[1])
             if size < c.TILE_SIZE:
                 game_mode_wire_create(self, tile_pos)
@@ -129,7 +137,10 @@ class Game(Scene):
             for y in range(c.GRID_HEIGHT_TILES):
                 g.window.blit(
                     g.TERRAIN[(x + y) % 2],
-                    camera_to_screen_shake(self.camera, x * c.TILE_SIZE, y * c.TILE_SIZE),
+                    camera_to_screen_shake(
+                        self.camera, x * c.TILE_SIZE,
+                        y * c.TILE_SIZE
+                    )
                 )
 
         # wires
@@ -148,24 +159,27 @@ class Game(Scene):
             tile_preview = g.WIRES[0].copy()
             tile_preview.set_alpha(200)
             tile_preview.blit(
-                animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
+                animator_get_frame(self.blending_anim),
+                special_flags=pygame.BLEND_MULT
             )
             g.window.blit(
                 tile_preview,
-                camera_to_screen(self.camera, tile_pos[0] * c.TILE_SIZE, tile_pos[1] * c.TILE_SIZE),
+                camera_to_screen(
+                    self.camera,
+                    tile_pos[0] * c.TILE_SIZE,
+                    tile_pos[1] * c.TILE_SIZE
+                ),
             )
 
         hand_render()
 
-        g.window.blit(g.FONT.render(f"${self.money}", False, c.BLACK), (0, 0))
+        g.window.blit(g.FONT.render(f"${player.money}", False, c.BLACK), (0, 0))
 
     def exit(self) -> None:
         pass
 
 
-## TOWERS
-
-
+# TOWERS
 def game_place_tower_on(self: Game, parent: Wire):
     tower = Tower(
         parent.tile[:],
@@ -174,17 +188,19 @@ def game_place_tower_on(self: Game, parent: Wire):
         c.UP,
         Animator(),
     )
-    animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[TowerType.NORMAL.value]})
+    animator_initialise(
+        tower.animator, {0: TOWER_ANIMATIONS[TowerType.NORMAL.value]}
+    )
     parent.tower = tower
     self.towers.append(tower)
     self.collision_grid[tower.tile[1]][tower.tile[0]] = True
-    self.money -= TOWER_PRICES[tower.type]
+    player.money -= TOWER_PRICES[tower.type]
 
 
 def game_delete_tower_from(self: Game, parent: Wire):
     self.towers.remove(parent.tower)
     self.collision_grid[parent.tile[1]][parent.tile[0]] = False
-    self.money += TOWER_PRICES[parent.tower.type]
+    player.money += TOWER_PRICES[parent.tower.type]
     parent.tower = None
 
 
@@ -194,19 +210,17 @@ def game_mode_tower_create(self: Game, tile_pos: Pos | None):
         if wire is not None:
             # place tower
             if wire.tower is None:
-                if self.money >= 5:
+                if player.money >= 5:
                     game_place_tower_on(self, wire)
             # delete tower
             else:
                 game_delete_tower_from(self, wire)
 
 
-## WIRES
-
-
+# WIRES
 def game_place_wire(self: Game, wire: Wire, parent: Wire):
     parent.outgoing_sides[c.INVERTED_DIRECTIONS[wire.incoming_side]] = wire
-    self.money -= 1
+    player.money -= 1
 
 
 def game_delete_wire(self: Game, wire: Wire, parent: Wire):
@@ -215,7 +229,7 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire):
     }
     if wire.tower is not None:
         game_delete_tower_from(self, wire)
-    self.money += 1
+    player.money += 1
 
 
 def game_mode_wire_create(self: Game, tile_pos: Pos | None):
@@ -243,7 +257,7 @@ def game_mode_wire_create(self: Game, tile_pos: Pos | None):
         if tile_pos in adjacent_sides:
             # place new wire
             if (overwrite := wire_find(self.wires, tile_pos)) is None:
-                if self.money >= 1:
+                if player.money >= 1:
                     wire = Wire(tile_pos[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile_pos]], {})
                     game_place_wire(self, wire, self.wire_draw_start)
                     self.wire_draw_start = wire
