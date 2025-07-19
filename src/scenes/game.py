@@ -17,7 +17,6 @@ from components.camera import (
     camera_to_screen,
     camera_to_screen_shake,
 )
-from components.grid import coord_to_tile
 from components.hand import HandType, hand, hand_render
 from components.motion import Motion
 from components.particles import Particle, particle_burst, particle_render, particle_update
@@ -30,7 +29,10 @@ from components.tower import (
     tower_update,
 )
 from components.player import player, player_reset
-from components.pathing import flowfield, collision_grid, pathing_reset
+from components.pathing import (
+    collision_grid, flowfield,
+    pathing_reset, coord_to_tile, flowfield_regenerate, debug_print
+)
 from components.ui import Pos
 from components.wire import Wire, wire_find, wire_render_chain
 
@@ -60,6 +62,8 @@ class Game(Scene):
 
         # map
         pathing_reset()
+        flowfield_regenerate(flowfield)
+        debug_print()
 
         # we can make this a 2d array if needed for pathfinding
         self.towers: list[Tower] = []
