@@ -23,17 +23,19 @@ class SpeedType(IntEnum):
 
 @dataclass(slots=True)
 class Player:
-    money: int = 0
-    health: int = 0
+    money: int = STARTING_MONEY
+    health: int = STARTING_HEALTH
+    score: int = 0
     mode: GameMode = GameMode.VIEW
     speed: SpeedType = SpeedType.NORMAL
 
 
-player: Player = Player()
+player: Player | None = None
 
 
 def player_reset() -> None:
-    player.money = STARTING_MONEY
-    player.health = STARTING_HEALTH
-    player.mode = GameMode.VIEW
-    player.speed = SpeedType.NORMAL
+    global player
+    player = Player()
+
+
+player_reset()

@@ -20,10 +20,9 @@ class TowerType(IntEnum):
 @dataclass(slots=True)
 class Tower:
     tile: Pos
-    type: TowerType = TowerType.CORE
-    level: int = 0
-
-    direction: str = c.UP
+    type: TowerType
+    level: int
+    direction: str
     animator: Animator = None
 
 
@@ -33,6 +32,7 @@ class TowerStat:
     sell_price: int
     reload_time: int
     damage: int
+    radius: int
 
 
 # Load animations once here
@@ -51,34 +51,34 @@ TOWER_PRICES = {
     TowerType.ZAP: 50,
 }
 
-MAX_TOWER_LEVEL = 3
+MAX_TOWER_LEVEL = 2
 
 # NOTE: index in array is for stats for that level
 TOWER_STATS = {
     TowerType.CORE: [
-        TowerStat(20, 0, 0),
-        TowerStat(40, 0, 0),
-        TowerStat(60, 0, 0),
+        TowerStat(20, 0, 0, 0),
+        TowerStat(40, 0, 0, 0),
+        TowerStat(60, 0, 0, 0),
     ],
     TowerType.NORMAL: [
-        TowerStat(3, 0.1, 1),
-        TowerStat(6, 0.1, 3),
-        TowerStat(9, 0.05, 5),
+        TowerStat(3, 0.1, 1, 32),
+        TowerStat(6, 0.1, 3, 32),
+        TowerStat(9, 0.05, 5, 32),
     ],
     TowerType.SLOW: [
-        TowerStat(5, 0.2, 0),
-        TowerStat(10, 0.15, 0),
-        TowerStat(15, 0.1, 0),
+        TowerStat(5, 0.2, 0, 32),
+        TowerStat(10, 0.15, 0, 32),
+        TowerStat(15, 0.1, 0, 32),
     ],
     TowerType.SPLASH: [
-        TowerStat(15, 0.2, 5),
-        TowerStat(30, 0.15, 10),
-        TowerStat(45, 0.1, 15),
+        TowerStat(15, 0.2, 5, 32),
+        TowerStat(30, 0.15, 10, 32),
+        TowerStat(45, 0.1, 15, 32),
     ],
     TowerType.ZAP: [
-        TowerStat(30, 0.5, 16),
-        TowerStat(60, 0.45, 35),
-        TowerStat(90, 0.4, 50),
+        TowerStat(30, 0.5, 16, 32),
+        TowerStat(60, 0.45, 35, 32),
+        TowerStat(90, 0.4, 50, 32),
     ],
 }
 
