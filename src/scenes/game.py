@@ -193,7 +193,9 @@ class Game(Scene):
         for x in range(c.GRID_WIDTH_TILES):
             for y in range(c.GRID_HEIGHT_TILES):
                 g.window.blit(
-                    g.TERRAIN[8 if (x, y) in (path.PATH_START_TILE, path.PATH_END_TILE) else (x + y) % 2],
+                    g.TERRAIN[
+                        8 if (x, y) in (path.PATH_START_TILE, path.PATH_END_TILE) else (x + y) % 2
+                    ],
                     camera_to_screen_shake(g.camera, x * c.TILE_SIZE, y * c.TILE_SIZE),
                 )
 
@@ -390,6 +392,7 @@ def game_delete_tower(self: Game, tower: Tower):
     path.flowfield_regenerate(path.flowfield)
 
     p.player.money += TOWER_STATS[tower.type.value][tower.level].sell_price
+    p.score_add(-100)
 
     tile_particle_burst(ParticleSpriteType.DELETE, tower.tile)
     g.camera.trauma = 0.35
@@ -457,7 +460,9 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                 hand.type = HandType.NO
 
         elif p.player.mode == p.GameMode.DESTROY:
-            hand.tooltip = Tooltip(f"{name}\n+${TOWER_STATS[tower.type.value][tower.level].sell_price}")
+            hand.tooltip = Tooltip(
+                f"{name}\n+${TOWER_STATS[tower.type.value][tower.level].sell_price}"
+            )
             hand.type = HandType.HOVER
             if t.mouse_pressed():
                 if hov_wire is not None:

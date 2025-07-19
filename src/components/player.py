@@ -1,5 +1,13 @@
 from dataclasses import dataclass
 from enum import Enum, IntEnum, auto
+import random
+
+import pygame
+
+from components.motion import Motion
+import core.constants as c
+import core.globals as g
+from components.particles import Particle, particle_spawn
 
 
 # STARTING_MONEY = 15
@@ -36,6 +44,29 @@ player: Player | None = None
 def player_reset() -> None:
     global player
     player = Player()
+
+
+def score_add(amount: int) -> None:
+    player.score = max(player.score + amount, 0)
+
+    if abs(amount) >= 100:
+        if amount >= 0:
+            text = g.FONT.render(f"+{amount}", False, c.GREEN)
+        else:
+            text = g.FONT.render(f"{amount}", False, c.RED)
+        particle_spawn(
+            Particle(
+                text,
+                Motion(
+                    pygame.Vector2(c.GRID_WIDTH // 2 + random.randint(-30, 30), c.GRID_HEIGHT),
+                    pygame.Vector2(0, -100),
+                    pygame.Vector2(),
+                ),
+                0,
+                0,
+                20,
+            )
+        )
 
 
 player_reset()
