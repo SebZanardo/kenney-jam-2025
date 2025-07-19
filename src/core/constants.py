@@ -1,3 +1,4 @@
+from enum import Enum
 import sys
 import pygame
 
@@ -39,6 +40,14 @@ DOWN = "down"
 HORIZONTAL = (LEFT, RIGHT)
 VERTICAL = (UP, DOWN)
 INVERTED_DIRECTIONS = {UP: DOWN, LEFT: RIGHT, RIGHT: LEFT, DOWN: UP}
+
+
+class Direction(Enum):
+    NORTH = (0, -1)
+    EAST = (1, 0)
+    SOUTH = (0, 1)
+    WEST = (-1, 0)
+
 
 # Size constants
 TILE_SIZE = 16

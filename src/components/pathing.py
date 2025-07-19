@@ -1,40 +1,134 @@
+from queue import deque
+
 import core.constants as c
 
 
 # These are outside grid
-half_height = int(c.GRID_HEIGHT/2)
+half_height = int(c.GRID_HEIGHT_TILES/2)
 outside = 30
 SPAWN_POS = (-outside, half_height)
-GOAL_POS = (c.WINDOW_WIDTH + outside, half_height)
+GOAL_POS = (c.GRID_WIDTH_TILES + outside, half_height)
 
 # These are grid tile start
 START_POS = (0, half_height)
-END_POS = (c.GRID_WIDTH - 1, half_height)
+END_POS = (c.GRID_WIDTH_TILES - 1, half_height)
 
 
-flowfield: list[list[float]] = [
-    [0.0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
+# Flowfield the enemies path off. Must always be valid path.
+flowfield: list[list[int]] = [
+    [0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
 ]
+
+# Flowfield the player can place towers off. It takes into account current
+# enemy positions. Expected to be invalid often
+placement_flowfield: list[list[int]] = [
+    [0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
+]
+
+# 2D array for where towers have been placed
 collision_grid: list[list[bool]] = [
     [False] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
 ]
 
+# Score based on how crowded cell is (ground only for now but could do air too)
+crowded_grid: list[list[float]] = [
+    [0.0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
+]
+
 
 def pathing_reset() -> None:
-    global flowfield, collision_grid
+    global flowfield, placement_flowfield, collision_grid, crowded_grid
 
-    flowfield = [
-        [0.0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
-    ]
+    for y in range(c.GRID_HEIGHT_TILES):
+        for x in range(c.GRID_WIDTH_TILES):
+            flowfield[y][x] = 0
+            placement_flowfield[y][x] = 0
+            collision_grid[y][x] = False
+            crowded_grid[y][x] = 0.0
 
-    collision_grid = [
-        [False] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
-    ]
+
+def flowfield_preview(x: int, y: int) -> bool:
+    '''
+    Returns whether there is a valid path between start and end
+    '''
+    global collision_grid
+
+    if collision_grid[y][x]:
+        return True
+
+    collision_grid[y][x] = True
+    valid = flowfield_regenerate(placement_flowfield)
+
+    if valid:
+        # TODO: Also check if all enemy cells are not zero
+        pass
+
+    collision_grid[y][x] = False
+
+    return valid
+
+
+def flowfield_regenerate(field: list[list[int]]) -> bool:
+    '''
+    Returns whether there is a valid path between start and end.
+    Flood fill BFS algorithm that starts at end and fills to start
+    '''
+
+    # Zero out the field
+    for y in range(c.GRID_HEIGHT_TILES):
+        for x in range(c.GRID_WIDTH_TILES):
+            field[y][x] = 0
+
+    complete = False
+
+    q = deque()
+    step = 1
+
+    q.append(END_POS)
+    field[END_POS[1]][END_POS[0]] = step
+
+    while q:
+        step += 1
+        for _ in range(len(q)):
+            x, y = q.popleft()
+            print(x, y)
+
+            for d in list(c.Direction):
+                dx, dy = d.value
+                nx = x + dx
+                ny = y + dy
+
+                if not inside_grid(nx, ny):
+                    continue
+
+                # Tower placed on this cell
+                if collision_grid[ny][nx]:
+                    continue
+
+                # Already been visited
+                if field[ny][nx] != 0:
+                    continue
+
+                if (nx, ny) == START_POS:
+                    complete = True
+                    # Don't break cause we want to fill everything
+
+                q.append((nx, ny))
+                field[ny][nx] = step
+
+    return complete
 
 
 def debug_print() -> None:
     print("FLOWFIELD", "#" * 100)
     for row in flowfield:
+        buffer = ''
+        for v in row:
+            buffer += (f"{v} ")
+        print(buffer)
+
+    print("PLACEMENT FLOWFIELD", "#" * 100)
+    for row in placement_flowfield:
         buffer = ''
         for v in row:
             buffer += (f"{v} ")
@@ -47,5 +141,21 @@ def debug_print() -> None:
             buffer += (f"{'#' if v else '.'} ")
         print(buffer)
 
+    print("CROWDED MAP", "#" * 100)
+    for row in crowded_grid:
+        buffer = ''
+        for v in row:
+            buffer += (f"{v} ")
+        print(buffer)
 
-debug_print()
+
+def inside_grid(tx: int, ty: int) -> bool:
+    return 0 <= tx < c.GRID_WIDTH_TILES and 0 <= ty < c.GRID_HEIGHT_TILES
+
+
+def coord_to_tile(x: int, y: int) -> tuple[int, int] | None:
+    tx, ty = x // c.TILE_SIZE, y // c.TILE_SIZE
+    if inside_grid(tx, ty):
+        return (int(tx), int(ty))  # cast to int bc // doesn't actually do it
+    else:
+        return None
