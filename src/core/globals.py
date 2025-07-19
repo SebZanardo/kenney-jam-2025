@@ -56,9 +56,7 @@ DEBUG_FONT = pygame.font.SysFont("monospace", 8)
 # Load sprites (png, webp or jpg for web compatibility)
 path = "data/textures/"
 ICON = pygame.image.load(path + "icon.png")
-MENU_BUTTONS = slice_sheet(path + "buttons.png", *c.BUTTON_SIZE)
 PATTERNS = pygame.image.load(path + "patterns.png")
-ONE_BIT_COLOR = pygame.image.load(path + "1bit-coloured.png")
 
 # I made a new folder for custom textures so we can keep track
 # of what was downloaded from Kenney directly and what was compiled
@@ -71,6 +69,11 @@ WIRES = slice_sheet(path + "wires.png", 16, 16)
 ENEMIES = slice_sheet(path + "enemies.png", 16, 16)
 BLENDING_FX = slice_sheet(path + "blending-fx.png", 16, 16)
 PARTICLES = slice_sheet(path + "particles.png", 8, 8)
+BUTTONS: list[pygame.Surface] = []
+for surf in slice_sheet(path + "buttons.png", 16, 16):
+    dim = surf.copy()
+    dim.fill((210, 210, 210, 255), special_flags=pygame.BLEND_MULT)
+    BUTTONS.append((dim, surf))
 
 # Load audio (ogg for web compatibility)
 path = "data/sfx/"

@@ -9,8 +9,6 @@ from components.ui import Pos
 
 
 class TowerType(IntEnum):
-    NONE = -1
-
     # don't use auto() since the value of the enum is equal to the animation the tower uses
     CORE = 0
     NORMAL = 1
@@ -22,7 +20,7 @@ class TowerType(IntEnum):
 @dataclass(slots=True)
 class Tower:
     tile: Pos
-    type: TowerType = TowerType.NONE
+    type: TowerType = TowerType.CORE
     level: int = 0
 
     direction: str = c.UP
@@ -38,11 +36,9 @@ class TowerStat:
 
 
 # Load animations once here
-TOWER_ANIMATIONS = []
+TOWER_ANIMATIONS: list[Animation] = []
 
 for tower_type in TowerType:
-    if tower_type == TowerType.NONE:
-        continue
     start = tower_type.value
     animation = Animation(g.TOWERS[start * 7 : (start + 1) * 7], 0.1)
     TOWER_ANIMATIONS.append(animation)

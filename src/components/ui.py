@@ -13,9 +13,9 @@ Colour = tuple[int, int, int]
 
 @dataclass(slots=True)
 class StyleUI:
-    button_dim: Pos = (100, 20)
-    checkbox_dim: Pos = (20, 20)
-    slider_dim: Pos = (300, 20)
+    button_dim: Pos = (48, 16)
+    checkbox_dim: Pos = (16, 16)
+    slider_dim: Pos = (48, 16)
 
     padding_x: int = 5
     padding_y: int = 5
@@ -103,16 +103,10 @@ def im_text(label: str) -> None:
 def im_button(label: str) -> bool:
     bbox = context.bbox(*style.button_dim)
     hovered, clicked, held = context.interact(bbox)
-    g.window.blit(g.MENU_BUTTONS[0], (bbox[0], bbox[1]), (0, 0, *style.button_dim))
-    if clicked:
-        pass
-    elif held:
-        g.window.blit(g.MENU_BUTTONS[3], (bbox[0], bbox[1]), (0, 0, *style.button_dim))
-    elif hovered:
-        g.window.blit(g.MENU_BUTTONS[1], (bbox[0], bbox[1]), (0, 0, *style.button_dim))
+    g.window.blit(g.BUTTONS[0][hovered], (bbox[0], bbox[1]), (0, 0, *style.button_dim))
 
     text = g.FONT.render(label, False, style.text_colour)
-    g.window.blit(text, (bbox[0], bbox[1]))
+    g.window.blit(text, (bbox[0] + 16, bbox[1]))
 
     return clicked
 
@@ -121,17 +115,10 @@ def im_checkbox(value: list[bool]) -> bool:
     bbox = context.bbox(*style.checkbox_dim)
     hovered, clicked, held = context.interact(bbox)
 
-    g.window.blit(g.MENU_BUTTONS[0], (bbox[0], bbox[1]), (0, 0, *style.checkbox_dim))
-
     if clicked:
         value[0] = not value[0]
-    elif held:
-        g.window.blit(g.MENU_BUTTONS[3], (bbox[0], bbox[1]), (0, 0, *style.checkbox_dim))
-    elif hovered:
-        g.window.blit(g.MENU_BUTTONS[1], (bbox[0], bbox[1]), (0, 0, *style.checkbox_dim))
 
-    if value[0]:
-        g.window.blit(g.MENU_BUTTONS[2], (bbox[0], bbox[1]), (0, 0, *style.checkbox_dim))
+    g.window.blit(g.BUTTONS[7 - value[0]][hovered], (bbox[0], bbox[1]), (0, 0, *style.checkbox_dim))
 
     return clicked
 
@@ -139,20 +126,22 @@ def im_checkbox(value: list[bool]) -> bool:
 def im_slider(value: list[float], lo: float, hi: float) -> bool:
     bbox = context.bbox(*style.slider_dim)
     hovered, clicked, held = context.interact(bbox)
-    g.window.blit(g.MENU_BUTTONS[0], (bbox[0], bbox[1]), (0, 0, *style.slider_dim))
+    g.window.blit(g.BUTTONS[2][0], (bbox[0], bbox[1]), (0, 0, *style.slider_dim))
+    g.window.blit(g.BUTTONS[3][0], (bbox[0] + 16, bbox[1]), (0, 0, *style.slider_dim))
+    g.window.blit(g.BUTTONS[5][0], (bbox[0] + 32, bbox[1]), (0, 0, *style.slider_dim))
+
+    # TODO: show hover feedback somehow
 
     if held:
         percent = (g.mouse_pos[0] - bbox[0]) / style.slider_dim[0]
         difference = hi - lo
         value[0] = percent * difference + lo
         value[0] = min(max(value[0], lo), hi)
-        g.window.blit(g.MENU_BUTTONS[3], (bbox[0], bbox[1]), (0, 0, *style.slider_dim))
-    elif hovered:
-        g.window.blit(g.MENU_BUTTONS[1], (bbox[0], bbox[1]), (0, 0, *style.slider_dim))
 
-    g.window.blit(
-        g.MENU_BUTTONS[2], (bbox[0], bbox[1]), (0, 0, value[0] / hi * style.slider_dim[0], bbox[3])
-    )
+    w = value[0] / hi * style.slider_dim[0]
+    g.window.blit(g.BUTTONS[2][1], (bbox[0], bbox[1]), (0, 0, w, style.slider_dim[1]))
+    g.window.blit(g.BUTTONS[3][1], (bbox[0] + 16, bbox[1]), (0, 0, w - 16, style.slider_dim[1]))
+    g.window.blit(g.BUTTONS[5][1], (bbox[0] + 32, bbox[1]), (0, 0, w - 32, style.slider_dim[1]))
 
     value_text = g.FONT.render(str(int(value[0])), False, style.text_colour)
     g.window.blit(value_text, (bbox[0], bbox[1]))
