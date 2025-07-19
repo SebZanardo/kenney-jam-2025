@@ -142,12 +142,12 @@ def enemy_update(i: int) -> bool:
         e.y += dy * speed
 
         # TODO: there is a bug here and i don't know how to fix
-        rx = int(e.x)
-        ry = int(e.y)
+        rx = int(e.x + 0.5)
+        ry = int(e.y + 0.5)
 
-        if rx != e.cx or rx != e.cy:
-            e.cx = rx
-            e.cy = ry
+        if rx != e.cx or ry != e.cy:
+            e.cx = int(e.x)
+            e.cy = int(e.y)
 
     return False
 
@@ -156,7 +156,7 @@ def enemy_render(i: int) -> None:
     e = enemies[i]
 
     rx = (e.x) * c.TILE_SIZE
-    ry = (e.y) * c.TILE_SIZE
+    ry = (e.y) * c.TILE_SIZE - c.TILE_SIZE//2
 
     g.window.blit(
         g.ENEMIES[e.enemy_type.value - 1],
