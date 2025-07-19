@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from enum import IntEnum, auto
 
-
-import core.constants as c
+from components.pathing import SPAWN_POS, START_POS
 
 
 class EnemyType(IntEnum):
@@ -48,16 +47,7 @@ MAX_ENEMIES = 100
 #  get out of order very fast, just need to update all enemies every tick.
 enemies = [Enemy() for _ in range(MAX_ENEMIES)]
 active_enemies = 0
-
-# These are outside grid
-half_height = int(c.GRID_HEIGHT/2)
-outside = 30
-SPAWN_POS = (-outside, half_height)
-GOAL_POS = (c.WINDOW_WIDTH + outside, half_height)
-
-# These are grid tile start
-START_POS = (0, half_height)
-END_POS = (c.GRID_WIDTH - 1, half_height)
+enemy_health_multiplier = 1
 
 
 def enemy_spawn(enemy_type: EnemyType) -> bool:
@@ -77,7 +67,7 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
     new_enemy.current_cell_x, new_enemy.current_cell_y = (-1, -1)
     new_enemy.target_cell_x, new_enemy.target_cell_y = START_POS
 
-    new_enemy.health = enemy_max_health[enemy_type]
+    new_enemy.health = enemy_max_health[enemy_type] * enemy_health_multiplier
 
     active_enemies += 1
 
@@ -98,3 +88,14 @@ def enemy_remove(i: int) -> None:
 
     enemies[i] = enemies[active_enemies]
     enemies[active_enemies] = temp
+
+
+def enemy_update(i: int) -> bool:
+    '''
+    Moves enemy toward target by speed
+    If target reached, find next target --> if at END_POS then GOAL_POS
+    If dead then remove
+
+    RETURN: whether died, because if died then dont increment i for next
+    '''
+    return False
