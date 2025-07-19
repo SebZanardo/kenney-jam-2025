@@ -42,7 +42,6 @@ VERTICAL = (UP, DOWN)
 INVERTED_DIRECTIONS = {UP: DOWN, LEFT: RIGHT, RIGHT: LEFT, DOWN: UP}
 
 DIRECTIONS = ((0, -1), (1, 0), (0, 1), (-1, 0))
-DIRECTION_OPPOSITES = ((0, 1), (-1, 0), (0, -1), (1, 0))
 
 # Size constants
 TILE_SIZE = 16

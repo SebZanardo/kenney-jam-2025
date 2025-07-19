@@ -25,12 +25,12 @@ class WaveData:
 
 
 # This stores all wave data
-# NOTE: can't be tuple cause python goofy ass can't have tuple with single element
 waves: list[list[Wave]] = [
+    [Wave(e.EnemyType.GROUND_WEAK, 1, 0)],
     [Wave(e.EnemyType.GROUND_WEAK, 8, 10)],
     [Wave(e.EnemyType.GROUND_HEAVY, 10, 8)],
     [Wave(e.EnemyType.GROUND_FAST, 30, 4)],
-    [Wave(e.EnemyType.GROUND_WEAK, 8, 10), Wave(e.EnemyType.GROUND_FAST, 30, 4)]
+    [Wave(e.EnemyType.GROUND_WEAK, 8, 10), Wave(e.EnemyType.GROUND_FAST, 30, 4)],
 ]
 WAVE_COUNT = len(waves)
 wave_data = WaveData()
@@ -58,7 +58,7 @@ def wave_update() -> None:
             return
     else:
         # Continue spawning current wave
-        while (wave_data.spawn_tick_counter >= wave_data.spawn_tick):
+        while wave_data.spawn_tick_counter >= wave_data.spawn_tick:
             # If we spawned all the enemies, increment to next instruction
             if wave_data.spawn_remaining <= 0:
                 wave_data.spawn_instruction_index += 1
@@ -90,7 +90,7 @@ def wave_new() -> None:
     # Increase enemy health multiplier
     e.enemy_health_multiplier = 1 + wave_data.number / WAVE_COUNT
 
-    wave_data.spawn_instruction_index: int = 0
+    wave_data.spawn_instruction_index = 0
     wave_data.spawn_done = False
     wave_instruction_new()
 

@@ -3,23 +3,19 @@ from queue import deque
 import core.constants as c
 
 
-half_height = int(c.GRID_HEIGHT_TILES/2)
-
 # how far outside is run
-outside = 5
+outside = 5 * c.TILE_SIZE
 
-SPAWN_POS = (-outside, half_height)
-GOAL_POS = (c.GRID_WIDTH_TILES + outside, half_height)
+SPAWN_POS = (-outside, c.GRID_HEIGHT / 2)
+GOAL_POS = (c.GRID_WIDTH + outside, SPAWN_POS[1])
 
 # These are grid tile start
-START_POS = (0, half_height)
-END_POS = (c.GRID_WIDTH_TILES - 1, half_height)
+START_TILE = (0, c.GRID_HEIGHT_TILES // 2)
+END_TILE = (c.GRID_WIDTH_TILES - 1, START_TILE[1])
 
 
 # Flowfield the enemies path off. Must always be valid path.
-flowfield: list[list[int]] = [
-    [-1] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
-]
+flowfield: list[list[int]] = [[-1] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)]
 
 # Flowfield the player can place towers off. It takes into account current
 # enemy positions. Expected to be invalid often
@@ -33,9 +29,7 @@ collision_grid: list[list[bool]] = [
 ]
 
 # Score based on how crowded cell is (ground only for now but could do air too)
-crowded_grid: list[list[float]] = [
-    [0.0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
-]
+crowded_grid: list[list[float]] = [[0.0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)]
 
 
 def pathing_reset() -> None:
@@ -50,9 +44,9 @@ def pathing_reset() -> None:
 
 
 def flowfield_preview(x: int, y: int) -> bool:
-    '''
+    """
     Returns whether there is a valid path between start and end
-    '''
+    """
     global collision_grid
 
     if collision_grid[y][x]:
@@ -71,10 +65,10 @@ def flowfield_preview(x: int, y: int) -> bool:
 
 
 def flowfield_regenerate(field: list[list[int]]) -> bool:
-    '''
+    """
     Returns whether there is a valid path between start and end.
     Flood fill BFS algorithm that starts at end and fills to start
-    '''
+    """
 
     for y in range(c.GRID_HEIGHT_TILES):
         for x in range(c.GRID_WIDTH_TILES):
@@ -84,8 +78,8 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
 
     q = deque()
 
-    q.append(END_POS)
-    field[END_POS[1]][END_POS[0]] = 1  # 1 is right but anything != 0 is fine
+    q.append(END_TILE)
+    field[END_TILE[1]][END_TILE[0]] = 1  # 1 is right but anything != 0 is fine
 
     while q:
         for _ in range(len(q)):
@@ -107,7 +101,7 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
                 if field[ny][nx] != -1:
                     continue
 
-                if (nx, ny) == START_POS:
+                if (nx, ny) == START_TILE:
                     complete = True
                     # Don't break cause we want to fill everything
 
@@ -120,30 +114,30 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
 def debug_print() -> None:
     print("FLOWFIELD", "#" * 100)
     for row in flowfield:
-        buffer = ''
+        buffer = ""
         for v in row:
-            buffer += (f"{v} ")
+            buffer += f"{v} "
         print(buffer)
 
     print("PLACEMENT FLOWFIELD", "#" * 100)
     for row in placement_flowfield:
-        buffer = ''
+        buffer = ""
         for v in row:
-            buffer += (f"{v} ")
+            buffer += f"{v} "
         print(buffer)
 
     print("COLLISION_GRID", "#" * 100)
     for row in collision_grid:
-        buffer = ''
+        buffer = ""
         for v in row:
-            buffer += (f"{'#' if v else '.'} ")
+            buffer += f"{'#' if v else '.'} "
         print(buffer)
 
     print("CROWDED MAP", "#" * 100)
     for row in crowded_grid:
-        buffer = ''
+        buffer = ""
         for v in row:
-            buffer += (f"{v} ")
+            buffer += f"{v} "
         print(buffer)
 
 
