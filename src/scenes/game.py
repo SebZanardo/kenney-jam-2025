@@ -16,6 +16,7 @@ from components.camera import (
     camera_from_screen,
     camera_to_screen,
     camera_to_screen_shake,
+    camera_update,
 )
 from components.hand import HandType, hand, hand_render
 from components.motion import Motion
@@ -99,6 +100,9 @@ class Game(Scene):
         if g.action_buffer[t.Action.START] == t.InputState.PRESSED:
             statemachine_change_state(self.statemachine, manager.SceneState.MENU)
             return
+
+        # camera
+        camera_update(self.camera, g.dt)
 
         # generic hand sprite
         hand.type = HandType.DEFAULT
@@ -257,13 +261,16 @@ def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
     self.towers.append(tower)
     collision_grid[tower.tile[1]][tower.tile[0]] = True
     player.money -= TOWER_PRICES[tower.type]
-    self.particles.extend(tile_particle_burst(ParticleSpriteType.CREATE, tower.tile))
+    self.particles.extend(tile_particle_burst(ParticleSpriteType.BUILD, tower.tile))
+    self.camera.trauma = 0.35
 
 
 def game_delete_tower_from(self: Game, parent: Wire):
     self.towers.remove(parent.tower)
     collision_grid[parent.tile[1]][parent.tile[0]] = False
     player.money += TOWER_PRICES[parent.tower.type]
+    self.particles.extend(tile_particle_burst(ParticleSpriteType.DELETE, parent.tower.tile))
+    self.camera.trauma = 0.35
     parent.tower = None
 
 
@@ -274,14 +281,9 @@ def game_mode_tower_create(self: Game, tile_pos: Pos | None):
     if g.mouse_buffer[t.MouseButton.LEFT] not in (t.InputState.PRESSED, t.InputState.HELD):
         if tile_pos is not None:
             wire = wire_find(self.wires, tile_pos)
-            if wire is not None:
-                # place tower
-                if wire.tower is None:
-                    if player.money >= TOWER_PRICES[self.dragging_tower_type]:
-                        game_place_tower_on(self, self.dragging_tower_type, wire)
-                # delete tower
-                # else:
-                #     game_delete_tower_from(self, wire)
+            if wire is not None and wire.tower is None:
+                if player.money >= TOWER_PRICES[self.dragging_tower_type]:
+                    game_place_tower_on(self, self.dragging_tower_type, wire)
 
         self.dragging_tower_type = None
 
@@ -298,13 +300,10 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire):
         dir: node for dir, node in parent.outgoing_sides.items() if node != wire
     }
     player.money += 1
-    self.particles.extend(
-        tile_particle_burst(
-            ParticleSpriteType.SHINY if wire.tower is None else ParticleSpriteType.DELETE, wire.tile
-        )
-    )
     if wire.tower is not None:
         game_delete_tower_from(self, wire)
+    else:
+        self.particles.extend(tile_particle_burst(ParticleSpriteType.SHINY, wire.tile))
 
 
 def game_mode_wire_create(self: Game, tile_pos: Pos | None):
