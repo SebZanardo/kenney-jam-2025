@@ -15,7 +15,7 @@ from components.tower import Tower
 class Wire:
     # position and nodes
     tile: Pos
-    incoming_side: str
+    incoming_side: str | None
     outgoing_sides: dict[str, Wire]  # dir: node
 
     # per-map config
@@ -35,6 +35,11 @@ def wire_find(wires: Iterable[Wire], tile: Pos) -> Wire | None:
 
 
 def wire_render_comp(wire: Wire, camera: Camera) -> None:
+    if wire.tower is not None:
+        return
+
+    assert wire.incoming_side is not None
+
     index: int = 0
     rot: int = 0
 

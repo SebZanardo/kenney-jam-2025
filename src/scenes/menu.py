@@ -45,9 +45,7 @@ class Menu(Scene):
     def execute(self) -> None:
         camera_update(self.camera, g.dt)
 
-        g.window.fill(c.WHITE)
-
-        g.window.blit(g.ICON, camera_to_screen_shake(self.camera, 0, 0))
+        g.window.fill(c.BLACK)
 
         if self.current_state == MenuState.MAIN:
             ui.im_reset_position(10, 10)

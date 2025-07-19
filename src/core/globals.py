@@ -74,6 +74,9 @@ PARTICLES = load_spritesheet(path + "particles.png", 8, 8)
 BUTTONS: list[pygame.Surface] = []
 for surf in load_spritesheet(path + "buttons.png", 16, 16):
     BUTTONS.append((dim_sprite(surf), surf))
+BIG_BUTTONS: list[pygame.Surface] = []
+for surf in load_spritesheet(path + "big-buttons.png", 128, 32, double_size=False):
+    BIG_BUTTONS.append((dim_sprite(surf), surf))
 
 # Load audio (ogg for web compatibility)
 path = "data/sfx/"

@@ -82,7 +82,6 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
     new_enemy.health = enemy_max_health[enemy_type] * enemy_health_multiplier
 
     active_enemies += 1
-    print("Spawned: ", enemy_type)
 
     return True
 
@@ -101,8 +100,6 @@ def enemy_remove(i: int) -> None:
 
     enemies[i] = enemies[active_enemies]
     enemies[active_enemies] = temp
-
-    print("Removed: ", i)
 
 
 def enemy_update(i: int) -> bool:
@@ -166,17 +163,4 @@ def enemy_render(i: int) -> None:
     g.window.blit(
         g.ENEMIES[e.enemy_type.value - 1],
         camera_to_screen(g.camera, e.x - c.TILE_SIZE // 2, e.y - c.TILE_SIZE // 2),
-    )
-
-    # debug
-    pygame.draw.circle(g.window, c.GREEN, camera_to_screen(g.camera, e.x, e.y), 1)
-    pygame.draw.rect(
-        g.window,
-        c.BLUE,
-        (
-            *camera_to_screen(g.camera, e.cx * c.TILE_SIZE, e.cy * c.TILE_SIZE),
-            c.TILE_SIZE,
-            c.TILE_SIZE,
-        ),
-        1,
     )

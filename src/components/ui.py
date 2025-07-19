@@ -6,7 +6,6 @@ import core.globals as g
 import core.input as t
 
 from components.audio import AudioChannel, play_sound
-from utilities.sprite import dim_sprite
 
 
 Pos = tuple[int, int]
@@ -16,18 +15,16 @@ Colour = tuple[int, int, int]
 
 @dataclass(slots=True)
 class StyleUI:
-    button_dim: Pos = (48, 16)
-    checkbox_dim: Pos = (16, 16)
-    slider_dim: Pos = (48, 16)
+    button_dim: Pos = (128, 32)
+    checkbox_dim: Pos = (32, 32)
+    slider_dim: Pos = (128, 32)
 
     padding_x: int = 5
     padding_y: int = 5
 
     background_colour: Colour = (0, 0, 0)
-    hovered_colour: Colour = (50, 50, 50)
-    clicked_colour: Colour = (100, 100, 100)
-    main_colour: Colour = (255, 0, 255)
     text_colour: Colour = (255, 255, 255)
+    text_colour_dim: Colour = (210, 210, 210)
 
 
 @dataclass(slots=True)
@@ -68,6 +65,8 @@ class ContextUI:
         held = False
 
         if self.held_id == self.current_id:
+            hovered = True
+
             if t.mouse_held(t.MouseButton.LEFT):
                 held = True
             else:
@@ -98,18 +97,18 @@ context = ContextUI()
 
 
 def im_text(label: str) -> None:
-    text = g.FONT.render(label, False, style.background_colour)
+    text = g.FONT.render(label, False, style.text_colour)
     bbox = context.bbox(*text.get_size())
-    g.window.blit(text, (bbox[0], bbox[1]))
+    g.window.blit(text, (bbox[0], bbox[1] + 7))
 
 
 def im_button(label: str) -> bool:
     bbox = context.bbox(*style.button_dim)
     hovered, clicked, held = context.interact(bbox)
-    g.window.blit(g.BUTTONS[0][hovered], (bbox[0], bbox[1]), (0, 0, *style.button_dim))
+    g.window.blit(g.BIG_BUTTONS[0][hovered], (bbox[0], bbox[1]))
 
-    text = g.FONT.render(label, False, style.text_colour)
-    g.window.blit(text, (bbox[0] + 16, bbox[1]))
+    text = g.FONT.render(label, False, style.text_colour if hovered else style.text_colour_dim)
+    g.window.blit(text, (bbox[0] + 7, bbox[1] + 7))
 
     return clicked
 
@@ -137,9 +136,7 @@ def im_checkbox(value: list[bool]) -> bool:
 def im_slider(value: list[float], lo: float, hi: float) -> bool:
     bbox = context.bbox(*style.slider_dim)
     hovered, clicked, held = context.interact(bbox)
-    g.window.blit(g.BUTTONS[2][0], (bbox[0], bbox[1]), (0, 0, *style.slider_dim))
-    g.window.blit(g.BUTTONS[3][0], (bbox[0] + 16, bbox[1]), (0, 0, *style.slider_dim))
-    g.window.blit(g.BUTTONS[5][0], (bbox[0] + 32, bbox[1]), (0, 0, *style.slider_dim))
+    g.window.blit(g.BIG_BUTTONS[1][hovered], (bbox[0], bbox[1] + 6))
 
     # TODO: show hover feedback somehow
 
@@ -150,12 +147,10 @@ def im_slider(value: list[float], lo: float, hi: float) -> bool:
         value[0] = min(max(value[0], lo), hi)
 
     w = value[0] / hi * style.slider_dim[0]
-    g.window.blit(g.BUTTONS[2][1], (bbox[0], bbox[1]), (0, 0, w, style.slider_dim[1]))
-    g.window.blit(g.BUTTONS[3][1], (bbox[0] + 16, bbox[1]), (0, 0, w - 16, style.slider_dim[1]))
-    g.window.blit(g.BUTTONS[5][1], (bbox[0] + 32, bbox[1]), (0, 0, w - 32, style.slider_dim[1]))
+    g.window.blit(g.BUTTONS[4][hovered], (bbox[0] - 16 + w, bbox[1] + 6))
 
     value_text = g.FONT.render(str(int(value[0])), False, style.text_colour)
-    g.window.blit(value_text, (bbox[0], bbox[1]))
+    g.window.blit(value_text, (bbox[0], bbox[1] - 1))
 
     return held
 

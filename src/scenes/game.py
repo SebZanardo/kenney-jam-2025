@@ -256,8 +256,8 @@ class Game(Scene):
         # hand
         hand_render()
 
-        g.window.blit(g.FONT.render(f"${player.money}", False, c.BLACK), (0, 0))
-        g.window.blit(g.FONT.render(f"<3 {player.health}", False, c.BLACK), (100, 0))
+        g.window.blit(g.FONT.render(f"${player.money}", False, c.WHITE), (0, 0))
+        g.window.blit(g.FONT.render(f"<3 {player.health}", False, c.WHITE), (100, 0))
         if player.health <= 0:
             g.window.blit(g.FONT.render(f"GAMEOVER", False, c.MAGENTA), (50, 100))
 
@@ -287,16 +287,9 @@ def tile_particle_burst(type: ParticleSpriteType, tile: Pos) -> list[Particle]:
 
 
 # TOWERS
-def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
-    tower = Tower(
-        parent.tile[:],
-        type,
-        1,
-        c.UP,
-        Animator(),
-    )
+def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
+    tower = Tower(tile[:], type, 1, c.UP, Animator())
     animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[type.value]})
-    parent.tower = tower
     self.towers.append(tower)
 
     p.collision_grid[tower.tile[1]][tower.tile[0]] = True
@@ -307,6 +300,12 @@ def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
 
     self.particles.extend(tile_particle_burst(ParticleSpriteType.BUILD, tower.tile))
     g.camera.trauma = 0.35
+
+    return tower
+
+
+def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
+    parent.tower = game_place_tower_at(self, type, parent.tile)
 
 
 def game_delete_tower_from(self: Game, parent: Wire):
@@ -327,11 +326,15 @@ def game_mode_tower_create(self: Game, tile_pos: Pos | None):
         return
 
     if g.mouse_buffer[t.MouseButton.LEFT] not in (t.InputState.PRESSED, t.InputState.HELD):
-        if tile_pos is not None:
+        if tile_pos is not None and player.money >= TOWER_PRICES[self.dragging_tower_type]:
             wire = wire_find(self.wires, tile_pos)
-            if wire is not None and wire.tower is None:
-                if player.money >= TOWER_PRICES[self.dragging_tower_type]:
+            if self.dragging_tower_type != TowerType.CORE:
+                if wire is not None and wire.tower is None:
                     game_place_tower_on(self, self.dragging_tower_type, wire)
+            else:
+                if wire is None:
+                    tower = game_place_tower_at(self, self.dragging_tower_type, tile_pos)
+                    self.wires.append(Wire(tile_pos, None, {}, True, tower))
 
         self.dragging_tower_type = None
 
