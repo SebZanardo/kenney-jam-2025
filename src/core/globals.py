@@ -2,10 +2,11 @@ import copy
 import platform
 import pygame
 
+from components.camera import Camera
 import core.constants as c
 from components.statemachine import StateMachine
 
-from utilities.sprite import dim_sprite, load_image, load_spritesheet
+from utilities.sprite import dim_sprite, invert_sprite, load_image, load_spritesheet
 
 
 def _setup_window() -> pygame.Surface:
@@ -24,10 +25,6 @@ clock = pygame.time.Clock()
 
 scene_manager = StateMachine()
 
-mouse_buffer = []
-action_buffer = []
-last_action_pressed = []
-
 dt = 1 / c.FPS  # We want fixed dt
 mouse_pos = (-1, -1)
 last_mouse_pos = (-1, -1)  # for interpolating at low dt
@@ -36,7 +33,7 @@ mouse_buffer = None
 action_buffer = None
 last_action_pressed = None
 
-camera = None
+camera: Camera | None = None
 
 # User settings
 default_setting_params = {
@@ -76,6 +73,10 @@ PARTICLES = load_spritesheet(path + "particles.png", 8, 8)
 BUTTONS: list[pygame.Surface] = []
 for surf in load_spritesheet(path + "buttons.png", 16, 16):
     BUTTONS.append((dim_sprite(surf), surf))
+BUTTONS_INV: list[pygame.Surface] = []
+for dim, surf in BUTTONS:
+    inv = invert_sprite(surf)
+    BUTTONS_INV.append((dim_sprite(inv), inv))
 BIG_BUTTONS: list[pygame.Surface] = []
 for surf in load_spritesheet(path + "big-buttons.png", 128, 32, double_size=False):
     BIG_BUTTONS.append((dim_sprite(surf), surf))
