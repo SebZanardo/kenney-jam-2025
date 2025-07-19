@@ -31,6 +31,7 @@ last_action_pressed = []
 
 dt = 1 / c.FPS  # We want fixed dt
 mouse_pos = (-1, -1)
+last_mouse_pos = (-1, -1)  # for interpolating at low dt
 
 mouse_buffer = None
 action_buffer = None

@@ -1,3 +1,4 @@
+import math
 import pygame
 
 import core.constants as c
@@ -10,8 +11,13 @@ from components.animation import (
     animator_initialise,
     animator_update,
 )
-from components.camera import Camera, camera_from_screen, camera_to_screen, camera_to_screen_shake
-from components.grid import inside_grid
+from components.camera import (
+    Camera,
+    camera_from_screen,
+    camera_to_screen,
+    camera_to_screen_shake,
+)
+from components.grid import coord_to_tile
 from components.hand import HandType, hand, hand_render
 from components.motion import Motion
 from components.tower import (
@@ -47,7 +53,7 @@ class Game(Scene):
         )
 
         # resources
-        self.money: int = 20
+        self.money: int = 50
 
         # map
         self.collision_grid: list[list[bool]] = [
@@ -81,19 +87,32 @@ class Game(Scene):
             return
 
         # mouse pos in camera space
+        last_hand_pos = camera_from_screen(self.camera, *g.last_mouse_pos)
         hand_pos = camera_from_screen(self.camera, *g.mouse_pos)
 
         # hovered tile pos
-        tile_pos = (hand_pos[0] // c.TILE_SIZE, hand_pos[1] // c.TILE_SIZE)
-        if not inside_grid(*tile_pos):
-            tile_pos = None
+        tile_pos = coord_to_tile(*hand_pos)
 
         # user interaction
         # place tower
         game_mode_tower_create(self, tile_pos)
 
-        # make wires
-        game_mode_wire_create(self, tile_pos)
+        # make wires (interp mouse pos)
+        interp_hand_pos = last_hand_pos[:]
+        while True:
+            diff = (hand_pos[0] - interp_hand_pos[0], hand_pos[1] - interp_hand_pos[1])
+            size = math.sqrt(diff[0] * diff[0] + diff[1] * diff[1])
+            if size < c.TILE_SIZE:
+                game_mode_wire_create(self, tile_pos)
+                break
+            unit = (diff[0] / size, diff[1] / size)
+            interp_hand_pos = (
+                interp_hand_pos[0] + unit[0] * c.TILE_SIZE / 2,
+                interp_hand_pos[1] + unit[1] * c.TILE_SIZE / 2,
+            )
+            if (interp_tile_pos := coord_to_tile(*interp_hand_pos)) is None:
+                break
+            game_mode_wire_create(self, interp_tile_pos)
 
         # towers
         for tower in self.towers:
@@ -203,47 +222,47 @@ def game_mode_wire_create(self: Game, tile_pos: Pos | None):
     if i.mouse_pressed() and tile_pos is not None:
         self.wire_draw_start = wire_find(self.wires, tile_pos)
 
-    if self.wire_draw_start is not None:
-        hand.type = HandType.GRAB
-        if g.mouse_buffer[i.MouseButton.LEFT] not in (i.InputState.PRESSED, i.InputState.HELD):
-            self.wire_draw_start = None
-            hand.type = HandType.DEFAULT
+    if self.wire_draw_start is None:
+        return
 
-        elif tile_pos != self.wire_draw_start.tile and tile_pos is not None:
-            sx, sy = self.wire_draw_start.tile
-            adjacent_sides = {
-                (sx, sy - 1): c.UP,
-                (sx - 1, sy): c.LEFT,
-                (sx + 1, sy): c.RIGHT,
-                (sx, sy + 1): c.DOWN,
-            }
+    hand.type = HandType.GRAB
+    if g.mouse_buffer[i.MouseButton.LEFT] not in (i.InputState.PRESSED, i.InputState.HELD):
+        self.wire_draw_start = None
+        hand.type = HandType.DEFAULT
 
-            # adjacent tile
-            if tile_pos in adjacent_sides:
-                # place new wire
-                if (overwrite := wire_find(self.wires, tile_pos)) is None:
-                    if self.money >= 1:
-                        wire = Wire(
-                            tile_pos[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile_pos]], {}
-                        )
-                        game_place_wire(self, wire, self.wire_draw_start)
-                        self.wire_draw_start = wire
-                    else:
-                        hand.type = HandType.NO
+    elif tile_pos != self.wire_draw_start.tile and tile_pos is not None:
+        sx, sy = self.wire_draw_start.tile
+        adjacent_sides = {
+            (sx, sy - 1): c.UP,
+            (sx - 1, sy): c.LEFT,
+            (sx + 1, sy): c.RIGHT,
+            (sx, sy + 1): c.DOWN,
+        }
 
-                # delete previous wire
-                elif (
-                    not self.wire_draw_start.outgoing_sides
-                    and self.wire_draw_start in overwrite.outgoing_sides.values()
-                    and not self.wire_draw_start.is_permanent
-                ):
-                    game_delete_wire(self, self.wire_draw_start, overwrite)
-                    self.wire_draw_start = overwrite
-
-                # crossing wires
+        # adjacent tile
+        if tile_pos in adjacent_sides:
+            # place new wire
+            if (overwrite := wire_find(self.wires, tile_pos)) is None:
+                if self.money >= 1:
+                    wire = Wire(tile_pos[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile_pos]], {})
+                    game_place_wire(self, wire, self.wire_draw_start)
+                    self.wire_draw_start = wire
                 else:
                     hand.type = HandType.NO
 
-            # cursor jumped, not an adjacent tile
+            # delete previous wire
+            elif (
+                not self.wire_draw_start.outgoing_sides
+                and self.wire_draw_start in overwrite.outgoing_sides.values()
+                and not self.wire_draw_start.is_permanent
+            ):
+                game_delete_wire(self, self.wire_draw_start, overwrite)
+                self.wire_draw_start = overwrite
+
+            # crossing wires
             else:
                 hand.type = HandType.NO
+
+        # cursor jumped, not an adjacent tile
+        else:
+            hand.type = HandType.NO
