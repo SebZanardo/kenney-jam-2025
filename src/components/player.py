@@ -5,7 +5,7 @@ from enum import IntEnum
 # STARTING_MONEY = 15
 # NOTE: This high money value is just for testing
 STARTING_MONEY = 100
-STARTING_HEALTH = 100
+STARTING_HEALTH = 1
 
 
 # value of the enum = number of fixed updates per frame

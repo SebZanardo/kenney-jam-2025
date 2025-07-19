@@ -17,7 +17,7 @@ def setup() -> None:
     pygame.display.set_caption(c.CAPTION)
     pygame.display.set_icon(g.ICON)
     pygame.mouse.set_visible(False)
-    statemachine_initialise(g.scene_manager, SCENE_MAPPING, SceneState.GAME)
+    statemachine_initialise(g.scene_manager, SCENE_MAPPING, SceneState.MENU)
 
     # Try load settings from web
     load_settings()

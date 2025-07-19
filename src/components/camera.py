@@ -2,9 +2,9 @@ from dataclasses import dataclass
 import random
 import pygame
 
-from components.ui import Pos
 import core.constants as c
 import core.globals as g
+from utilities.math import Pos
 
 from components.motion import Motion, motion_update
 

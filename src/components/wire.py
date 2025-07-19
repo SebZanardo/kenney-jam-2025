@@ -6,9 +6,9 @@ import pygame
 
 import core.constants as c
 import core.globals as g
-from components.ui import Pos
 from components.camera import Camera, camera_to_screen_shake
 from components.tower import Tower
+from utilities.math import Pos
 
 
 @dataclass(slots=True)

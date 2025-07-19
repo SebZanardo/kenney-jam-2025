@@ -53,6 +53,7 @@ pass
 # Load fonts (ttf for web compatibility)
 path = "data/fonts/"
 FONT = pygame.font.Font(path + "Better VCR 9.0.1.ttf", 16)
+FONT_LARGE = pygame.font.Font(path + "Better VCR 9.0.1.ttf", 32)
 DEBUG_FONT = pygame.font.SysFont("monospace", 8)
 
 # Load sprites (png, webp or jpg for web compatibility)
@@ -66,6 +67,7 @@ PATTERNS = load_image(path + "patterns.png")
 path = "data/textures-src/"
 TERRAIN = load_spritesheet(path + "terrain.png", 16, 16)
 HANDS = load_spritesheet(path + "hands.png", 16, 16, double_size=False)
+ICONS = load_spritesheet(path + "icons.png", 16, 16, double_size=False)
 TOWERS = load_spritesheet(path + "towers.png", 16, 16)
 WIRES = load_spritesheet(path + "wires.png", 16, 16)
 ENEMIES = load_spritesheet(path + "enemies.png", 16, 16)

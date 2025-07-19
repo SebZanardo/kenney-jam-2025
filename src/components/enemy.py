@@ -7,7 +7,13 @@ import pygame
 import core.globals as g
 import core.constants as c
 
-from components.pathing import SPAWN_POS, START_TILE, GOAL_POS, END_TILE, flowfield
+from components.pathing import (
+    PATH_START_POS,
+    PATH_START_TILE,
+    PATH_END_POS,
+    PATH_END_TILE,
+    flowfield,
+)
 from components.player import player
 from components.camera import camera_to_screen
 from utilities.math import clamp
@@ -74,10 +80,10 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
 
     new_enemy = enemies[active_enemies]
     new_enemy.enemy_type = enemy_type
-    new_enemy.x, new_enemy.y = SPAWN_POS
+    new_enemy.x, new_enemy.y = PATH_START_POS
 
     # (-1, -1) denotes outside grid for either spawn run or goal run
-    new_enemy.cx, new_enemy.cy = SPAWN_POS
+    new_enemy.cx, new_enemy.cy = PATH_START_POS
 
     new_enemy.health = enemy_max_health[enemy_type] * enemy_health_multiplier
 
@@ -119,17 +125,17 @@ def enemy_update(i: int) -> bool:
     speed = enemy_speed[e.enemy_type] * c.TILE_SIZE
 
     # Travelling to start
-    if (e.cx, e.cy) == SPAWN_POS:
+    if (e.cx, e.cy) == PATH_START_POS:
         e.x += speed
         # Reached start of map
-        if e.x >= START_TILE[0] * c.TILE_SIZE:
-            e.cx, e.cy = START_TILE
+        if e.x >= PATH_START_TILE[0] * c.TILE_SIZE:
+            e.cx, e.cy = PATH_START_TILE
 
     # Travelling to goal
-    elif (e.cx, e.cy) == END_TILE:
+    elif (e.cx, e.cy) == PATH_END_TILE:
         e.x += speed
         # Reached end of screen
-        if e.x >= GOAL_POS[0]:
+        if e.x >= PATH_END_POS[0]:
             player.health -= 1
             return True
 

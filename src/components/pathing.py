@@ -6,12 +6,12 @@ import core.constants as c
 # how far outside is run
 outside = 5 * c.TILE_SIZE
 
-SPAWN_POS = (-outside, c.GRID_HEIGHT / 2)
-GOAL_POS = (c.GRID_WIDTH + outside, SPAWN_POS[1])
+PATH_START_POS = (-outside, c.GRID_HEIGHT / 2)
+PATH_END_POS = (c.GRID_WIDTH + outside, PATH_START_POS[1])
 
 # These are grid tile start
-START_TILE = (0, c.GRID_HEIGHT_TILES // 2)
-END_TILE = (c.GRID_WIDTH_TILES - 1, START_TILE[1])
+PATH_START_TILE = (0, c.GRID_HEIGHT_TILES // 2)
+PATH_END_TILE = (c.GRID_WIDTH_TILES - 1, PATH_START_TILE[1])
 
 
 # Flowfield the enemies path off. Must always be valid path.
@@ -78,8 +78,8 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
 
     q = deque()
 
-    q.append(END_TILE)
-    field[END_TILE[1]][END_TILE[0]] = 1  # 1 is right but anything != 0 is fine
+    q.append(PATH_END_TILE)
+    field[PATH_END_TILE[1]][PATH_END_TILE[0]] = 1  # 1 is right but anything != 0 is fine
 
     while q:
         for _ in range(len(q)):
@@ -101,7 +101,7 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
                 if field[ny][nx] != -1:
                     continue
 
-                if (nx, ny) == START_TILE:
+                if (nx, ny) == PATH_START_TILE:
                     complete = True
                     # Don't break cause we want to fill everything
 
