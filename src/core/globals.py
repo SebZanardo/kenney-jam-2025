@@ -3,7 +3,6 @@ import platform
 import pygame
 
 import core.constants as c
-from components.hand import Hand
 from components.statemachine import StateMachine
 
 from utilities.sprite import slice_sheet
@@ -69,6 +68,7 @@ TERRAIN = slice_sheet(path + "terrain.png", 16, 16)
 HANDS = slice_sheet(path + "hands.png", 16, 16)
 TOWERS = slice_sheet(path + "towers.png", 16, 16)
 WIRES = slice_sheet(path + "wires.png", 16, 16)
+ENEMIES = slice_sheet(path + "enemies.png", 16, 16)
 BLENDING_FX = slice_sheet(path + "blending-fx.png", 16, 16)
 
 # Load audio (ogg for web compatibility)
