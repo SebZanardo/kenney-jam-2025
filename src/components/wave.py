@@ -1,0 +1,100 @@
+from dataclasses import dataclass
+
+import core.constants as c
+
+import components.enemy as e
+
+
+@dataclass(frozen=True)
+class Wave:
+    enemy_type: e.EnemyType
+    count: int
+    # This is float because if < 1 then can spawn multiple per tick
+    spawn_tick: float
+
+
+@dataclass(slots=True)
+class WaveData:
+    number: int = 0
+
+    # For wave we are on
+    spawn_enemy_type: e.EnemyType = e.EnemyType.NONE
+    spawn_remaining: int = 0
+    spawn_tick: float = 0
+    spawn_tick_counter: float = 0
+    spawn_instruction_index: int = -1
+    spawn_done = False
+
+
+# This stores all wave data
+waves: tuple[tuple[Wave]] = (
+    Wave()
+)
+WAVE_COUNT = len(waves)
+wave_data = WaveData()
+
+
+def wave_update() -> None:
+    if wave_data.spawn_done:
+        # If wave has finished spawning and all enemies died, spawn next wave
+        if e.active_enemies == 0:
+            wave_new()
+            return
+    else:
+        # Continue spawning current wave
+        while (
+            wave_data.spawn_tick_counter >= wave_data.spawn_tick
+        ):
+            # If we spawned all the enemies, increment to next instruction
+            if wave_data.spawn_remaining <= 0:
+                wave_data.spawn_instruction_index += 1
+                wave_instruction_new()
+                if wave_data.spawn_done:
+                    break
+
+            spawned = e.enemy_spawn(wave_data.spawn_enemy_type)
+            if spawned:
+                wave_data.spawn_remaining -= 1
+                wave_data.spawn_tick_counter -= wave_data.spawn_tick
+
+        wave_data.spawn_tick_counter += 1
+
+    # Update all enemies
+    i = 0
+    while i < e.active_enemies:
+        died = e.enemy_update(i)
+        if died:
+            e.enemy_remove(i)
+        else:
+            i += 1
+
+
+def wave_new() -> None:
+    wave_data.number += 1
+    print(f"New wave: {wave_data.number}")
+
+    # Increase enemy health multiplier
+    e.enemy_health_multiplier = 1 + wave_data / WAVE_COUNT
+
+    wave_data.spawn_instruction_index: int = 0
+    wave_data.spawn_done = False
+    wave_instruction_new()
+
+
+def wave_instruction_new() -> None:
+    wave = waves[wave_data.number % WAVE_COUNT]
+
+    if wave_data.spawn_instruction_index >= len(wave):
+        # Signal that spawn wave is done
+        wave_data.spawn_done = True
+        print("Current wave spawning complete")
+        return
+
+    wave_instruction: Wave = wave[wave_data.spawn_instruction_index]
+
+    wave_data.spawn_enemy_type = wave_instruction.enemy_type
+    wave_data.spawn_remaining = wave_instruction.count
+    wave_data.spawn_tick = wave_instruction.spawn_tick
+    wave_data.spawn_tick_counter = 0
+
+    print(f"New wave spawn index: {wave_data.spawn_instruction_index}")
