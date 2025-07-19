@@ -4,7 +4,9 @@ from enum import IntEnum, auto
 import core.constants as c
 import core.globals as g
 from components.camera import Camera, camera_to_screen_shake
-from components.animation import Animation, Animator, animator_get_frame, animator_update
+from components.animation import (
+    Animation, Animator, animator_get_frame, animator_update
+)
 from components.ui import Pos
 from utilities.sprite import rotate_sprite
 
@@ -54,6 +56,9 @@ tower_purchase_price = {
     TowerType.SPLASH: 20,
     TowerType.ZAP: 50,
 }
+
+
+MAX_TOWER_LEVEL = 3
 
 # NOTE: index in array is for stats for that level
 tower_stats = {

@@ -29,7 +29,7 @@ mouse_buffer = []
 action_buffer = []
 last_action_pressed = []
 
-dt = 0.0
+dt = c.MAX_DT  # We want fixed dt
 mouse_pos = (-1, -1)
 
 mouse_buffer = None

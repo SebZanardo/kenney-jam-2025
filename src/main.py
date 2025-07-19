@@ -15,10 +15,10 @@ async def main() -> None:
     print("Starting game loop")
 
     while True:
-        elapsed_time = g.clock.tick(c.FPS)
-        # TODO: Make dt global or used fixed_dt which can be in constants
-        g.dt = elapsed_time / 1000.0  # Convert to seconds
-        g.dt = min(g.dt, c.MAX_DT)  # Clamp delta time
+        g.clock.tick(c.FPS)
+        # elapsed_time = g.clock.tick(c.FPS)
+        # g.dt = elapsed_time / 1000.0  # Convert to seconds
+        # g.dt = min(g.dt, c.MAX_DT)  # Clamp delta time
         # dt *= g.time_dilation
 
         g.mouse_pos = pygame.mouse.get_pos()
