@@ -87,7 +87,7 @@ def wire_render_comp(wire: Wire) -> None:
 
     surf = pygame.transform.rotate(g.WIRES[index], rot * -90)
     if wire.tower is not None:
-        surf.set_alpha(100)
+        surf.set_alpha(128)
     g.window.blit(
         surf,
         camera_to_screen_shake(g.camera, wire.tile[0] * c.TILE_SIZE, wire.tile[1] * c.TILE_SIZE),

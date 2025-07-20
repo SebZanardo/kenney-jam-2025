@@ -81,7 +81,7 @@ def collision_check(x: int, y: int) -> bool:
 
         # if placement_flowfield[ey][ex] == -1:
         #     return True
-        #
+
     return False
 
 
@@ -128,7 +128,6 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
 
                 q.append((nx, ny))
                 field[ny][nx] = i
-    ###########################################################################
 
     return complete
 

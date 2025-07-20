@@ -572,7 +572,6 @@ def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
         self.tutorial = TutorialState.WIRES
 
     path.collision_grid[tower.tile[1]][tower.tile[0]] = True
-
     path.flowfield_copy(path.placement_flowfield, path.flowfield)
 
     price = TOWER_PRICES[tower.type.value]
@@ -627,7 +626,6 @@ def game_delete_tower_from(self: Game, parent: Wire):
 
 def game_upgrade_tower(self: Game, tower: Tower):
     tower.level += 1
-    # animator_switch_animation(tower.blending_anim, tower.level)
 
     p.money_add(-TOWER_PRICES[tower.type.value])
 
@@ -649,8 +647,10 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 
         else:
             if tile != self.last_flowfield_tile:
+                path.flowfield_copy(path.flowfield, path.placement_flowfield)
                 self.last_flowfield_collision = path.flowfield_preview(*tile)
                 self.pathsssss = path.flowfield_path(path.placement_flowfield)
+                self.last_flowfield_tile = tile[:]
 
             # ensure cores are either placed in empty space or on other cores
             if (
