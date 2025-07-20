@@ -27,7 +27,7 @@ class SpeedType(IntEnum):
 @dataclass(slots=True)
 class Player:
     money: int = 50
-    health: int = 0
+    health: int = 20
     score: int = 0
     mode: GameMode = GameMode.VIEW
     speed: SpeedType = SpeedType.NORMAL
@@ -48,7 +48,7 @@ def money_add(amount: int) -> None:
 def score_add(amount: int) -> None:
     player.score = max(player.score + amount, 0)
 
-    if abs(amount) >= 100:
+    if abs(amount) >= 50:
         text = g.FONT.render(signed_num(amount), False, c.GREEN if amount > 0 else c.RED)
         particle_spawn(
             Particle(
