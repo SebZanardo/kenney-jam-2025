@@ -204,15 +204,15 @@ class Game(Scene):
         for wire in self.wires:
             wire_render_chain(wire)
 
-        # enemies
-        for i in range(e.active_enemies):
-            e.enemy_render(i)
-
         # towers
         for tower in self.towers:
             tower_render(tower)
             if p.player.mode == p.GameMode.VIEW and tower.tile == hov_tile:
                 tower_render_radius(tower)
+
+        # enemies
+        for i in range(e.active_enemies):
+            e.enemy_render(i)
 
         # preview tile
         if p.player.health > 0:

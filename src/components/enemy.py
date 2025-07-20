@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import IntEnum
+import random
 
 import pygame
 
@@ -124,16 +125,27 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
     if active_enemies >= MAX_ENEMIES:
         return False
 
+    stat = ENEMY_STATS[enemy_type]
+
     new_enemy = enemies[active_enemies]
     new_enemy.type = enemy_type
-    new_enemy.x, new_enemy.y = PATH_START_POS
+
+    if not stat.flying:
+        new_enemy.x, new_enemy.y = PATH_START_POS
+    else:
+        new_enemy.x, new_enemy.y = (
+            PATH_START_POS[0],
+            random.choice([0, 1, c.GRID_HEIGHT_TILES - 2, c.GRID_HEIGHT_TILES - 1])
+            + c.TILE_SIZE // 2,
+        )
+
     new_enemy.animator = Animator()
     animator_initialise(new_enemy.animator, {0: ENEMY_ANIMATIONS[enemy_type.value]})
 
     # (-1, -1) denotes outside grid for either spawn run or goal run
     new_enemy.cx, new_enemy.cy = PATH_START_POS
 
-    new_enemy.health = ENEMY_STATS[enemy_type].health * enemy_health_multiplier
+    new_enemy.health = stat.health * enemy_health_multiplier
 
     active_enemies += 1
 
@@ -196,9 +208,14 @@ def enemy_update(i: int) -> bool:
 
     # Reached next cell pos
     else:
-        # Move e.x and e.y
-        dx, dy = c.DIRECTIONS[flowfield[enemy.cy][enemy.cx]]
-        xv, yv = -dx * speed, -dy * speed
+        # pathfind
+        if not stat.flying:
+            dx, dy = c.DIRECTIONS[flowfield[enemy.cy][enemy.cx]]
+            xv, yv = -dx * speed, -dy * speed
+        # fly
+        else:
+            xv, yv = speed, 0
+
         enemy.x += xv
         enemy.y += yv
 
