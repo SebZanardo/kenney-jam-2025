@@ -14,7 +14,7 @@ WINDOW_SETUP = {
     "vsync": 1,
 }
 
-CAPTION = "kenney-jam-2025"
+CAPTION = "POWER defence"
 FPS = 30  # 0 = Uncapped -> let VSYNC decide best tick speed if enabled
 # NOTE: Capped at 30FPS on mobile so that is our fixed update
 

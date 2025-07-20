@@ -214,7 +214,7 @@ def enemy_update(i: int) -> bool:
         if enemy.x >= PATH_END_POS[0]:
             p.player.health -= 1
             play_sound(AudioChannel.PLAYER, g.PLAYER_SFX[0])
-            g.camera.trauma = 0.3
+            g.camera.trauma = 0.35
             enemy.health = 0  # Set to dead so tower can see that it died
             return True
 
