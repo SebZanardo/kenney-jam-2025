@@ -81,6 +81,8 @@ BIG_BUTTONS: list[pygame.Surface] = []
 for surf in load_spritesheet(path + "big-buttons.png", 128, 32, double_size=False):
     BIG_BUTTONS.append((dim_sprite(surf), surf))
 RADIUS = pygame.image.load(path + "radius.png").convert_alpha()
+LOGO = pygame.image.load(path + "logo.png").convert_alpha()
+LOGO = pygame.transform.scale_by(LOGO, 2)
 
 # Load audio (ogg for web compatibility)
 path = "data/sfx/"
