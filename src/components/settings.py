@@ -65,6 +65,9 @@ def load_settings() -> None:
             print("Cooked settings :(")
             write_settings()
 
+    set_music_volume(g.setting_params["music"][0] / 100)
+    set_sfx_volume(g.setting_params["sfx"][0] / 100)
+
 
 def write_settings() -> None:
     if not c.IS_WEB:
