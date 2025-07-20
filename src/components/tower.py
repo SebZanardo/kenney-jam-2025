@@ -1,5 +1,7 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from enum import IntEnum
+import math
 
 import pygame
 
@@ -25,9 +27,17 @@ class Tower:
     tile: Pos
     type: TowerType
     level: int
+
+    # visual
     direction: str
     animator: Animator
     blending_anim: Animator
+
+    # for cores
+    connected_tower_count: int = 0
+
+    # for non-cores
+    core_tower: Tower | None = None
 
 
 # NOTE: These should be stats for all towers
@@ -96,6 +106,15 @@ TOWER_STATS = (
 )
 
 
+def tower_get_power(tower: Tower) -> float:
+    connected_tower_count: int = 0
+    if tower.type == TowerType.CORE:
+        connected_tower_count = tower.connected_tower_count
+    elif tower.core_tower is not None:
+        connected_tower_count = tower.core_tower.connected_tower_count
+    return min(1.0, math.exp(-0.25 * (connected_tower_count - 1)))
+
+
 def tower_update(tower: Tower) -> None:
     animator_update(tower.animator, g.dt)
     animator_update(tower.blending_anim, g.dt)
@@ -141,3 +160,12 @@ def tower_render(tower: Tower) -> None:
         surf,
         camera_to_screen_shake(g.camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
     )
+
+    # g.window.blit(
+    #     g.FONT.render(
+    #         f"{}",
+    #         True,
+    #         c.WHITE,
+    #     ),
+    #     camera_to_screen_shake(g.camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
+    # )
