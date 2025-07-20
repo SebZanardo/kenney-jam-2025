@@ -3,31 +3,20 @@ from dataclasses import dataclass
 import random
 import pygame
 
-from components.hand import HandType, hand, hand_render
-from components.motion import Motion
 import core.constants as c
-import core.input as t
 import core.globals as g
+import core.input as t
 
 from components.statemachine import StateMachine, statemachine_change_state
 import components.enemy as e
+from components.hand import HandType, hand, hand_render
+from components.hud import hud_render
 import components.ui as ui
-from components.camera import Camera, camera_update, camera_to_screen_shake, camera_to_screen
+from components.camera import camera_update, camera_to_screen_shake, camera_to_screen
 from components.settings import settings_menu
-from components.animation import (
-    Animator,
-    animator_get_frame,
-    animator_initialise,
-    animator_update,
-)
+from components.animation import Animator, animator_get_frame, animator_initialise, animator_update
 from components.tower import TowerType, tower_particle_burst
-from components.particles import (
-    ParticleSpriteType,
-    particle_burst,
-    particles_render,
-    particles_update,
-    particles_clear,
-)
+from components.particles import particles_render, particles_update, particles_clear
 
 from scenes.scene import Scene
 from scenes import manager
@@ -127,31 +116,7 @@ class Menu(Scene):
         particles_update()
         particles_render()
 
-        # Black out under hud
-        pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 35))
-        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 35, c.WINDOW_WIDTH, 35))
-
-        for x in range(c.WINDOW_WIDTH // 14):
-            g.window.blit(g.TERRAIN[3], (x * 14 - 1, 3))
-            g.window.blit(g.TERRAIN[2], (x * 14 - 1, c.WINDOW_HEIGHT - c.TILE_SIZE - 4))
-
-        for y in range(c.GRID_HEIGHT_TILES):
-            g.window.blit(
-                g.TERRAIN[5],
-                camera_to_screen_shake(g.camera, -1 * c.TILE_SIZE, y * c.TILE_SIZE),
-            )
-            g.window.blit(
-                g.TERRAIN[6],
-                camera_to_screen_shake(g.camera, -2 * c.TILE_SIZE, y * c.TILE_SIZE),
-            )
-            g.window.blit(
-                g.TERRAIN[4],
-                camera_to_screen_shake(g.camera, c.GRID_WIDTH, y * c.TILE_SIZE),
-            )
-            g.window.blit(
-                g.TERRAIN[6],
-                camera_to_screen_shake(g.camera, c.GRID_WIDTH + c.TILE_SIZE, y * c.TILE_SIZE),
-            )
+        hud_render()
 
         if self.current_state == MenuState.MAIN:
             ui.im_reset_position(

@@ -1,13 +1,11 @@
 from enum import IntEnum, auto
 import math
-import random
 import pygame
 
-from components.audio import AudioChannel, play_sound
-from components.settings import settings_menu
 import core.constants as c
-import core.input as t
 import core.globals as g
+import core.input as t
+
 from components.animation import (
     Animation,
     Animator,
@@ -15,6 +13,7 @@ from components.animation import (
     animator_initialise,
     animator_update,
 )
+from components.audio import AudioChannel, play_sound
 from components.camera import (
     camera_from_screen,
     camera_to_screen,
@@ -22,6 +21,8 @@ from components.camera import (
     camera_update,
 )
 from components.hand import HandType, Tooltip, hand, hand_render
+from components.hud import hud_render
+from components.settings import settings_menu
 from components.particles import (
     ParticleSpriteType,
     particle_burst,
@@ -48,7 +49,7 @@ import components.enemy as e
 from components import ui
 from components.wave import wave_data
 from components.wire import Wire, wire_find, wire_render_chain
-from utilities.math import Pos, signed_num
+from utilities.math import Pos
 
 from scenes.scene import Scene
 from scenes import manager
@@ -94,6 +95,8 @@ class Game(Scene):
         self.dragging_tower_type: TowerType | None = None
         self.last_flowfield_tile: Pos | None = None
         self.last_flowfield_collision: bool = False
+        self.valid_tower_placement: bool = False
+        self.pathsssss: list[Pos] = path.flowfield_path(path.flowfield)
 
         # wires
         self.wires: list[Wire] = [
@@ -115,9 +118,6 @@ class Game(Scene):
 
         self.tutorial = TutorialState.CORE
         self.wire_count = 0
-
-        self.valid_placement = False
-        self.pathsssss = []
 
     def execute(self) -> None:
         if not self.gameover and p.player.health <= 0:
@@ -246,34 +246,19 @@ class Game(Scene):
         # particles
         particles_render()
 
-        # render best path from placement map
-        # TODO: would be best not to update this every frame but idc aat this point
-        if self.valid_placement and hov_tile is not None and path.inside_grid(*hov_tile) and path.collision_grid[hov_tile[1]][hov_tile[0]] == False:
-            self.pathsssss = path.flowfield_path(path.placement_flowfield)
-        else:
-            self.pathsssss = path.flowfield_path(path.flowfield)
-
         if self.tutorial == TutorialState.COMPLETE:
-            for pos in self.pathsssss:
-                r_pos = camera_to_screen(g.camera, pos[0] * c.TILE_SIZE, pos[1] * c.TILE_SIZE)
+            for x, y in self.pathsssss:
                 g.window.blit(
                     g.PATH,
-                    r_pos
+                    camera_to_screen_shake(g.camera, x * c.TILE_SIZE, y * c.TILE_SIZE),
                 )
 
         # hud
         if hov_tile is None:
             self.wire_draw_start = None
-
-        # Black out under hud
-        pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 35))
-        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 35, c.WINDOW_WIDTH, 35))
+        hud_render()
 
         # top and bottom
-        for x in range(c.WINDOW_WIDTH // 14):
-            g.window.blit(g.TERRAIN[3], (x * 14 - 1, 3))
-            g.window.blit(g.TERRAIN[2], (x * 14 - 1, c.WINDOW_HEIGHT - c.TILE_SIZE - 4))
-
         if not self.gameover:
             last_speed, last_mode = p.player.speed, p.player.mode
             ui.im_reset_position(c.TILE_SIZE, 0)
@@ -655,15 +640,16 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
     if self.dragging_tower_type is not None:
         # out of bounds
         if tile is None:
-            self.valid_placement = True
+            self.valid_tower_placement = True
 
         # start or end tile
         elif tile in (path.PATH_START_TILE, path.PATH_END_TILE):
-            self.valid_placement = False
+            self.valid_tower_placement = False
 
         else:
             if tile != self.last_flowfield_tile:
                 self.last_flowfield_collision = path.flowfield_preview(*tile)
+                self.pathsssss = path.flowfield_path(path.placement_flowfield)
 
             # ensure cores are either placed in empty space or on other cores
             if (
@@ -671,18 +657,18 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                 and hov_wire is not None
                 and (hov_wire.tower is None or hov_wire.tower.type != TowerType.CORE)
             ):
-                self.valid_placement = False
+                self.valid_tower_placement = False
                 hand.tooltip = Tooltip("Place cores in empty space")
 
             # collision with enemy
             elif path.collision_check(*tile):
-                self.valid_placement = False
+                self.valid_tower_placement = False
 
             # collision with tiles
             else:
-                self.valid_placement = self.last_flowfield_collision
+                self.valid_tower_placement = self.last_flowfield_collision
 
-        if not self.valid_placement:
+        if not self.valid_tower_placement:
             hand.type = HandType.NO
 
     hov_tower: Tower | None = None
@@ -719,12 +705,12 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                             (4, f"Spd {20 - stat_old.reload_time} -> {20 -stat_new.reload_time}")
                         )
                 else:
-                    self.valid_placement = False
+                    self.valid_tower_placement = False
                     hand.tooltip = Tooltip("MAX LEVEL")
             else:
-                self.valid_placement = False
+                self.valid_tower_placement = False
 
-            if not self.valid_placement:
+            if not self.valid_tower_placement:
                 hand.type = HandType.NO
 
         elif p.player.mode == p.GameMode.DESTROY:
@@ -757,7 +743,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
         ):
             game_upgrade_tower(self, hov_tower)
 
-        elif self.valid_placement:
+        elif self.valid_tower_placement:
             # place normal tower
             if self.dragging_tower_type != TowerType.CORE:
                 if hov_wire is None:
