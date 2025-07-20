@@ -83,7 +83,6 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
     new_enemy.enemy_type = enemy_type
     new_enemy.x, new_enemy.y = PATH_START_POS
 
-    # (-1, -1) denotes outside grid for either spawn run or goal run
     new_enemy.cx, new_enemy.cy = PATH_START_POS
 
     new_enemy.health = enemy_max_health[enemy_type] * enemy_health_multiplier
@@ -145,7 +144,12 @@ def enemy_update(i: int) -> bool:
     # Reached next cell pos
     else:
         # Move e.x and e.y
-        dx, dy = c.DIRECTIONS[flowfield[e.cy][e.cx]]
+        d = flowfield[e.cy][e.cx]
+        if d == -1:
+            print("Oh shit something went wrong with pathing")
+            pygame.quit()
+
+        dx, dy = c.DIRECTIONS[d]
         dx, dy = -dx, -dy
 
         e.x += dx * speed
