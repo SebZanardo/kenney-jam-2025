@@ -87,35 +87,35 @@ TOWER_STATS = [
     # TowerType.NORMAL
     (
         TowerStat(3, 15, 1, 80),
-        TowerStat(6, 10, 3, 80),
-        TowerStat(9, 5, 5, 80),
+        TowerStat(6, 10, 3, 88),
+        TowerStat(9, 5, 5, 96),
     ),
     # TowerType.SLOW
     (
-        TowerStat(5, 20, 0, 80),
-        TowerStat(10, 15, 0, 80),
-        TowerStat(15, 10, 0, 80),
+        TowerStat(5, 20, 2, 80),
+        TowerStat(10, 15, 8, 96),
+        TowerStat(15, 10, 15, 112),
     ),
     # TowerType.SPLASH
     (
-        TowerStat(15, 2, 5, 80),
-        TowerStat(30, 1.5, 10, 80),
+        TowerStat(15, 2, 5, 64),
+        TowerStat(30, 1.5, 10, 72),
         TowerStat(45, 1, 15, 80),
     ),
     # TowerType.ZAP
     (
-        TowerStat(30, 5, 16, 80),
+        TowerStat(30, 5, 16, 64),
         TowerStat(60, 4.5, 35, 80),
-        TowerStat(90, 4, 50, 80),
+        TowerStat(90, 4, 50, 96),
     ),
 ]
 
 
 def tower_get_power(tower: Tower) -> float:
     if tower.type == TowerType.CORE:
-        connected_tower_count = tower.connected_tower_count
+        connected_tower_count = tower.connected_tower_count - tower.level
     elif tower.core_tower is not None:
-        connected_tower_count = tower.core_tower.connected_tower_count
+        connected_tower_count = tower.core_tower.connected_tower_count - tower.core_tower.level
     else:
         return 0.0
     return min(1.0, math.exp(-0.25 * (connected_tower_count - 1)))

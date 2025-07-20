@@ -50,7 +50,7 @@ import components.enemy as e
 from components import ui
 from components.wave import wave_data
 from components.wire import Wire, wire_find, wire_render_chain
-from utilities.math import Pos
+from utilities.math import Pos, signed_num
 
 from scenes.scene import Scene
 from scenes import manager
@@ -209,7 +209,11 @@ class Game(Scene):
         # towers
         for tower in self.towers:
             tower_render(tower)
-            if p.player.mode == p.GameMode.VIEW and tower.tile == hov_tile:
+            if (
+                p.player.mode == p.GameMode.VIEW
+                and self.dragging_tower_type is None
+                and tower.tile == hov_tile
+            ):
                 tower_render_radius(tower)
 
         # enemies
@@ -332,9 +336,10 @@ class Game(Scene):
                 c.WINDOW_WIDTH - c.TILE_SIZE - 4, i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6
             )
             surf = TOWER_ANIMATIONS[tower_type.value].frames[0]
-            if ui.im_button_image(
-                [dim_sprite(surf), surf], f"{tower_type.name}\n-${TOWER_PRICES[tower_type.value]}"
-            ):
+            text = f"{tower_type.name}\n-${TOWER_PRICES[tower_type.value]}"
+            if tower_type != TowerType.CORE:
+                text += f"\nDmg: {TOWER_STATS[tower_type.value][0].damage}"
+            if ui.im_button_image([dim_sprite(surf), surf], text):
                 ui.context.held_id = -1
                 if p.player.money >= TOWER_PRICES[tower_type.value]:
                     self.dragging_tower_type = tower_type
@@ -481,10 +486,25 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                     hand.tooltip = Tooltip(
                         f"Upgrade {tower.type.name}\nLv {tower.level + 1} -> {tower.level + 2}"
                     )
+                    if tower.type != TowerType.CORE:
+                        stat_old = TOWER_STATS[tower.type.value][tower.level]
+                        stat_new = TOWER_STATS[tower.type.value][tower.level + 1]
+                        hand.tooltip.text += (
+                            f"\nDmg {signed_num(stat_new.damage - stat_old.damage)}"
+                        )
+                        hand.tooltip.text += (
+                            f"\nSpd {signed_num(stat_old.reload_time - stat_new.reload_time)}"
+                        )
+                        hand.tooltip.text += (
+                            f"\nRng {signed_num((stat_new.radius - stat_old.radius) / c.TILE_SIZE)}"
+                        )
                 else:
-                    hand.type = HandType.NO
+                    valid_placement = False
                     hand.tooltip = Tooltip("MAX LEVEL")
             else:
+                valid_placement = False
+
+            if not valid_placement:
                 hand.type = HandType.NO
 
         elif p.player.mode == p.GameMode.DESTROY:
@@ -500,6 +520,8 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 
         elif p.player.mode == p.GameMode.VIEW:
             hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
+            if tower.type != TowerType.CORE:
+                hand.tooltip.text += f"\nDmg: {TOWER_STATS[tower.type.value][tower.level].damage}"
 
         hov_tower = tower
         break
