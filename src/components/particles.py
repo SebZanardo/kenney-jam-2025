@@ -17,6 +17,12 @@ class ParticleSpriteType(IntEnum):
     BUILD = 3
     ATTACK_BIG = 4
     ATTACK_SMALL = 5
+    SLOW_BIG = 6
+    SLOW_SMALL = 7
+    SPLASH_BIG = 8
+    SPLASH_SMALL = 9
+    ZAP_BIG = 10
+    ZAP_SMALL = 11
 
 
 @dataclass(slots=True)
