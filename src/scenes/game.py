@@ -260,27 +260,28 @@ class Game(Scene):
             ui.im_reset_position(c.TILE_SIZE, 0)
             if self.tutorial >= TutorialState.UNPAUSE:
                 if last_speed == p.SpeedType.PAUSED:
-                    if ui.im_button_image(g.BUTTONS_INV[9], "Paused"):
+                    if ui.im_button_image(g.BUTTONS_INV[9], Tooltip("Paused")):
                         p.player.speed = p.SpeedType.NORMAL
                         if self.tutorial == TutorialState.UNPAUSE:
                             self.tutorial = TutorialState.COMPLETE
                 else:
-                    if ui.im_button_image(g.BUTTONS[9], "Pause"):
+                    if ui.im_button_image(g.BUTTONS[9], Tooltip("Pause")):
                         p.player.speed = p.SpeedType.PAUSED
 
                 if self.tutorial == TutorialState.COMPLETE:
                     ui.im_same_line()
                     if last_speed == p.SpeedType.FAST:
-                        if ui.im_button_image(g.BUTTONS_INV[12], "Fast forwarding"):
+                        if ui.im_button_image(g.BUTTONS_INV[12], Tooltip("Fast forwarding")):
                             p.player.speed = p.SpeedType.NORMAL
                     else:
-                        if ui.im_button_image(g.BUTTONS[12], "Fast forward"):
+                        if ui.im_button_image(g.BUTTONS[12], Tooltip("Fast forward")):
                             p.player.speed = p.SpeedType.FAST
 
             if self.tutorial >= TutorialState.VIEW:
                 ui.im_set_next_position(c.WINDOW_WIDTH - 3 * c.TILE_SIZE, 0)
                 if ui.im_button_image(
-                    (g.BUTTONS_INV if last_mode == p.GameMode.WIRING else g.BUTTONS)[1], "Lay wire"
+                    (g.BUTTONS_INV if last_mode == p.GameMode.WIRING else g.BUTTONS)[1],
+                    Tooltip("Lay wire"),
                 ):
                     p.player.mode = p.GameMode.WIRING
                     if self.tutorial == TutorialState.VIEW:
@@ -288,25 +289,26 @@ class Game(Scene):
 
                 ui.im_same_line()
                 if ui.im_button_image(
-                    (g.BUTTONS_INV if last_mode == p.GameMode.DESTROY else g.BUTTONS)[2], "Destroy"
+                    (g.BUTTONS_INV if last_mode == p.GameMode.DESTROY else g.BUTTONS)[2],
+                    Tooltip("Destroy"),
                 ):
                     p.player.mode = p.GameMode.DESTROY
                     if self.tutorial == TutorialState.VIEW:
                         self.tutorial = TutorialState.TOWER
 
             ui.im_set_next_position(c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE)
-            if ui.im_button_image(g.BUTTONS[3], "Settings"):
+            if ui.im_button_image(g.BUTTONS[3], Tooltip("Settings")):
                 ui.im_new()
                 self.current_state = MenuState.SETTINGS
             if self.tutorial < TutorialState.COMPLETE:
                 ui.im_set_next_position(
                     c.WINDOW_WIDTH - 2 * c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE
                 )
-                if ui.im_button_image(g.BUTTONS[5], "Skip tutorial"):
+                if ui.im_button_image(g.BUTTONS[5], Tooltip("Skip tutorial")):
                     ui.im_new()
                     self.tutorial = TutorialState.COMPLETE
 
-        text_y, icon_y, icon_w = 7, 8, 18
+        text_y, icon_y, icon_w = 7, 8, 20
         wave_text = g.FONT.render(f"WAVE {wave_data.number + 1}", False, c.WHITE)
         g.window.blit(wave_text, (c.WINDOW_WIDTH // 2 - wave_text.get_width() // 2, text_y))
         money_text = g.FONT.render(f"${p.player.money}", False, c.WHITE)
@@ -372,13 +374,18 @@ class Game(Scene):
                     c.WINDOW_WIDTH - c.TILE_SIZE - 4,
                     i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6 + (30 if i != 0 else 0),
                 )
-                text = f"{tower_type.name}\n${TOWER_PRICES[tower_type.value]}"
+
+                tooltip = Tooltip(tower_type.name, [(0, f"${TOWER_PRICES[tower_type.value]}")])
                 if tower_type != TowerType.CORE:
                     stat = TOWER_STATS[tower_type.value][0]
-                    text += f"\nDmg: {stat.damage}"
-                    text += f"\nSpd: {20 - stat.reload_time}"
+                    tooltip.lines.append((3, f"Dmg: {stat.damage}"))
+                    tooltip.lines.append((4, f"Spd: {20 - stat.reload_time}"))
+                    if stat.splash_radius > 0:
+                        tooltip.lines.append((-1, "Deals splash dmg"))
+                    if stat.slow > 0:
+                        tooltip.lines.append((-1, "Slows enemies"))
 
-                if ui.im_button_image(TOWER_ANIMATIONS[tower_type.value][1], text):
+                if ui.im_button_image(TOWER_ANIMATIONS[tower_type.value][1], tooltip):
                     ui.context.held_id = -1
                     if p.player.money >= TOWER_PRICES[tower_type.value]:
                         self.dragging_tower_type = tower_type
@@ -443,7 +450,9 @@ class Game(Scene):
 
         # tutorial render
         if self.tutorial == TutorialState.CORE:
-            tutorial_text = g.FONT.render("Spend some money to place a CORE", False, c.WHITE)
+            tutorial_text = g.FONT.render(
+                "Spend some money to place a CORE.\nTry dragging one onto the map", False, c.WHITE
+            )
 
             g.window.blit(
                 tutorial_text,
@@ -454,7 +463,7 @@ class Game(Scene):
             )
         elif self.tutorial == TutorialState.WIRES:
             tutorial_text = g.FONT.render(
-                "Click and drag to wire from the CORE\nYou can also branch wires from each other",
+                "Click and drag to wire from the CORE.\nYou can also branch wires from each other",
                 False,
                 c.WHITE,
             )
@@ -663,29 +672,33 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
             continue
 
         name = f"{tower.type.name} Lv {tower.level + 1}"
-        hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
+        hand.tooltip = Tooltip(name, [(-1, f"Power: {tower_get_power(tower) * 100:.0f}%")])
         if tower.type != TowerType.CORE:
             stat = TOWER_STATS[tower.type.value][tower.level]
-            hand.tooltip.text += f"\nDmg: {stat.damage}"
-            hand.tooltip.text += f"\nSpd: {20 - stat.reload_time}"
+            hand.tooltip.lines.append((3, f"Dmg: {stat.damage}"))
+            hand.tooltip.lines.append((4, f"Spd: {20 - stat.reload_time}"))
+            if stat.splash_radius > 0:
+                hand.tooltip.lines.append((-1, "Deals splash dmg"))
+            if stat.slow > 0:
+                hand.tooltip.lines.append((-1, "Slows enemies"))
 
         if self.dragging_tower_type is not None:
             if self.dragging_tower_type == tower.type:
                 if tower.level < MAX_TOWER_LEVEL:
                     hand.type = HandType.HOVER
                     hand.tooltip = Tooltip(
-                        f"Upgrade {tower.type.name}\nLv {tower.level + 1} -> {tower.level + 2}"
+                        f"Upgrade {tower.type.name}",
+                        [(-1, f"Lv {tower.level + 1} -> {tower.level + 2}")],
                     )
                     if tower.type != TowerType.CORE:
                         stat_old = TOWER_STATS[tower.type.value][tower.level]
                         stat_new = TOWER_STATS[tower.type.value][tower.level + 1]
-                        hand.tooltip.text += f"\nDmg {stat_old.damage} -> {stat_new.damage}"
-                        hand.tooltip.text += (
-                            f"\nSpd {20 - stat_old.reload_time} -> {20 -stat_new.reload_time}"
+                        hand.tooltip.lines.append(
+                            (3, f"Dmg {stat_old.damage} -> {stat_new.damage}")
                         )
-                        # hand.tooltip.text += (
-                        #     f"\nRng {(stat_new.radius - stat_old.radius) / c.TILE_SIZE}"
-                        # )
+                        hand.tooltip.lines.append(
+                            (4, f"Spd {20 - stat_old.reload_time} -> {20 -stat_new.reload_time}")
+                        )
                 else:
                     valid_placement = False
                     hand.tooltip = Tooltip("MAX LEVEL")
@@ -697,7 +710,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 
         elif p.player.mode == p.GameMode.DESTROY:
             hand.tooltip = Tooltip(
-                f"{name}\nSell: +${TOWER_STATS[tower.type.value][tower.level].sell_price}"
+                name, [(0, f"Sell: +${TOWER_STATS[tower.type.value][tower.level].sell_price}")]
             )
             hand.type = HandType.HOVER
             if t.mouse_pressed():

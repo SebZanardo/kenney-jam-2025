@@ -61,7 +61,7 @@ class Menu(Scene):
         self.current_state = MenuState.MAIN
 
     def enter(self) -> None:
-        self.walking = []
+        self.walking: list[EnemyWalker] = []
         for _ in range(20):
             w = EnemyWalker(
                 random.randint(LEFT_BOUND, RIGHT_BOUND),
@@ -110,9 +110,9 @@ class Menu(Scene):
                 if (
                     t.mouse_pressed(t.MouseButton.LEFT)
                     and g.mouse_pos[0] >= x
-                    and g.mouse_pos[0] <= (x + surf.get_width())
+                    and g.mouse_pos[0] <= x + surf.get_width()
                     and g.mouse_pos[1] >= y
-                    and g.mouse_pos[1] <= (y + surf.get_height())
+                    and g.mouse_pos[1] <= y + surf.get_height()
                 ):
                     tower_type = random.choice(list(TowerType)[1:])
                     tower_particle_burst(
@@ -122,10 +122,7 @@ class Menu(Scene):
                     g.camera.trauma += 0.2
                     w.dead = True
 
-                g.window.blit(
-                    surf,
-                    camera_to_screen_shake(g.camera, w.x, w.y),
-                )
+                g.window.blit(surf, camera_to_screen_shake(g.camera, w.x, w.y))
 
         particles_update()
         particles_render()

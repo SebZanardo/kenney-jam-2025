@@ -115,7 +115,7 @@ def im_button_text(label: str) -> bool:
 
 
 def im_button_image(
-    sprites: tuple[pygame.Surface, pygame.Surface], tooltip: str | None = None
+    sprites: tuple[pygame.Surface, pygame.Surface], tooltip: Tooltip | None = None
 ) -> bool:
     bbox = context.bbox(*sprites[0].get_size())
     hovered, clicked, held = context.interact(bbox)
@@ -123,8 +123,7 @@ def im_button_image(
 
     if hovered:
         hand.type = HandType.HOVER
-        if tooltip is not None:
-            hand.tooltip = Tooltip(tooltip)
+        hand.tooltip = tooltip
 
     return clicked
 

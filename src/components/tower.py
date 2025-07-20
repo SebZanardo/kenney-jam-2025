@@ -106,9 +106,9 @@ TOWER_STATS = [
     ),
     # TowerType.SPLASH
     (
-        TowerStat(15, 10, 20, 140, 100, 0),
-        TowerStat(30, 9, 30, 160, 110, 0),
-        TowerStat(45, 8, 45, 180, 125, 0),
+        TowerStat(15, 10, 20, 120, 100, 0),
+        TowerStat(30, 9, 30, 140, 110, 0),
+        TowerStat(45, 8, 45, 160, 125, 0),
     ),
     # TowerType.ZAP
     (
@@ -186,9 +186,9 @@ def tower_update(tower: Tower) -> None:
                     ennn = e.enemies[i]
                     diff_x = ennn.x - tower.target.x
                     diff_y = ennn.y - tower.target.y
-                    distance = math.sqrt((diff_x ** 2) + (diff_y ** 2))
+                    distance = math.sqrt((diff_x**2) + (diff_y**2))
                     if distance < stat.splash_radius:
-                        ennn.health -= stat.damage / 2  #splash damage halved
+                        ennn.health -= stat.damage / 2  # splash damage halved
                         ennn.slow_timer += stat.slow
 
             if tower.target.health <= 0:
