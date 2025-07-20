@@ -454,8 +454,9 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
     # recheck things
     ###########################################################################
     # Calculate if tower can be placed here and not block flowfield or enemies
-    if self.dragging_tower_type is not None and tile != self.last_hov_pos:
 
+    self.valid_placement = path.collision_check(*tile)
+    if self.valid_placement and self.dragging_tower_type is not None and tile != self.last_hov_pos:
         # Start or end tile
         if tile in (path.PATH_START_TILE, path.PATH_END_TILE):
             self.valid_placement = False

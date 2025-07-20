@@ -56,27 +56,36 @@ def flowfield_preview(x: int, y: int) -> bool:
 
     collision_grid[y][x] = True
     valid = flowfield_regenerate(placement_flowfield)
+    collision_grid[y][x] = False
 
-    if valid:
-        checked = set()
+    return valid
 
-        for i in range(e.active_enemies):
-            enemy = e.enemies[i]
 
-            # Skip if already verified this cell
-            if (enemy.cx, enemy.cy) in checked:
-                continue
+def collision_check(x: int, y: int) -> bool:
+    """
+    Checks if enemies are on tower or not
+    """
+    valid = True
 
-            checked.add((enemy.cx, enemy.cy))
+    collision_grid[y][x] = True
+    checked = set()
 
-            if not inside_grid(enemy.cx, enemy.cy):
-                continue
+    for i in range(e.active_enemies):
+        enemy = e.enemies[i]
 
-            # Cannot place on enemy
-            if placement_flowfield[enemy.cy][enemy.cx] == -1:
-                valid = False
-                break
+        # Skip if already verified this cell
+        if (enemy.cx, enemy.cy) in checked:
+            continue
 
+        checked.add((enemy.cx, enemy.cy))
+
+        if not inside_grid(enemy.cx, enemy.cy):
+            continue
+
+        # Cannot place on enemy
+        if placement_flowfield[enemy.cy][enemy.cx] == -1:
+            valid = False
+            break
     collision_grid[y][x] = False
 
     return valid
