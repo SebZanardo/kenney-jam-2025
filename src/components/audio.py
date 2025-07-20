@@ -6,6 +6,7 @@ class AudioChannel(IntEnum):
     UI = 0
     TOWER = auto()
     TOWER_ALT = auto()
+    BUILD = auto()
 
 
 def play_music(path: str, *args) -> None:

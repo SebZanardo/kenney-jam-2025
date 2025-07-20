@@ -89,6 +89,13 @@ path = "data/sfx/"
 HOVER_SFX = pygame.mixer.Sound(path + "hover.ogg")
 SELECT_SFX = pygame.mixer.Sound(path + "select.ogg")
 TOWER_SFX = [pygame.mixer.Sound(path + f"tower{i}.ogg") for i in range(4)]
+BUILD_SFX = [
+    pygame.mixer.Sound(path + "create_wire.ogg"),
+    pygame.mixer.Sound(path + "destroy_wire.ogg"),
+    pygame.mixer.Sound(path + "create_tower.ogg"),
+    pygame.mixer.Sound(path + "destroy_tower.ogg"),
+    pygame.mixer.Sound(path + "create_core.ogg"),
+]
 
 path = "data/music/"
 NINTENDO_MUSIC = path + "theme.ogg"

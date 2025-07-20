@@ -239,7 +239,15 @@ def tower_render_radius(tower: Tower) -> None:
 
 
 def tower_particle_burst(type: TowerType, level: int, x: int, y: int) -> None:
-    play_sound(AudioChannel.TOWER, g.TOWER_SFX[type.value - 1])
+    if type != TowerType.CORE:
+        play_sound(
+            (
+                AudioChannel.TOWER_ALT
+                if type in (TowerType.SPLASH, TowerType.ZAP)
+                else AudioChannel.TOWER
+            ),
+            g.TOWER_SFX[type.value - 1],
+        )
     if type == TowerType.NORMAL:
         for particle_type in (ParticleSpriteType.NORMAL_BIG, ParticleSpriteType.NORMAL_SMALL):
             particle_burst(

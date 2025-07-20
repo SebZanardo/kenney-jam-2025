@@ -3,6 +3,7 @@ import math
 import random
 import pygame
 
+from components.audio import AudioChannel, play_sound
 from components.settings import settings_menu
 import core.constants as c
 import core.input as t
@@ -218,7 +219,7 @@ class Game(Scene):
         power_count = 0
         for tower in self.towers:
 
-            if tower_get_power(tower) > 0:
+            if tower_get_power(tower) > 0 and tower.type != TowerType.CORE:
                 power_count += 1
 
             tower_render(tower)
@@ -230,9 +231,9 @@ class Game(Scene):
             ):
                 tower_render_radius(tower)
 
-        if power_count > 1 and self.tutorial == TutorialState.TOWER:
+        if power_count > 0 and self.tutorial == TutorialState.TOWER:
             self.tutorial = TutorialState.WIRE_MODE
-        elif power_count > 2 and self.tutorial == TutorialState.ANOTHER_TOWER:
+        elif power_count > 1 and self.tutorial == TutorialState.ANOTHER_TOWER:
             self.tutorial = TutorialState.UNPAUSE
 
         if self.tutorial == TutorialState.WIRE_MODE and p.GameMode.WIRING:
@@ -559,6 +560,7 @@ def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
     p.money_add(-price)
     p.score_add(price)
 
+    play_sound(AudioChannel.BUILD, g.BUILD_SFX[2 if type != TowerType.CORE else 4])
     tile_particle_burst(ParticleSpriteType.BUILD, tower.tile)
     g.camera.trauma = 0.35
 
@@ -583,6 +585,7 @@ def game_delete_tower(self: Game, tower: Tower):
         p.money_add(sell)
         p.score_add(-sell * 3)
 
+    play_sound(AudioChannel.BUILD, g.BUILD_SFX[3])
     tile_particle_burst(ParticleSpriteType.DELETE, tower.tile)
     g.camera.trauma = 0.35
 
@@ -748,6 +751,7 @@ def game_place_wire(self: Game, wire: Wire, parent: Wire):
     if self.tutorial == TutorialState.WIRES and self.wire_count > 6:
         self.tutorial = TutorialState.VIEW
 
+    play_sound(AudioChannel.BUILD, g.BUILD_SFX[0])
     tile_particle_burst(ParticleSpriteType.CREATE, wire.tile)
 
 
@@ -761,6 +765,7 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire | None):
     self.wire_count -= 1
 
     if wire.tower is None:
+        play_sound(AudioChannel.BUILD, g.BUILD_SFX[1])
         tile_particle_burst(ParticleSpriteType.SHINY, wire.tile)
     else:
         game_detach_tower(self, wire)
