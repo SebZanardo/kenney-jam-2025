@@ -39,6 +39,7 @@ class Tower:
 
     # for non-cores
     core_tower: Tower | None = None
+
     target: e.Enemy = None
 
 
