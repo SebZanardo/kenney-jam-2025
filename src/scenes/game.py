@@ -54,7 +54,6 @@ from utilities.math import Pos, signed_num
 
 from scenes.scene import Scene
 from scenes import manager
-from utilities.sprite import dim_sprite
 
 
 class MenuState(IntEnum):
@@ -220,35 +219,6 @@ class Game(Scene):
         for i in range(e.active_enemies):
             e.enemy_render(i)
 
-        # preview tile
-        if p.player.health > 0:
-            preview_tile: pygame.Surface | None = None
-
-            if self.dragging_tower_type is not None:
-                preview_tile = TOWER_ANIMATIONS[self.dragging_tower_type.value].frames[0]
-                if hov_tile is not None:
-                    tower_render_radius(Tower(hov_tile, self.dragging_tower_type, 0))
-
-            elif p.player.mode == p.GameMode.WIRING:
-                if hov_wire is not None:
-                    preview_tile = g.WIRES[0]
-
-            if preview_tile is not None:
-                if hov_tile is None:
-                    g.window.blit(preview_tile, g.mouse_pos)
-                else:
-                    surf = preview_tile.copy()
-                    surf.set_alpha(200)
-                    surf.blit(
-                        animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
-                    )
-                    g.window.blit(
-                        surf,
-                        camera_to_screen(
-                            g.camera, hov_tile[0] * c.TILE_SIZE, hov_tile[1] * c.TILE_SIZE
-                        ),
-                    )
-
         # particles
         particles_render()
 
@@ -326,7 +296,25 @@ class Game(Scene):
             ),
         )
 
-        # right
+        # left and right
+        for y in range(c.GRID_HEIGHT_TILES):
+            g.window.blit(
+                g.TERRAIN[5],
+                camera_to_screen_shake(g.camera, -1 * c.TILE_SIZE, y * c.TILE_SIZE),
+            )
+            g.window.blit(
+                g.TERRAIN[6],
+                camera_to_screen_shake(g.camera, -2 * c.TILE_SIZE, y * c.TILE_SIZE),
+            )
+            g.window.blit(
+                g.TERRAIN[4],
+                camera_to_screen_shake(g.camera, c.GRID_WIDTH, y * c.TILE_SIZE),
+            )
+            g.window.blit(
+                g.TERRAIN[6],
+                camera_to_screen_shake(g.camera, c.GRID_WIDTH + c.TILE_SIZE, y * c.TILE_SIZE),
+            )
+
         last_dragging_tower_type = self.dragging_tower_type
         for i, tower_type in enumerate(TowerType):
             if tower_type == last_dragging_tower_type:
@@ -335,14 +323,42 @@ class Game(Scene):
             ui.im_set_next_position(
                 c.WINDOW_WIDTH - c.TILE_SIZE - 4, i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6
             )
-            surf = TOWER_ANIMATIONS[tower_type.value].frames[0]
             text = f"{tower_type.name}\n-${TOWER_PRICES[tower_type.value]}"
             if tower_type != TowerType.CORE:
                 text += f"\nDmg: {TOWER_STATS[tower_type.value][0].damage}"
-            if ui.im_button_image([dim_sprite(surf), surf], text):
+            if ui.im_button_image(TOWER_ANIMATIONS[tower_type.value][1], text):
                 ui.context.held_id = -1
                 if p.player.money >= TOWER_PRICES[tower_type.value]:
                     self.dragging_tower_type = tower_type
+
+        # preview tile
+        if p.player.health > 0:
+            preview_tile: pygame.Surface | None = None
+
+            if self.dragging_tower_type is not None:
+                preview_tile = TOWER_ANIMATIONS[self.dragging_tower_type.value][1][1]
+                if hov_tile is not None:
+                    tower_render_radius(Tower(hov_tile, self.dragging_tower_type, 0))
+
+            elif p.player.mode == p.GameMode.WIRING:
+                if hov_wire is not None:
+                    preview_tile = g.WIRES[0]
+
+            if preview_tile is not None:
+                if hov_tile is None:
+                    g.window.blit(preview_tile, g.mouse_pos)
+                else:
+                    surf = preview_tile.copy()
+                    surf.set_alpha(200)
+                    surf.blit(
+                        animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
+                    )
+                    g.window.blit(
+                        surf,
+                        camera_to_screen(
+                            g.camera, hov_tile[0] * c.TILE_SIZE, hov_tile[1] * c.TILE_SIZE
+                        ),
+                    )
 
         # heading
         if p.player.health <= 0:
@@ -379,7 +395,7 @@ def tile_particle_burst(type: ParticleSpriteType, tile: Pos) -> None:
 # TOWERS
 def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
     tower = Tower(tile[:], type, 0, 0, Animator(), Animator())
-    animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[type.value]})
+    animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[type.value][0]})
     animator_initialise(tower.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.08)})
     self.towers.append(tower)
 

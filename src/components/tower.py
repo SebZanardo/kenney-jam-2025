@@ -14,6 +14,7 @@ from components.camera import camera_to_screen_shake
 from components.particles import ParticleSpriteType, particle_burst
 
 from utilities.math import Pos, point_in_circle
+from utilities.sprite import dim_sprite, gray_sprite
 
 
 class TowerType(IntEnum):
@@ -55,12 +56,15 @@ class TowerStat:
 
 
 # Load animations once here
-TOWER_ANIMATIONS: list[Animation] = []
+TOWER_ANIMATIONS: list[tuple[Animation, tuple[pygame.Surface, pygame.Surface], pygame.Surface]] = []
 
 for tower_type in TowerType:
     start = tower_type.value
+    first_frame = g.TOWERS[start * 7]
     animation = Animation(g.TOWERS[start * 7 : (start + 1) * 7], 0.1)
-    TOWER_ANIMATIONS.append(animation)
+    TOWER_ANIMATIONS.append(
+        (animation, (dim_sprite(first_frame), first_frame), gray_sprite(first_frame))
+    )
 
 TOWER_PRICES = [
     # TowerType.CORE
@@ -191,7 +195,10 @@ def tower_update(tower: Tower) -> None:
 
 
 def tower_render(tower: Tower) -> None:
-    surf = animator_get_frame(tower.animator)
+    if tower_get_power(tower) == 0:
+        surf = TOWER_ANIMATIONS[tower.type.value][2]
+    else:
+        surf = animator_get_frame(tower.animator)
     surf = pygame.transform.rotate(surf, -tower.rotation)
 
     if tower.level > 0:

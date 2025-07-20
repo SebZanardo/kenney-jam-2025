@@ -54,6 +54,13 @@ def invert_sprite(surf: pygame.Surface) -> pygame.Surface:
     return inv
 
 
+def gray_sprite(surf: pygame.Surface, value: float = 0.5) -> pygame.Surface:
+    gray = surf.copy()
+    gray.fill((0, 0, 0, 255), special_flags=pygame.BLEND_MULT)
+    gray.fill((value * 255, value * 255, value * 255, 0), special_flags=pygame.BLEND_ADD)
+    return gray
+
+
 # rotates a sprite to match the given direction, assuming it is initially facing up
 def rotate_sprite(sprite: pygame.Surface, new_direction: str) -> pygame.Surface:
     if new_direction == c.UP:
