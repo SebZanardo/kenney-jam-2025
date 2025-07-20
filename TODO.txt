@@ -1,0 +1,7 @@
+- Object pool and limit particles
+- Waves up to 100 then loop
+- More balanced health, damage and money
+- More enemy types
+- Splash logic optimised
+- Enemy pathing bugs fixed, not just hack
+- Preview path fixed
