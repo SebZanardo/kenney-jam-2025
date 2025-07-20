@@ -85,9 +85,6 @@ def input_event_queue() -> bool:
             elif event.y > 0:
                 g.action_buffer[Action.LEFT] = InputState.PRESSED
 
-        elif event.type == pygame.WINDOWFOCUSGAINED:
-            pygame.mixer.music.unpause()
-
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             if not c.IS_WEB:
                 return False

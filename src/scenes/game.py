@@ -48,7 +48,7 @@ import components.enemy as e
 from components import ui
 from components.wave import wave_data
 from components.wire import Wire, wire_find, wire_render_chain
-from utilities.math import Pos
+from utilities.math import Pos, signed_num
 
 from scenes.scene import Scene
 from scenes import manager
@@ -372,7 +372,11 @@ class Game(Scene):
                     c.WINDOW_WIDTH - c.TILE_SIZE - 4,
                     i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6 + (30 if i != 0 else 0),
                 )
-                text = f"{tower_type.name}\n-${TOWER_PRICES[tower_type.value]}"
+                text = f"{tower_type.name}\n${TOWER_PRICES[tower_type.value]}"
+                if tower_type != TowerType.CORE:
+                    stat = TOWER_STATS[tower_type.value][0]
+                    text += f"\nDmg: {stat.damage}"
+                    text += f"\nSpd: {20 - stat.reload_time}"
 
                 if ui.im_button_image(TOWER_ANIMATIONS[tower_type.value][1], text):
                     ui.context.held_id = -1
@@ -411,7 +415,7 @@ class Game(Scene):
 
         # heading
         if self.gameover:
-            heading = g.FONT_LARGE.render("GAME OVER", False, c.WHITE)
+            heading = g.FONT_LARGE.render("GAME OVER", False, c.WHITE, c.BLACK)
             g.window.blit(
                 heading,
                 (
@@ -421,7 +425,9 @@ class Game(Scene):
             )
 
             if self.gameover_timer <= 0:
-                continue_text = g.FONT.render("<CLICK> anywhere to return to menu", False, c.WHITE)
+                continue_text = g.FONT.render(
+                    "<CLICK> anywhere to return to menu", False, c.WHITE, c.BLACK
+                )
 
                 g.window.blit(
                     continue_text,
@@ -484,7 +490,7 @@ class Game(Scene):
             )
         elif self.tutorial == TutorialState.VIEW:
             tutorial_text = g.FONT.render(
-                "Change your mode to perform different\nactions such as placing wires and\nviewing stats or removing builds",
+                "Change your mode to perform different\nactions such as placing wires,\nviewing stats, or removing builds",
                 False,
                 c.WHITE,
             )
@@ -611,6 +617,7 @@ def game_upgrade_tower(self: Game, tower: Tower):
 
     p.money_add(-TOWER_PRICES[tower.type.value])
 
+    play_sound(AudioChannel.BUILD, g.BUILD_SFX[2 if tower.type != TowerType.CORE else 4])
     tile_particle_burst(ParticleSpriteType.BUILD, tower.tile)
     g.camera.trauma = 0.35
 
@@ -657,6 +664,10 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 
         name = f"{tower.type.name} Lv {tower.level + 1}"
         hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
+        if tower.type != TowerType.CORE:
+            stat = TOWER_STATS[tower.type.value][tower.level]
+            hand.tooltip.text += f"\nDmg: {stat.damage}"
+            hand.tooltip.text += f"\nSpd: {20 - stat.reload_time}"
 
         if self.dragging_tower_type is not None:
             if self.dragging_tower_type == tower.type:
@@ -665,20 +676,16 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                     hand.tooltip = Tooltip(
                         f"Upgrade {tower.type.name}\nLv {tower.level + 1} -> {tower.level + 2}"
                     )
-                    # NOTE: these should be hidden from player. more fun if they
-                    # work it out and trust that we balanced properly
-                    # if tower.type != TowerType.CORE:
-                    #     stat_old = TOWER_STATS[tower.type.value][tower.level]
-                    #     stat_new = TOWER_STATS[tower.type.value][tower.level + 1]
-                    #     hand.tooltip.text += (
-                    #         f"\nDmg {signed_num(stat_new.damage - stat_old.damage)}"
-                    #     )
-                    #     hand.tooltip.text += (
-                    #         f"\nSpd {signed_num(stat_old.reload_time - stat_new.reload_time)}"
-                    #     )
-                    #     hand.tooltip.text += (
-                    #         f"\nRng {signed_num((stat_new.radius - stat_old.radius) / c.TILE_SIZE)}"
-                    #     )
+                    if tower.type != TowerType.CORE:
+                        stat_old = TOWER_STATS[tower.type.value][tower.level]
+                        stat_new = TOWER_STATS[tower.type.value][tower.level + 1]
+                        hand.tooltip.text += f"\nDmg {stat_old.damage} -> {stat_new.damage}"
+                        hand.tooltip.text += (
+                            f"\nSpd {20 - stat_old.reload_time} -> {20 -stat_new.reload_time}"
+                        )
+                        # hand.tooltip.text += (
+                        #     f"\nRng {(stat_new.radius - stat_old.radius) / c.TILE_SIZE}"
+                        # )
                 else:
                     valid_placement = False
                     hand.tooltip = Tooltip("MAX LEVEL")
