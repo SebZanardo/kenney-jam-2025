@@ -476,11 +476,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                     game_delete_tower(self, tower)
 
         elif p.player.mode == p.GameMode.VIEW:
-<<<<<<< HEAD
             hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
-=======
-            hand.tooltip = Tooltip(f"{name}")
->>>>>>> 2ee4a6b0d26c01b4232d10ed53b5d5f209db95e4
         break
 
     # placing
