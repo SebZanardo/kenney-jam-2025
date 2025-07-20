@@ -166,9 +166,14 @@ def tower_update(tower: Tower) -> None:
         # Damage target
         if tower.cooldown <= 0:
             tower.target.health -= stat.damage
+
             if tower.target.health <= 0:
-                p.money_add(10)
-                p.score_add(100)
+                reward = e.ENEMY_STATS[tower.target.type.value].reward
+                p.money_add(reward)
+                p.score_add(10 * reward)
+            else:
+                p.score_add(1)
+
             tower.cooldown = stat.reload_time
 
             # TODO: make different attacks use different particles
