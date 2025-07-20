@@ -131,8 +131,8 @@ class Menu(Scene):
         particles_render()
 
         # Black out under hud
-        pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 32))
-        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 32, c.WINDOW_WIDTH, 32))
+        pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 35))
+        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 35, c.WINDOW_WIDTH, 35))
 
         for x in range(c.WINDOW_WIDTH // 14):
             g.window.blit(g.TERRAIN[3], (x * 14 - 1, 3))

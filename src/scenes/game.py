@@ -249,8 +249,8 @@ class Game(Scene):
             self.wire_draw_start = None
 
         # Black out under hud
-        pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 32))
-        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 32, c.WINDOW_WIDTH, 32))
+        pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 35))
+        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 35, c.WINDOW_WIDTH, 35))
 
         # top and bottom
         for x in range(c.WINDOW_WIDTH // 14):
