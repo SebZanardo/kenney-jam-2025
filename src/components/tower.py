@@ -30,7 +30,7 @@ class Tower:
     level: int
 
     # visual
-    direction: str = c.UP
+    rotation: float = 0.0
     animator: Animator | None = None
     blending_anim: Animator | None = None
 
@@ -40,7 +40,7 @@ class Tower:
     # for non-cores
     core_tower: Tower | None = None
 
-    target: e.Enemy = None
+    target: e.Enemy | None = None
     cooldown: int = 0
 
 
@@ -76,7 +76,7 @@ TOWER_PRICES = [
 
 MAX_TOWER_LEVEL = 2
 
-TOWER_STATS = (
+TOWER_STATS = [
     # TowerType.CORE
     (
         TowerStat(10, 0, 0, 0),
@@ -107,7 +107,7 @@ TOWER_STATS = (
         TowerStat(60, 0.45, 35, 80),
         TowerStat(90, 0.4, 50, 80),
     ),
-)
+]
 
 
 def tower_get_power(tower: Tower) -> float:
@@ -150,11 +150,14 @@ def tower_update(tower: Tower) -> None:
                 break
 
             i += 1
-    else:
+
+    if tower.target is not None:
+        # Rotate towards target
+        tower.rotation = math.degrees(math.atan2(ty - tower.target.y, tx - tower.target.x)) - 90
+
         # Check if target is dead or out of range
-        if (
-            tower.target.health <= 0 or
-            not point_in_circle(tower.target.x, tower.target.y, tx, ty, stats.radius)
+        if tower.target.health <= 0 or not point_in_circle(
+            tower.target.x, tower.target.y, tx, ty, stats.radius
         ):
             tower.target = None
             return
@@ -180,6 +183,7 @@ def tower_update(tower: Tower) -> None:
 
 def tower_render(tower: Tower) -> None:
     surf = animator_get_frame(tower.animator)
+    surf = pygame.transform.rotate(surf, -tower.rotation)
 
     if tower.level > 0:
         surf = surf.copy()
@@ -189,7 +193,11 @@ def tower_render(tower: Tower) -> None:
 
     g.window.blit(
         surf,
-        camera_to_screen_shake(g.camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
+        camera_to_screen_shake(
+            g.camera,
+            (tower.tile[0] + 0.5) * c.TILE_SIZE - surf.get_width() // 2,
+            (tower.tile[1] + 0.5) * c.TILE_SIZE - surf.get_height() // 2,
+        ),
     )
 
     # g.window.blit(

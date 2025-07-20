@@ -16,7 +16,7 @@ class WaveData:
     number: int = 0
 
     # For wave we are on
-    spawn_enemy_type: e.EnemyType = e.EnemyType.NONE
+    spawn_enemy_type: e.EnemyType = e.EnemyType.GROUND
     spawn_remaining: int = 0
     spawn_tick: float = 0
     spawn_tick_counter: float = 0
@@ -26,11 +26,23 @@ class WaveData:
 
 # This stores all wave data
 waves: list[list[Wave]] = [
-    [Wave(e.EnemyType.GROUND_WEAK, 1, 0)],
-    [Wave(e.EnemyType.GROUND_WEAK, 8, 10)],
+    [
+        Wave(e.EnemyType.GROUND, 1, 0),
+        Wave(e.EnemyType.FLYING, 1, 0),
+        Wave(e.EnemyType.GROUND_FAST, 1, 30),
+        Wave(e.EnemyType.FLYING_FAST, 1, 30),
+        Wave(e.EnemyType.GROUND_HEAVY, 1, 60),
+        Wave(e.EnemyType.FLYING_HEAVY, 1, 60),
+        Wave(e.EnemyType.GROUND_HEAVY_FAST, 1, 90),
+        Wave(e.EnemyType.GROUND_SUPER_HEAVY, 1, 120),
+    ],
+    [Wave(e.EnemyType.GROUND, 8, 10)],
     [Wave(e.EnemyType.GROUND_HEAVY, 10, 8)],
     [Wave(e.EnemyType.GROUND_FAST, 30, 4)],
-    [Wave(e.EnemyType.GROUND_WEAK, 8, 10), Wave(e.EnemyType.GROUND_FAST, 30, 4)],
+    [
+        Wave(e.EnemyType.GROUND_FAST, 30, 4),
+        Wave(e.EnemyType.GROUND, 8, 10),
+    ],
 ]
 WAVE_COUNT = len(waves)
 wave_data = WaveData()
@@ -42,7 +54,7 @@ def wave_reset() -> None:
     wave_data.number = 0
 
     # For wave we are on
-    wave_data.spawn_enemy_type = e.EnemyType.NONE
+    wave_data.spawn_enemy_type = e.EnemyType.GROUND
     wave_data.spawn_remaining = 0
     wave_data.spawn_tick = 0
     wave_data.spawn_tick_counter = 0
@@ -66,10 +78,11 @@ def wave_update() -> None:
                 if wave_data.spawn_done:
                     break
 
-            spawned = e.enemy_spawn(wave_data.spawn_enemy_type)
-            if spawned:
-                wave_data.spawn_remaining -= 1
-                wave_data.spawn_tick_counter -= wave_data.spawn_tick
+            e.enemy_spawn(wave_data.spawn_enemy_type)
+            # decrement the remaining count regardless of whether it succeeded or not
+            # to avoid getting stuck in an infinite loop!
+            wave_data.spawn_remaining -= 1
+            wave_data.spawn_tick_counter -= wave_data.spawn_tick
 
         wave_data.spawn_tick_counter += 1
 

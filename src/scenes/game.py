@@ -210,15 +210,15 @@ class Game(Scene):
         for wire in self.wires:
             wire_render_chain(wire)
 
-        # enemies
-        for i in range(e.active_enemies):
-            e.enemy_render(i)
-
         # towers
         for tower in self.towers:
             tower_render(tower)
             if p.player.mode == p.GameMode.VIEW and tower.tile == hov_tile:
                 tower_render_radius(tower)
+
+        # enemies
+        for i in range(e.active_enemies):
+            e.enemy_render(i)
 
         # preview tile
         if p.player.health > 0:
@@ -377,7 +377,7 @@ def tile_particle_burst(type: ParticleSpriteType, tile: Pos) -> None:
 
 # TOWERS
 def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
-    tower = Tower(tile[:], type, 0, c.UP, Animator(), Animator())
+    tower = Tower(tile[:], type, 0, 0, Animator(), Animator())
     animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[type.value]})
     animator_initialise(tower.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.08)})
     self.towers.append(tower)
@@ -506,6 +506,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 
         elif p.player.mode == p.GameMode.VIEW:
             hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
+
         break
 
     # placing

@@ -6,7 +6,7 @@ import components.enemy as e
 
 
 # how far outside is run
-outside = 5 * c.TILE_SIZE
+outside = 3 * c.TILE_SIZE
 
 PATH_START_POS = (-outside, c.GRID_HEIGHT / 2)
 PATH_END_POS = (c.GRID_WIDTH + outside, PATH_START_POS[1])
