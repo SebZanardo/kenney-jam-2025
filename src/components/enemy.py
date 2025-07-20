@@ -1,9 +1,5 @@
-import math
-from components.player import GameMode, SpeedType, player, player_reset
 from dataclasses import dataclass
 from enum import IntEnum, auto
-
-import pygame
 
 import core.globals as g
 import core.constants as c
@@ -23,10 +19,18 @@ from utilities.math import clamp
 class EnemyType(IntEnum):
     NONE = 0
 
-    GROUND_WEAK = auto()
+    # ground
+    GROUND = auto()
     GROUND_FAST = auto()
     GROUND_HEAVY = auto()
-    # FLYING = auto()  # TODO: Implement
+    GROUND_HEAVY_FAST = auto()
+    GROUND_SUPER_HEAVY = auto()
+
+    # flying
+    # TODO: Implement
+    FLYING = auto()
+    FLYING_FAST = auto()
+    FLYING_HEAVY = auto()
 
 
 @dataclass(slots=True)
@@ -42,22 +46,34 @@ class Enemy:
     health: int = 0
 
 
-# TODO: Change to array later once enum is stable
-enemy_max_health = {
-    EnemyType.NONE: 0,
-    EnemyType.GROUND_WEAK: 10,
-    EnemyType.GROUND_FAST: 15,
-    EnemyType.GROUND_HEAVY: 50,
-}
+@dataclass(frozen=True)
+class EnemyStat:
+    health: int
+    speed: float
+    size: float
+    flying: bool
 
-# TODO: Change to array later once enum is stable
-# NOTE: Values must be a unit fraction 1/X
-enemy_speed = {
-    EnemyType.NONE: 0,
-    EnemyType.GROUND_WEAK: 0.1,
-    EnemyType.GROUND_FAST: 0.2,
-    EnemyType.GROUND_HEAVY: 0.05,
-}
+
+ENEMY_STATS = [
+    # EnemyType.NONE
+    EnemyStat(0, 0, 1, False),
+    # EnemyType.GROUND
+    EnemyStat(10, 0.1, 1, False),
+    # EnemyType.GROUND_FAST
+    EnemyStat(15, 0.2, 1, False),
+    # EnemyType.GROUND_HEAVY
+    EnemyStat(50, 0.05, 1.5, False),
+    # EnemyType.GROUND_HEAVY_FAST
+    EnemyStat(100, 0.1, 1.5, False),
+    # EnemyType.GROUND_SUPER_HEAVY
+    EnemyStat(300, 0.025, 2, False),
+    # EnemyType.FLYING
+    EnemyStat(10, 0.1, 1, True),
+    # EnemyType.FLYING_FAST
+    EnemyStat(15, 0.2, 1, True),
+    # EnemyType.FLYING_HEAVY
+    EnemyStat(50, 0.05, 1.5, True),
+]
 
 
 MAX_ENEMIES = 100
@@ -86,7 +102,7 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
     # (-1, -1) denotes outside grid for either spawn run or goal run
     new_enemy.cx, new_enemy.cy = PATH_START_POS
 
-    new_enemy.health = enemy_max_health[enemy_type] * enemy_health_multiplier
+    new_enemy.health = ENEMY_STATS[enemy_type].health * enemy_health_multiplier
 
     active_enemies += 1
 
@@ -123,7 +139,7 @@ def enemy_update(i: int) -> bool:
     if e.health <= 0:
         return True
 
-    speed = enemy_speed[e.enemy_type] * c.TILE_SIZE
+    speed = ENEMY_STATS[e.enemy_type].speed * c.TILE_SIZE
 
     # Travelling to start
     if (e.cx, e.cy) == PATH_START_POS:

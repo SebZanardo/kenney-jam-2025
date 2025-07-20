@@ -76,7 +76,7 @@ TOWER_PRICES = [
 
 MAX_TOWER_LEVEL = 2
 
-TOWER_STATS = (
+TOWER_STATS = [
     # TowerType.CORE
     (
         TowerStat(10, 0, 0, 0),
@@ -107,7 +107,7 @@ TOWER_STATS = (
         TowerStat(60, 0.45, 35, 80),
         TowerStat(90, 0.4, 50, 80),
     ),
-)
+]
 
 
 def tower_get_power(tower: Tower) -> float:
