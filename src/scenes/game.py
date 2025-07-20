@@ -371,7 +371,7 @@ def tile_particle_burst(type: ParticleSpriteType, tile: Pos) -> None:
 
 # TOWERS
 def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
-    tower = Tower(tile[:], type, 0, c.UP, Animator(), Animator())
+    tower = Tower(tile[:], type, 0, 0, Animator(), Animator())
     animator_initialise(tower.animator, {0: TOWER_ANIMATIONS[type.value]})
     animator_initialise(tower.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.08)})
     self.towers.append(tower)
