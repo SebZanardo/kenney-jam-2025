@@ -20,6 +20,7 @@ from components.animation import (
     animator_initialise,
     animator_update,
 )
+from components.tower import TowerType, particle_tower_create
 from components.particles import ParticleSpriteType, particle_burst, particles_render, particles_update
 
 from scenes.scene import Scene
@@ -106,18 +107,9 @@ class Menu(Scene):
                     g.mouse_pos[0] >= x and g.mouse_pos[0] <= (x + surf.width) and
                     g.mouse_pos[1] >= y and g.mouse_pos[1] <= (y + surf.height)
                 ):
-                    # TODO: play sound effect here
-                    for particle_type in (ParticleSpriteType.ATTACK_BIG, ParticleSpriteType.ATTACK_SMALL):
-                        particle_burst(
-                            particle_type,
-                            count=int(stat.size * 5),
-                            position=(w.x + surf.width // 2, w.y + surf.height // 2),
-                            position_variance=c.TILE_SIZE,
-                            velocity=0,
-                            velocity_variance=0,
-                            lifespan=10,
-                            lifespan_variance=2,
-                        )
+                    tower_type = random.choice(list(TowerType)[1:])
+                    particle_tower_create(tower_type, 1, w.x + surf.width // 2, w.y + surf.height // 2)
+
                     w.dead = True
 
                 g.window.blit(
