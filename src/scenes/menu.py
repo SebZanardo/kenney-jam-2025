@@ -76,9 +76,6 @@ class Menu(Scene):
     def execute(self) -> None:
         hand.type = HandType.DEFAULT
 
-        if t.mouse_pressed(t.MouseButton.LEFT):
-            g.camera.trauma += 0.15
-
         if t.mouse_held(t.MouseButton.LEFT):
             hand.type = HandType.GRAB
 
@@ -116,6 +113,7 @@ class Menu(Scene):
                     tower_type = random.choice(list(TowerType)[1:])
                     particle_tower_create(tower_type, 1, w.x + surf.get_width() // 2, w.y + surf.get_height() // 2)
 
+                    g.camera.trauma += 0.15
                     w.dead = True
 
                 g.window.blit(
