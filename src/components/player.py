@@ -11,7 +11,7 @@ from components.particles import Particle, particle_spawn
 from utilities.math import signed_num
 
 
-STARTING_MONEY = 30
+STARTING_MONEY = 50
 STARTING_HEALTH = 100
 
 

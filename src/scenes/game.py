@@ -63,6 +63,7 @@ class TutorialState(IntEnum):
     WIRES = auto()
     VIEW = auto()
     TOWER = auto()
+    WIRE_MODE = auto()
     ANOTHER_TOWER = auto()
     UNPAUSE = auto()
     COMPLETE = auto()
@@ -227,7 +228,7 @@ class Game(Scene):
                 tower_render_radius(tower)
 
         if power_count > 1 and self.tutorial == TutorialState.TOWER:
-            self.tutorial = TutorialState.ANOTHER_TOWER
+            self.tutorial = TutorialState.WIRE_MODE
         elif power_count > 2 and self.tutorial == TutorialState.ANOTHER_TOWER:
             self.tutorial = TutorialState.UNPAUSE
 
@@ -285,6 +286,8 @@ class Game(Scene):
                 if ui.im_button_image(
                     (g.BUTTONS_INV if last_mode == p.GameMode.WIRING else g.BUTTONS)[1], "Lay wire"
                 ):
+                    if self.tutorial == TutorialState.WIRE_MODE:
+                        self.tutorial = TutorialState.ANOTHER_TOWER
                     p.player.mode = p.GameMode.WIRING
 
                 ui.im_same_line()
@@ -354,7 +357,7 @@ class Game(Scene):
                     continue
                 elif self.tutorial == TutorialState.ANOTHER_TOWER and i == 0:
                     continue
-                elif self.tutorial == TutorialState.VIEW or self.tutorial == TutorialState.WIRES:
+                elif self.tutorial == TutorialState.VIEW or self.tutorial == TutorialState.WIRES or self.tutorial == TutorialState.WIRE_MODE:
                     continue
 
                 if tower_type == last_dragging_tower_type:
@@ -389,7 +392,7 @@ class Game(Scene):
                     surf = preview_tile.copy()
                     surf.set_alpha(200)
                     surf.blit(
-                        animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
+                        animator_get_frame(self.blending_anim), (0, 0), special_flags=pygame.BLEND_MULT
                     )
                     g.window.blit(
                         surf,
@@ -432,7 +435,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 - 20,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
                 ),
             )
         elif self.tutorial == TutorialState.WIRES:
@@ -442,7 +445,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 - 20,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
                 ),
             )
         elif self.tutorial == TutorialState.TOWER:
@@ -452,27 +455,37 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 - 20,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
+                ),
+            )
+        elif self.tutorial == TutorialState.WIRE_MODE:
+            tutorial_text = g.FONT.render("Switch to wire mode to modify wires", False, c.WHITE)
+
+            g.window.blit(
+                tutorial_text,
+                (
+                    c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
                 ),
             )
         elif self.tutorial == TutorialState.VIEW:
-            tutorial_text = g.FONT.render("Change your mode to perform different\nactions such aslaying wires, removing\nor viewing tower stats", False, c.WHITE)
+            tutorial_text = g.FONT.render("Change your mode to perform different\nactions such as placing wires, removing\nor viewing tower stats", False, c.WHITE)
 
             g.window.blit(
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 - 20,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
                 ),
             )
         elif self.tutorial == TutorialState.ANOTHER_TOWER:
-            tutorial_text = g.FONT.render("Build a defence with towers to stop\nenemies from reaching the other side.\nPlace another powered tower to continue...", False, c.WHITE)
+            tutorial_text = g.FONT.render("Build a defence with towers to stop\nenemies from reaching the other side.\nPlace another powered tower to continue", False, c.WHITE)
 
             g.window.blit(
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 - 20,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
                 ),
             )
         elif self.tutorial == TutorialState.UNPAUSE:
@@ -482,7 +495,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 - 20,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
                 ),
             )
 

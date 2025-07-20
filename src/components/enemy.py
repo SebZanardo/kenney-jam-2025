@@ -177,13 +177,15 @@ def enemy_update(i: int) -> bool:
     """
     enemy = enemies[i]
 
+    stat = ENEMY_STATS[enemy.type]
+
     # Dead then no need to update
     if enemy.health <= 0:
+        p.score_add(stat.health)
         return True
 
     animator_update(enemy.animator, g.dt)
 
-    stat = ENEMY_STATS[enemy.type]
     speed = stat.speed * c.TILE_SIZE
 
     enemy.direction = c.RIGHT
