@@ -53,7 +53,7 @@ class Menu(Scene):
         super().__init__(statemachine)
 
         self.current_state = MenuState.MAIN
-        self.camera = Camera(
+        g.camera = Camera(
             Motion.empty(),
             pygame.Vector2(),
             pygame.Vector2(),
@@ -75,11 +75,17 @@ class Menu(Scene):
 
     def execute(self) -> None:
         hand.type = HandType.DEFAULT
+
+        if t.mouse_pressed(t.MouseButton.LEFT):
+            g.camera.trauma += 0.15
+
         if t.mouse_held(t.MouseButton.LEFT):
             hand.type = HandType.GRAB
+
         hand.tooltip = None
 
-        camera_update(self.camera, g.dt)
+        g.camera.trauma = min(g.camera.trauma, 0.5)
+        camera_update(g.camera, g.dt)
 
         g.window.fill(c.BLACK)
 
@@ -104,11 +110,11 @@ class Menu(Scene):
 
                 if (
                     t.mouse_pressed(t.MouseButton.LEFT) and
-                    g.mouse_pos[0] >= x and g.mouse_pos[0] <= (x + surf.width) and
-                    g.mouse_pos[1] >= y and g.mouse_pos[1] <= (y + surf.height)
+                    g.mouse_pos[0] >= x and g.mouse_pos[0] <= (x + surf.get_width()) and
+                    g.mouse_pos[1] >= y and g.mouse_pos[1] <= (y + surf.get_height())
                 ):
                     tower_type = random.choice(list(TowerType)[1:])
-                    particle_tower_create(tower_type, 1, w.x + surf.width // 2, w.y + surf.height // 2)
+                    particle_tower_create(tower_type, 1, w.x + surf.get_width() // 2, w.y + surf.get_height() // 2)
 
                     w.dead = True
 
@@ -194,7 +200,7 @@ class Menu(Scene):
                 ui.im_new()
 
         if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
-            self.camera.trauma += 0.5
+            g.camera.trauma += 0.5
 
         # hand
         hand_render()
