@@ -108,7 +108,14 @@ class Game(Scene):
         self.blending_anim = Animator()
         animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.15)})
 
+        self.gameover = False
+        self.gameover_timer = 60
+
     def execute(self) -> None:
+        self.gameover = p.player.health <= 0
+        if self.gameover and self.gameover_timer > 0:
+            self.gameover_timer -= 1
+
         hand.type = HandType.DEFAULT
         if self.wire_draw_start is not None or self.dragging_tower_type is not None or t.mouse_held(t.MouseButton.LEFT):
             hand.type = HandType.GRAB
@@ -142,7 +149,7 @@ class Game(Scene):
         # hovered wire
         hov_wire, hov_wire_parent = wire_find(self.wires, hov_tile)
 
-        if p.player.health > 0:
+        if not self.gameover:
             # user interaction
             if p.player.mode == p.GameMode.WIRING:
                 # make wires (interp mouse pos)
@@ -180,12 +187,6 @@ class Game(Scene):
             particles_update()
             animator_update(self.blending_anim, g.dt)
 
-        # game over
-        else:
-            if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
-                statemachine_change_state(self.statemachine, manager.SceneState.MENU)
-                return
-            pass
 
         # RENDER
         g.window.fill(c.BLACK)
@@ -230,42 +231,43 @@ class Game(Scene):
             g.window.blit(g.TERRAIN[3], (x * 14 - 1, 3))
             g.window.blit(g.TERRAIN[2], (x * 14 - 1, c.WINDOW_HEIGHT - c.TILE_SIZE - 4))
 
-        last_speed, last_mode = p.player.speed, p.player.mode
-        ui.im_reset_position(c.TILE_SIZE, 0)
-        if last_speed == p.SpeedType.PAUSED:
-            if ui.im_button_image(g.BUTTONS_INV[9], "Paused"):
-                p.player.speed = p.SpeedType.NORMAL
-        else:
-            if ui.im_button_image(g.BUTTONS[9], "Pause"):
-                p.player.speed = p.SpeedType.PAUSED
-        ui.im_same_line()
-        if last_speed == p.SpeedType.FAST:
-            if ui.im_button_image(g.BUTTONS_INV[12], "Fast forwarding"):
-                p.player.speed = p.SpeedType.NORMAL
-        else:
-            if ui.im_button_image(g.BUTTONS[12], "Fast forward"):
-                p.player.speed = p.SpeedType.FAST
+        if not self.gameover:
+            last_speed, last_mode = p.player.speed, p.player.mode
+            ui.im_reset_position(c.TILE_SIZE, 0)
+            if last_speed == p.SpeedType.PAUSED:
+                if ui.im_button_image(g.BUTTONS_INV[9], "Paused"):
+                    p.player.speed = p.SpeedType.NORMAL
+            else:
+                if ui.im_button_image(g.BUTTONS[9], "Pause"):
+                    p.player.speed = p.SpeedType.PAUSED
+            ui.im_same_line()
+            if last_speed == p.SpeedType.FAST:
+                if ui.im_button_image(g.BUTTONS_INV[12], "Fast forwarding"):
+                    p.player.speed = p.SpeedType.NORMAL
+            else:
+                if ui.im_button_image(g.BUTTONS[12], "Fast forward"):
+                    p.player.speed = p.SpeedType.FAST
 
-        ui.im_set_next_position(c.WINDOW_WIDTH - 4 * c.TILE_SIZE, 0)
-        if ui.im_button_image(
-            (g.BUTTONS_INV if last_mode == p.GameMode.VIEW else g.BUTTONS)[0], "View"
-        ):
-            p.player.mode = p.GameMode.VIEW
-        ui.im_same_line()
-        if ui.im_button_image(
-            (g.BUTTONS_INV if last_mode == p.GameMode.WIRING else g.BUTTONS)[1], "Lay wire"
-        ):
-            p.player.mode = p.GameMode.WIRING
-        ui.im_same_line()
-        if ui.im_button_image(
-            (g.BUTTONS_INV if last_mode == p.GameMode.DESTROY else g.BUTTONS)[2], "Destroy"
-        ):
-            p.player.mode = p.GameMode.DESTROY
+            ui.im_set_next_position(c.WINDOW_WIDTH - 4 * c.TILE_SIZE, 0)
+            if ui.im_button_image(
+                (g.BUTTONS_INV if last_mode == p.GameMode.VIEW else g.BUTTONS)[0], "View"
+            ):
+                p.player.mode = p.GameMode.VIEW
+            ui.im_same_line()
+            if ui.im_button_image(
+                (g.BUTTONS_INV if last_mode == p.GameMode.WIRING else g.BUTTONS)[1], "Lay wire"
+            ):
+                p.player.mode = p.GameMode.WIRING
+            ui.im_same_line()
+            if ui.im_button_image(
+                (g.BUTTONS_INV if last_mode == p.GameMode.DESTROY else g.BUTTONS)[2], "Destroy"
+            ):
+                p.player.mode = p.GameMode.DESTROY
 
-        ui.im_set_next_position(c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE)
-        if ui.im_button_image(g.BUTTONS[3], "Settings"):
-            ui.im_new()
-            self.current_state = MenuState.SETTINGS
+            ui.im_set_next_position(c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE)
+            if ui.im_button_image(g.BUTTONS[3], "Settings"):
+                ui.im_new()
+                self.current_state = MenuState.SETTINGS
 
         text_y, icon_y, icon_w = 7, 8, 18
         wave_text = g.FONT.render(f"WAVE {wave_data.number + 1}", False, c.WHITE)
@@ -314,53 +316,54 @@ class Game(Scene):
                 camera_to_screen_shake(g.camera, c.GRID_WIDTH + c.TILE_SIZE, y * c.TILE_SIZE),
             )
 
-        last_dragging_tower_type = self.dragging_tower_type
-        for i, tower_type in enumerate(TowerType):
-            if tower_type == last_dragging_tower_type:
-                ui.context.current_id += 1
-                continue
-            ui.im_set_next_position(
-                c.WINDOW_WIDTH - c.TILE_SIZE - 4, i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6 + (30 if i != 0 else 0)
-            )
-            text = f"{tower_type.name}\n-${TOWER_PRICES[tower_type.value]}"
-            if tower_type != TowerType.CORE:
-                text += f"\nDmg: {TOWER_STATS[tower_type.value][0].damage}"
-            if ui.im_button_image(TOWER_ANIMATIONS[tower_type.value][1], text):
-                ui.context.held_id = -1
-                if p.player.money >= TOWER_PRICES[tower_type.value]:
-                    self.dragging_tower_type = tower_type
+        if not self.gameover:
+            last_dragging_tower_type = self.dragging_tower_type
+            for i, tower_type in enumerate(TowerType):
+                if tower_type == last_dragging_tower_type:
+                    ui.context.current_id += 1
+                    continue
+                ui.im_set_next_position(
+                    c.WINDOW_WIDTH - c.TILE_SIZE - 4, i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6 + (30 if i != 0 else 0)
+                )
+                text = f"{tower_type.name}\n-${TOWER_PRICES[tower_type.value]}"
+                if tower_type != TowerType.CORE:
+                    text += f"\nDmg: {TOWER_STATS[tower_type.value][0].damage}"
+                if ui.im_button_image(TOWER_ANIMATIONS[tower_type.value][1], text):
+                    ui.context.held_id = -1
+                    if p.player.money >= TOWER_PRICES[tower_type.value]:
+                        self.dragging_tower_type = tower_type
 
-        # preview tile
-        if p.player.health > 0:
-            preview_tile: pygame.Surface | None = None
+            # preview tile
+            if p.player.health > 0:
+                preview_tile: pygame.Surface | None = None
 
-            if self.dragging_tower_type is not None:
-                preview_tile = TOWER_ANIMATIONS[self.dragging_tower_type.value][1][1]
-                if hov_tile is not None:
-                    tower_render_radius(Tower(hov_tile, self.dragging_tower_type, 0))
+                if self.dragging_tower_type is not None:
+                    preview_tile = TOWER_ANIMATIONS[self.dragging_tower_type.value][1][1]
+                    if hov_tile is not None:
+                        tower_render_radius(Tower(hov_tile, self.dragging_tower_type, 0))
 
-            elif p.player.mode == p.GameMode.WIRING:
-                if hov_wire is not None:
-                    preview_tile = g.WIRES[0]
+                elif p.player.mode == p.GameMode.WIRING:
+                    if hov_wire is not None:
+                        preview_tile = g.WIRES[0]
 
-            if preview_tile is not None:
-                if hov_tile is None:
-                    g.window.blit(preview_tile, g.mouse_pos)
-                else:
-                    surf = preview_tile.copy()
-                    surf.set_alpha(200)
-                    surf.blit(
-                        animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
-                    )
-                    g.window.blit(
-                        surf,
-                        camera_to_screen(
-                            g.camera, hov_tile[0] * c.TILE_SIZE, hov_tile[1] * c.TILE_SIZE
-                        ),
-                    )
+                if preview_tile is not None:
+                    if hov_tile is None:
+                        g.window.blit(preview_tile, g.mouse_pos)
+                    else:
+                        surf = preview_tile.copy()
+                        surf.set_alpha(200)
+                        surf.blit(
+                            animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
+                        )
+                        g.window.blit(
+                            surf,
+                            camera_to_screen(
+                                g.camera, hov_tile[0] * c.TILE_SIZE, hov_tile[1] * c.TILE_SIZE
+                            ),
+                        )
 
         # heading
-        if p.player.health <= 0:
+        if self.gameover:
             heading = g.FONT_LARGE.render("GAME OVER", False, c.WHITE)
             g.window.blit(
                 heading,
@@ -369,6 +372,21 @@ class Game(Scene):
                     c.WINDOW_HEIGHT // 2 - heading.get_height() // 2,
                 ),
             )
+
+            if self.gameover_timer <= 0:
+                continue_text = g.FONT.render("<CLICK> anywhere to return to menu", False, c.WHITE)
+
+                g.window.blit(
+                    continue_text,
+                    (
+                        c.WINDOW_WIDTH // 2 - continue_text.get_width() // 2,
+                        c.WINDOW_HEIGHT // 2 - continue_text.get_height() // 2 + 50,
+                    ),
+                )
+
+                if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
+                    statemachine_change_state(self.statemachine, manager.SceneState.MENU)
+                    return
 
         # hand
         hand_render()

@@ -8,7 +8,6 @@ import core.input as t
 import core.globals as g
 
 from components.statemachine import StateMachine, statemachine_change_state
-from components.audio import play_music, stop_music
 import components.ui as ui
 from components.camera import Camera, camera_update
 from components.settings import settings_menu
