@@ -50,7 +50,7 @@ def dim_sprite(surf: pygame.Surface, value: float = 0.8) -> pygame.Surface:
 def invert_sprite(surf: pygame.Surface) -> pygame.Surface:
     inv = pygame.Surface(surf.get_size(), surf.get_flags(), surf.get_bitsize())
     inv.fill((255, 255, 255, 255))
-    inv.blit(surf, special_flags=pygame.BLEND_SUB)
+    inv.blit(surf, (0, 0), special_flags=pygame.BLEND_SUB)
     return inv
 
 
