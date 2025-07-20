@@ -85,7 +85,6 @@ class Game(Scene):
         # map
         path.pathing_reset()
         path.flowfield_regenerate(path.flowfield)
-        path.debug_print()
 
         # wave
         wave_reset()
@@ -111,7 +110,7 @@ class Game(Scene):
 
     def execute(self) -> None:
         hand.type = HandType.DEFAULT
-        if self.wire_draw_start is not None or self.dragging_tower_type is not None:
+        if self.wire_draw_start is not None or self.dragging_tower_type is not None or t.mouse_held(t.MouseButton.LEFT):
             hand.type = HandType.GRAB
         hand.tooltip = None
 

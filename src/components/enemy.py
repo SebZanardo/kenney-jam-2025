@@ -35,7 +35,6 @@ class EnemyType(IntEnum):
     GROUND_SUPER_HEAVY = 4
 
     # flying
-    # TODO: Implement
     FLYING = 5
     FLYING_FAST = 6
     FLYING_HEAVY = 7
@@ -131,14 +130,15 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
     new_enemy = enemies[active_enemies]
     new_enemy.type = enemy_type
 
-    if not stat.flying:
-        new_enemy.x, new_enemy.y = PATH_START_POS
-    else:
-        new_enemy.x, new_enemy.y = (
-            PATH_START_POS[0],
-            random.choice([0, 1, c.GRID_HEIGHT_TILES - 2, c.GRID_HEIGHT_TILES - 1])
-            + c.TILE_SIZE // 2,
-        )
+    new_enemy.x, new_enemy.y = PATH_START_POS
+    # if not stat.flying:
+    #     new_enemy.x, new_enemy.y = PATH_START_POS
+    # else:
+    #     new_enemy.x, new_enemy.y = (
+    #         PATH_START_POS[0],
+    #         random.choice([0, 1, c.GRID_HEIGHT_TILES - 2, c.GRID_HEIGHT_TILES - 1])
+    #         + c.TILE_SIZE // 2,
+    #     )
 
     new_enemy.animator = Animator()
     animator_initialise(new_enemy.animator, {0: ENEMY_ANIMATIONS[enemy_type.value]})

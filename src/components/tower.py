@@ -132,8 +132,9 @@ def tower_update(tower: Tower) -> None:
     if power == 0:
         return
 
-    animator_update(tower.animator, g.dt * power)
-    animator_update(tower.blending_anim, g.dt * power)
+    if tower.target is not None:
+        animator_update(tower.animator, g.dt * power)
+        animator_update(tower.blending_anim, g.dt * power)
 
     stat = TOWER_STATS[tower.type.value][tower.level]
 

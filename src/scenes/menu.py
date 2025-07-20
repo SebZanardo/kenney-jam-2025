@@ -40,6 +40,8 @@ class Menu(Scene):
 
     def execute(self) -> None:
         hand.type = HandType.DEFAULT
+        if t.mouse_held(t.MouseButton.LEFT):
+            hand.type = HandType.GRAB
         hand.tooltip = None
 
         camera_update(self.camera, g.dt)
