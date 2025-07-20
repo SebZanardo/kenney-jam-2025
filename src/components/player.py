@@ -46,6 +46,10 @@ def player_reset() -> None:
     player = Player()
 
 
+def money_add(amount: int) -> None:
+    player.money += amount
+
+
 def score_add(amount: int) -> None:
     player.score = max(player.score + amount, 0)
 

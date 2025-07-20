@@ -4,13 +4,14 @@ from enum import IntEnum
 import math
 import pygame
 
-from components.particles import ParticleSpriteType, particle_burst
 import core.constants as c
 import core.globals as g
 
 import components.enemy as e
-from components.camera import camera_to_screen_shake
+import components.player as p
 from components.animation import Animation, Animator, animator_get_frame, animator_update
+from components.camera import camera_to_screen_shake
+from components.particles import ParticleSpriteType, particle_burst
 
 from utilities.math import Pos, point_in_circle
 
@@ -85,27 +86,27 @@ TOWER_STATS = [
     ),
     # TowerType.NORMAL
     (
-        TowerStat(3, 0.1, 1, 80),
-        TowerStat(6, 0.1, 3, 80),
-        TowerStat(9, 0.05, 5, 80),
+        TowerStat(3, 15, 1, 80),
+        TowerStat(6, 10, 3, 80),
+        TowerStat(9, 5, 5, 80),
     ),
     # TowerType.SLOW
     (
-        TowerStat(5, 0.2, 0, 80),
-        TowerStat(10, 0.15, 0, 80),
-        TowerStat(15, 0.1, 0, 80),
+        TowerStat(5, 20, 0, 80),
+        TowerStat(10, 15, 0, 80),
+        TowerStat(15, 10, 0, 80),
     ),
     # TowerType.SPLASH
     (
-        TowerStat(15, 0.2, 5, 80),
-        TowerStat(30, 0.15, 10, 80),
-        TowerStat(45, 0.1, 15, 80),
+        TowerStat(15, 2, 5, 80),
+        TowerStat(30, 1.5, 10, 80),
+        TowerStat(45, 1, 15, 80),
     ),
     # TowerType.ZAP
     (
-        TowerStat(30, 0.5, 16, 80),
-        TowerStat(60, 0.45, 35, 80),
-        TowerStat(90, 0.4, 50, 80),
+        TowerStat(30, 5, 16, 80),
+        TowerStat(60, 4.5, 35, 80),
+        TowerStat(90, 4, 50, 80),
     ),
 ]
 
@@ -129,9 +130,9 @@ def tower_update(tower: Tower) -> None:
     animator_update(tower.animator, g.dt * power)
     animator_update(tower.blending_anim, g.dt * power)
 
-    stats = TOWER_STATS[tower.type.value][tower.level]
+    stat = TOWER_STATS[tower.type.value][tower.level]
 
-    if stats.radius == 0:
+    if stat.radius == 0:
         return
 
     tx, ty = (tower.tile[0] + 0.5) * c.TILE_SIZE, (tower.tile[1] + 0.5) * c.TILE_SIZE
@@ -145,7 +146,7 @@ def tower_update(tower: Tower) -> None:
         while i < e.active_enemies:
             enemy = e.enemies[i]
 
-            if point_in_circle(enemy.x, enemy.y, tx, ty, stats.radius):
+            if point_in_circle(enemy.x, enemy.y, tx, ty, stat.radius):
                 tower.target = enemy
                 break
 
@@ -157,15 +158,18 @@ def tower_update(tower: Tower) -> None:
 
         # Check if target is dead or out of range
         if tower.target.health <= 0 or not point_in_circle(
-            tower.target.x, tower.target.y, tx, ty, stats.radius
+            tower.target.x, tower.target.y, tx, ty, stat.radius
         ):
             tower.target = None
             return
 
         # Damage target
         if tower.cooldown <= 0:
-            tower.target.health -= stats.damage
-            tower.cooldown = stats.reload_time
+            tower.target.health -= stat.damage
+            if tower.target.health <= 0:
+                p.money_add(10)
+                p.score_add(100)
+            tower.cooldown = stat.reload_time
 
             # TODO: make different attacks use different particles
             for particle_type in (ParticleSpriteType.ATTACK_BIG, ParticleSpriteType.ATTACK_SMALL):

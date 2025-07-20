@@ -382,7 +382,7 @@ def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
 
     path.flowfield_copy(path.placement_flowfield, path.flowfield)
 
-    p.player.money -= TOWER_PRICES[tower.type.value]
+    p.money_add(-TOWER_PRICES[tower.type.value])
 
     tile_particle_burst(ParticleSpriteType.BUILD, tower.tile)
     g.camera.trauma = 0.35
@@ -400,7 +400,7 @@ def game_delete_tower(self: Game, tower: Tower):
     path.collision_grid[tower.tile[1]][tower.tile[0]] = False
     path.flowfield_regenerate(path.flowfield)
 
-    p.player.money += TOWER_STATS[tower.type.value][tower.level].sell_price
+    p.money_add(TOWER_STATS[tower.type.value][tower.level].sell_price)
     p.score_add(-100)
 
     tile_particle_burst(ParticleSpriteType.DELETE, tower.tile)
@@ -426,7 +426,7 @@ def game_upgrade_tower(self: Game, tower: Tower):
     tower.level += 1
     # animator_switch_animation(tower.blending_anim, tower.level)
 
-    p.player.money -= TOWER_PRICES[tower.type.value]
+    p.money_add(-TOWER_PRICES[tower.type.value])
 
     tile_particle_burst(ParticleSpriteType.BUILD, tower.tile)
     g.camera.trauma = 0.35
@@ -545,7 +545,7 @@ def game_place_wire(self: Game, wire: Wire, parent: Wire):
             game_attach_tower(self, wire, tower)
             break
 
-    p.player.money -= 1
+    p.money_add(-1)
 
     tile_particle_burst(ParticleSpriteType.CREATE, wire.tile)
 
@@ -556,7 +556,7 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire | None):
             dir: node for dir, node in parent.outgoing_sides.items() if node != wire
         }
 
-    p.player.money += 1
+    p.money_add(1)
 
     if wire.tower is None:
         tile_particle_burst(ParticleSpriteType.SHINY, wire.tile)
