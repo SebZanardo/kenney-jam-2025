@@ -51,6 +51,7 @@ class Enemy:
     cy: int = 0
 
     health: int = 0
+    max_health: int = 0
 
     # visual
     direction: str = c.RIGHT
@@ -145,7 +146,8 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
 
     new_enemy.cx, new_enemy.cy = PATH_START_POS
 
-    new_enemy.health = stat.health * enemy_health_multiplier
+    new_enemy.max_health = stat.health * enemy_health_multiplier
+    new_enemy.health = new_enemy.max_health
 
     active_enemies += 1
 
@@ -251,6 +253,9 @@ def enemy_render(i: int) -> None:
     stat = ENEMY_STATS[enemy.type.value]
 
     surf = animator_get_frame(enemy.animator)
+    if enemy.health < enemy.max_health:
+        surf = surf.copy()
+        surf.set_alpha(255 * (enemy.health / enemy.max_health * 0.5 + 0.5))
     if stat.anim_rotate:
         surf = pygame.transform.rotate(
             surf, {c.RIGHT: 0, c.UP: 90, c.DOWN: -90, c.LEFT: 180}[enemy.direction]
