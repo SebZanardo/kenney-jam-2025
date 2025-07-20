@@ -13,7 +13,7 @@ from utilities.math import signed_num
 
 # STARTING_MONEY = 15
 # NOTE: This high money value is just for testing
-STARTING_MONEY = 100
+STARTING_MONEY = 1000
 STARTING_HEALTH = 100
 
 

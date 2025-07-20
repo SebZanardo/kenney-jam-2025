@@ -101,11 +101,12 @@ class Game(Scene):
         animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.15)})
 
         self.gameover = False
-        self.gameover_timer = 60
+        self.gameover_timer = 90
 
     def execute(self) -> None:
         self.gameover = p.player.health <= 0
         if self.gameover and self.gameover_timer > 0:
+            p.player.speed = p.SpeedType.NORMAL
             self.gameover_timer -= 1
 
         hand.type = HandType.DEFAULT
