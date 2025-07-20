@@ -9,7 +9,7 @@ import core.globals as g
 
 from components.statemachine import StateMachine, statemachine_change_state
 import components.ui as ui
-from components.camera import Camera, camera_update
+from components.camera import Camera, camera_update, camera_to_screen_shake
 from components.settings import settings_menu
 
 from scenes.scene import Scene
@@ -46,6 +46,29 @@ class Menu(Scene):
         camera_update(self.camera, g.dt)
 
         g.window.fill(c.BLACK)
+
+        for x in range(c.WINDOW_WIDTH // 14):
+            g.window.blit(g.TERRAIN[3], (x * 14 - 1, 3))
+            g.window.blit(g.TERRAIN[2], (x * 14 - 1, c.WINDOW_HEIGHT - c.TILE_SIZE - 4))
+
+
+        for y in range(c.GRID_HEIGHT_TILES):
+            g.window.blit(
+                g.TERRAIN[5],
+                camera_to_screen_shake(g.camera, -1 * c.TILE_SIZE, y * c.TILE_SIZE),
+            )
+            g.window.blit(
+                g.TERRAIN[6],
+                camera_to_screen_shake(g.camera, -2 * c.TILE_SIZE, y * c.TILE_SIZE),
+            )
+            g.window.blit(
+                g.TERRAIN[4],
+                camera_to_screen_shake(g.camera, c.GRID_WIDTH, y * c.TILE_SIZE),
+            )
+            g.window.blit(
+                g.TERRAIN[6],
+                camera_to_screen_shake(g.camera, c.GRID_WIDTH + c.TILE_SIZE, y * c.TILE_SIZE),
+            )
 
         if self.current_state == MenuState.MAIN:
             ui.im_reset_position(

@@ -68,14 +68,6 @@ class Game(Scene):
     # runs when game starts (or is resumed but thats not a thing)
     def enter(self) -> None:
         self.current_state = MenuState.GAME
-        g.camera = Camera(
-            Motion.empty(),
-            pygame.Vector2(
-                c.WINDOW_WIDTH // 2 - c.GRID_WIDTH // 2, c.WINDOW_HEIGHT // 2 - c.GRID_HEIGHT // 2
-            ),
-            pygame.Vector2(),
-            pygame.Vector2(30, 30),
-        )
 
         # play_music(g.GAME_MUSIC, -1)
 
