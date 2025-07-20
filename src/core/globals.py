@@ -55,13 +55,13 @@ DEBUG_FONT = pygame.font.SysFont("monospace", 8)
 
 # Load sprites (png, webp or jpg for web compatibility)
 path = "data/textures/"
-ICON = pygame.image.load(path + "icon.png").convert_alpha()
 PATTERNS = load_image(path + "patterns.png").convert_alpha()
 
 # I made a new folder for custom textures so we can keep track
 # of what was downloaded from Kenney directly and what was compiled
 # into new spritesheets. I also put the Aseprite source files there.
 path = "data/textures-src/"
+ICON = pygame.image.load(path + "favicon.png").convert_alpha()
 TERRAIN = load_spritesheet(path + "terrain.png", 16, 16)
 HANDS = load_spritesheet(path + "hands.png", 16, 16, double_size=False)
 ICONS = load_spritesheet(path + "icons.png", 16, 16, double_size=False)
