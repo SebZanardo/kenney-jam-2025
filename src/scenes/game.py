@@ -434,6 +434,7 @@ def game_upgrade_tower(self: Game, tower: Tower):
 
 def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
     # validation and tooltips
+    # validation and tooltips
     if self.dragging_tower_type is not None:
         # out of bounds
         if tile is None:
@@ -467,6 +468,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
         if not valid_placement:
             hand.type = HandType.NO
 
+    hov_tower: Tower | None = None
     hov_tower: Tower | None = None
     for tower in self.towers:
         if tower.tile != tile:
@@ -574,8 +576,11 @@ def game_attach_tower(self: Game, wire: Wire, tower: Tower):
 def game_detach_tower(self: Game, wire: Wire):
     if wire.tower is not None:
         wire.tower.core_tower = None
+    if wire.tower is not None:
+        wire.tower.core_tower = None
     if wire.core_tower is not None:
         wire.core_tower.connected_tower_count -= 1
+    wire.tower = None
     wire.tower = None
 
 
