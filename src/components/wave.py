@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
+import core.globals as g
 import components.enemy as e
+import components.player as p
+from components.audio import AudioChannel, play_sound
 
 
 @dataclass(frozen=True)
@@ -132,6 +135,9 @@ def wave_update() -> None:
 
 
 def wave_new() -> None:
+    p.money_add(wave_data.number + 1)
+    play_sound(AudioChannel.WAVE, g.PLAYER_SFX[2])
+
     wave_data.number += 1
     print(f"New wave: {wave_data.number}")
 

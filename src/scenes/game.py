@@ -118,7 +118,9 @@ class Game(Scene):
         self.wire_count = 0
 
     def execute(self) -> None:
-        self.gameover = p.player.health <= 0
+        if not self.gameover and p.player.health <= 0:
+            self.gameover = True
+            play_sound(AudioChannel.PLAYER, g.PLAYER_SFX[1])
         if self.gameover and self.gameover_timer > 0:
             p.player.speed = p.SpeedType.NORMAL
             self.gameover_timer -= 1

@@ -86,8 +86,10 @@ LOGO = pygame.transform.scale_by(LOGO, 2)
 
 # Load audio (ogg for web compatibility)
 path = "data/sfx/"
-HOVER_SFX = pygame.mixer.Sound(path + "hover.ogg")
-SELECT_SFX = pygame.mixer.Sound(path + "select.ogg")
+UI_SFX = [
+    pygame.mixer.Sound(path + "ui_hover.ogg"),
+    pygame.mixer.Sound(path + "ui_select.ogg"),
+]
 TOWER_SFX = [pygame.mixer.Sound(path + f"tower{i}.ogg") for i in range(4)]
 BUILD_SFX = [
     pygame.mixer.Sound(path + "create_wire.ogg"),
@@ -95,6 +97,11 @@ BUILD_SFX = [
     pygame.mixer.Sound(path + "create_tower.ogg"),
     pygame.mixer.Sound(path + "destroy_tower.ogg"),
     pygame.mixer.Sound(path + "create_core.ogg"),
+]
+PLAYER_SFX = [
+    pygame.mixer.Sound(path + "player_hurt.ogg"),
+    pygame.mixer.Sound(path + "player_game_over.ogg"),
+    pygame.mixer.Sound(path + "player_completed_wave.ogg"),
 ]
 
 path = "data/music/"

@@ -11,10 +11,6 @@ from components.particles import Particle, particle_spawn
 from utilities.math import signed_num
 
 
-STARTING_MONEY = 50
-STARTING_HEALTH = 100
-
-
 class GameMode(Enum):
     VIEW = 0
     WIRING = auto()
@@ -30,8 +26,8 @@ class SpeedType(IntEnum):
 
 @dataclass(slots=True)
 class Player:
-    money: int = STARTING_MONEY
-    health: int = STARTING_HEALTH
+    money: int = 50
+    health: int = 0
     score: int = 0
     mode: GameMode = GameMode.VIEW
     speed: SpeedType = SpeedType.NORMAL
