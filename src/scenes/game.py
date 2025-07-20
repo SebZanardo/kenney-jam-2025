@@ -97,10 +97,10 @@ class Game(Scene):
 
         # wires
         self.wires: list[Wire] = [
-            Wire((random.randint(1, 7), 0), c.UP, {}, True),
-            Wire((random.randint(8, 14), 0), c.UP, {}, True),
-            Wire((random.randint(1, 7), 8), c.DOWN, {}, True),
-            Wire((random.randint(8, 14), 8), c.DOWN, {}, True),
+            # Wire((random.randint(1, 7), 0), c.UP, {}, True),
+            # Wire((random.randint(8, 14), 0), c.UP, {}, True),
+            # Wire((random.randint(1, 7), 8), c.DOWN, {}, True),
+            # Wire((random.randint(8, 14), 8), c.DOWN, {}, True),
         ]
         self.wire_draw_start: Wire | None = None
 
@@ -470,7 +470,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 
         self.valid_placement = path.flowfield_preview(*tile)
 
-    if not self.valid_placement:
+    if not self.valid_placement and self.dragging_tower_type:
         hand.type = HandType.NO
     ###########################################################################
 
