@@ -12,8 +12,7 @@ from utilities.math import signed_num
 
 
 class GameMode(Enum):
-    VIEW = 0
-    WIRING = auto()
+    WIRING = 0
     DESTROY = auto()
 
 
@@ -29,7 +28,7 @@ class Player:
     money: int = 50
     health: int = 20
     score: int = 0
-    mode: GameMode = GameMode.VIEW
+    mode: GameMode = GameMode.WIRING
     speed: SpeedType = SpeedType.NORMAL
 
 
