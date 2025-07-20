@@ -41,6 +41,7 @@ class Tower:
     core_tower: Tower | None = None
 
     target: e.Enemy = None
+    cooldown: int = 0
 
 
 # NOTE: These should be stats for all towers
@@ -122,32 +123,53 @@ def tower_update(tower: Tower) -> None:
     animator_update(tower.animator, g.dt)
     animator_update(tower.blending_anim, g.dt)
 
-    r = TOWER_STATS[tower.type.value][tower.level].radius
+    stats = TOWER_STATS[tower.type.value][tower.level]
 
-    if r == 0:
+    if stats.radius == 0:
         return
 
     tx, ty = (tower.tile[0] + 0.5) * c.TILE_SIZE, (tower.tile[1] + 0.5) * c.TILE_SIZE
 
-    # TODO: targeting enemies
-    i = 0
-    while i < e.active_enemies:
-        enemy = e.enemies[i]
+    # Tick down cooldown no matter what
+    tower.cooldown -= 1
 
-        if point_in_circle(enemy.x, enemy.y, tx, ty, r):
+    # Find a target
+    if tower.target is None:
+        i = 0
+        while i < e.active_enemies:
+            enemy = e.enemies[i]
+
+            if point_in_circle(enemy.x, enemy.y, tx, ty, stats.radius):
+                tower.target = enemy
+                break
+
+            i += 1
+    else:
+        # Check if target is dead or out of range
+        if (
+            tower.target.health <= 0 or
+            not point_in_circle(tower.target.x, tower.target.y, tx, ty, stats.radius)
+        ):
+            tower.target = None
+            return
+
+        # Damage target
+        if tower.cooldown <= 0:
+            tower.target.health -= stats.damage
+            tower.cooldown = stats.reload_time
+
+            # TODO: make different attacks use different particles
             for particle_type in (ParticleSpriteType.ATTACK_BIG, ParticleSpriteType.ATTACK_SMALL):
                 particle_burst(
                     particle_type,
                     count=2,
-                    position=(enemy.x, enemy.y),
+                    position=(tower.target.x, tower.target.y),
                     position_variance=c.TILE_SIZE // 2,
                     velocity=0,
                     velocity_variance=0,
                     lifespan=10,
                     lifespan_variance=2,
                 )
-
-        i += 1
 
 
 def tower_render(tower: Tower) -> None:
