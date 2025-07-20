@@ -253,12 +253,13 @@ class Game(Scene):
         else:
             self.pathsssss = path.flowfield_path(path.flowfield)
 
-        for pos in self.pathsssss:
-            r_pos = camera_to_screen(g.camera, pos[0] * c.TILE_SIZE, pos[1] * c.TILE_SIZE)
-            g.window.blit(
-                g.PATH,
-                r_pos
-            )
+        if self.tutorial == TutorialState.COMPLETE:
+            for pos in self.pathsssss:
+                r_pos = camera_to_screen(g.camera, pos[0] * c.TILE_SIZE, pos[1] * c.TILE_SIZE)
+                g.window.blit(
+                    g.PATH,
+                    r_pos
+                )
 
         # hud
         if hov_tile is None:
