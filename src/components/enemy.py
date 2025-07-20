@@ -222,7 +222,7 @@ def enemy_update(i: int) -> bool:
     # Reached next cell pos
     else:
         # Incase this happens safety
-        if not inside_grid(enemy.x, enemy.y):
+        if not inside_grid(enemy.x//c.TILE_SIZE, enemy.y//c.TILE_SIZE):
             p.player.health -= 1
             play_sound(AudioChannel.PLAYER, g.PLAYER_SFX[0])
             g.camera.trauma = 0.3
