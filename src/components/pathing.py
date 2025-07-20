@@ -2,6 +2,8 @@ from queue import deque
 
 import core.constants as c
 
+import components.enemy as e
+
 
 # how far outside is run
 outside = 5 * c.TILE_SIZE
@@ -56,8 +58,24 @@ def flowfield_preview(x: int, y: int) -> bool:
     valid = flowfield_regenerate(placement_flowfield)
 
     if valid:
-        # TODO: Also check if all enemy cells are not zero
-        pass
+        checked = set()
+
+        for i in range(e.active_enemies):
+            enemy = e.enemies[i]
+
+            # Skip if already verified this cell
+            if (enemy.cx, enemy.cy) in checked:
+                continue
+
+            checked.add((enemy.cx, enemy.cy))
+
+            if not inside_grid(enemy.cx, enemy.cy):
+                continue
+
+            # Cannot place on enemy
+            if placement_flowfield[enemy.cy][enemy.cx] == -1:
+                valid = False
+                break
 
     collision_grid[y][x] = False
 
@@ -108,7 +126,18 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
                 q.append((nx, ny))
                 field[ny][nx] = i
 
+    # BUG: REMOVE THIS FOR BETTER PERFORMANCE #################################
+    if not c.IS_WEB:
+        debug_print()
+    ###########################################################################
+
     return complete
+
+
+def flowfield_copy(from_field: list[list[int]], to_field: list[list[int]]) -> None:
+    for y in range(c.GRID_HEIGHT_TILES):
+        for x in range(c.GRID_WIDTH_TILES):
+            to_field[y][x] = from_field[y][x]
 
 
 def debug_print() -> None:
