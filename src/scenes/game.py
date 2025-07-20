@@ -94,6 +94,8 @@ class Game(Scene):
         # towers
         self.towers: list[Tower] = []
         self.dragging_tower_type: TowerType | None = None
+        self.last_flowfield_tile: Pos | None = None
+        self.last_flowfield_collision: bool = False
 
         # wires
         self.wires: list[Wire] = [
@@ -107,10 +109,6 @@ class Game(Scene):
         # vfx
         self.blending_anim = Animator()
         animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.15)})
-
-        # placement
-        self.last_hov_pos = (-1, -1)
-        self.valid_placement = False
 
     def execute(self) -> None:
         hand.type = HandType.DEFAULT
@@ -190,8 +188,6 @@ class Game(Scene):
                 statemachine_change_state(self.statemachine, manager.SceneState.MENU)
                 return
             pass
-
-        self.last_hov_pos = hov_tile
 
         # RENDER
         g.window.fill(c.BLACK)
@@ -437,44 +433,41 @@ def game_upgrade_tower(self: Game, tower: Tower):
 
 
 def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
-    # tooltips
+    # validation and tooltips
     if self.dragging_tower_type is not None:
-        if tile in (path.PATH_START_TILE, path.PATH_END_TILE):
-            hand.type = HandType.NO
-        elif tile is not None:
+        # out of bounds
+        if tile is None:
+            valid_placement = True
+
+        # start or end tile
+        elif tile in (path.PATH_START_TILE, path.PATH_END_TILE):
+            valid_placement = False
+
+        else:
+            if tile != self.last_flowfield_tile:
+                self.last_flowfield_collision = path.flowfield_preview(*tile)
+
+            # ensure cores are either placed in empty space or on other cores
             if (
                 self.dragging_tower_type == TowerType.CORE
                 and hov_wire is not None
                 and (hov_wire.tower is None or hov_wire.tower.type != TowerType.CORE)
             ):
-                hand.type = HandType.NO
+                valid_placement = False
                 hand.tooltip = Tooltip("Place cores in empty space")
 
-    # Idk how this is working so im just going to make my logic here and
-    # recheck things
-    ###########################################################################
-    # Calculate if tower can be placed here and not block flowfield or enemies
+            # collision with enemy
+            elif path.collision_check(*tile):
+                valid_placement = False
 
-    self.valid_placement = path.collision_check(*tile)
-    if self.valid_placement and self.dragging_tower_type is not None and tile != self.last_hov_pos:
-        # Start or end tile
-        if tile in (path.PATH_START_TILE, path.PATH_END_TILE):
-            self.valid_placement = False
+            # collision with tiles
+            else:
+                valid_placement = self.last_flowfield_collision
 
-        # Outside grid
-        elif not path.inside_grid(*tile):
-            self.valid_placement = False
+        if not valid_placement:
+            hand.type = HandType.NO
 
-        # Already tower here
-        elif path.collision_grid[tile[1]][tile[0]]:
-            self.valid_placement = False
-
-        self.valid_placement = path.flowfield_preview(*tile)
-
-    if not self.valid_placement and self.dragging_tower_type:
-        hand.type = HandType.NO
-    ###########################################################################
-
+    hov_tower: Tower | None = None
     for tower in self.towers:
         if tower.tile != tile:
             continue
@@ -508,6 +501,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
         elif p.player.mode == p.GameMode.VIEW:
             hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
 
+        hov_tower = tower
         break
 
     # placing
@@ -517,30 +511,25 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
     if g.mouse_buffer[t.MouseButton.LEFT] in (t.InputState.PRESSED, t.InputState.HELD):
         return
 
-    if (
-        tile not in (None, path.PATH_START_TILE, path.PATH_END_TILE)
-        and p.player.money >= TOWER_PRICES[self.dragging_tower_type.value]
-    ):
+    if tile is not None and p.player.money >= TOWER_PRICES[self.dragging_tower_type.value]:
         # upgrade
         if (
-            hov_wire is not None
-            and hov_wire.tower is not None
-            and hov_wire.tower.type == self.dragging_tower_type
-            and hov_wire.tower.level < MAX_TOWER_LEVEL
+            hov_tower is not None
+            and hov_tower.type == self.dragging_tower_type
+            and hov_tower.level < MAX_TOWER_LEVEL
         ):
-            game_upgrade_tower(self, hov_wire.tower)
+            game_upgrade_tower(self, hov_tower)
 
-        # place normal tower
-        elif self.dragging_tower_type != TowerType.CORE:
-            if hov_wire is None and self.valid_placement:
-                game_place_tower_at(self, self.dragging_tower_type, tile)
-            else:
-                if hov_wire is not None and hov_wire.tower is None:
+        elif valid_placement:
+            # place normal tower
+            if self.dragging_tower_type != TowerType.CORE:
+                if hov_wire is None:
+                    game_place_tower_at(self, self.dragging_tower_type, tile)
+                elif hov_wire.tower is None:
                     game_place_tower_on(self, self.dragging_tower_type, hov_wire)
 
-        # place core
-        else:
-            if hov_wire is None and self.valid_placement:
+            # place core
+            else:
                 tower = game_place_tower_at(self, self.dragging_tower_type, tile)
                 self.wires.append(Wire(tile, None, {}, True, tower, tower))
                 p.player.mode = p.GameMode.WIRING
@@ -571,6 +560,8 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire | None):
 
     if wire.tower is None:
         tile_particle_burst(ParticleSpriteType.SHINY, wire.tile)
+    else:
+        game_detach_tower(self, wire)
 
 
 def game_attach_tower(self: Game, wire: Wire, tower: Tower):
@@ -581,9 +572,11 @@ def game_attach_tower(self: Game, wire: Wire, tower: Tower):
 
 
 def game_detach_tower(self: Game, wire: Wire):
-    wire.tower = None
+    if wire.tower is not None:
+        wire.tower.core_tower = None
     if wire.core_tower is not None:
         wire.core_tower.connected_tower_count -= 1
+    wire.tower = None
 
 
 def game_mode_wire_create(self: Game, tile: Pos | None, hov_wire: Wire | None):

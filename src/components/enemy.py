@@ -212,7 +212,8 @@ def enemy_update(i: int) -> bool:
             d = flowfield[enemy.cy][enemy.cx]
             if d == -1:
                 print("Oh shit something went wrong with pathing")
-                pygame.quit()
+                ## pygame.quit()  # maybe dont quit the game
+                d = 3
             dx, dy = c.DIRECTIONS[d]
             xv, yv = -dx * speed, -dy * speed
         # fly
