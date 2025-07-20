@@ -1,6 +1,15 @@
 from dataclasses import dataclass
-from enum import IntEnum, auto
+from enum import IntEnum
 
+import pygame
+
+from components.animation import (
+    Animation,
+    Animator,
+    animator_get_frame,
+    animator_initialise,
+    animator_update,
+)
 import core.globals as g
 import core.constants as c
 
@@ -17,25 +26,23 @@ from utilities.math import clamp
 
 
 class EnemyType(IntEnum):
-    NONE = 0
-
     # ground
-    GROUND = auto()
-    GROUND_FAST = auto()
-    GROUND_HEAVY = auto()
-    GROUND_HEAVY_FAST = auto()
-    GROUND_SUPER_HEAVY = auto()
+    GROUND = 0
+    GROUND_FAST = 1
+    GROUND_HEAVY = 2
+    GROUND_HEAVY_FAST = 3
+    GROUND_SUPER_HEAVY = 4
 
     # flying
     # TODO: Implement
-    FLYING = auto()
-    FLYING_FAST = auto()
-    FLYING_HEAVY = auto()
+    FLYING = 5
+    FLYING_FAST = 6
+    FLYING_HEAVY = 7
 
 
 @dataclass(slots=True)
 class Enemy:
-    enemy_type: EnemyType = EnemyType.NONE
+    type: EnemyType = EnemyType.GROUND
     x: float = 0
     y: float = 0
 
@@ -45,6 +52,10 @@ class Enemy:
 
     health: int = 0
 
+    # visual
+    direction: str = c.RIGHT
+    animator: Animator | None = None
+
 
 @dataclass(frozen=True)
 class EnemyStat:
@@ -53,27 +64,45 @@ class EnemyStat:
     size: float
     flying: bool
 
+    # visual
+    anim_length: int
+    anim_speed: float
+    anim_rotate: bool
+
 
 ENEMY_STATS = [
-    # EnemyType.NONE
-    EnemyStat(0, 0, 1, False),
     # EnemyType.GROUND
-    EnemyStat(10, 0.1, 1, False),
+    EnemyStat(10, 0.1, 1, False, 4, 1, False),
     # EnemyType.GROUND_FAST
-    EnemyStat(15, 0.2, 1, False),
+    EnemyStat(15, 0.2, 1, False, 2, 1, True),
     # EnemyType.GROUND_HEAVY
-    EnemyStat(50, 0.05, 1.5, False),
+    EnemyStat(50, 0.05, 1.5, False, 2, 2, True),
     # EnemyType.GROUND_HEAVY_FAST
-    EnemyStat(100, 0.1, 1.5, False),
+    EnemyStat(100, 0.1, 1.5, False, 2, 1, False),
     # EnemyType.GROUND_SUPER_HEAVY
-    EnemyStat(300, 0.025, 2, False),
+    EnemyStat(300, 0.025, 2, False, 2, 5, False),
     # EnemyType.FLYING
-    EnemyStat(10, 0.1, 1, True),
+    EnemyStat(10, 0.1, 1, True, 2, 1, False),
     # EnemyType.FLYING_FAST
-    EnemyStat(15, 0.2, 1, True),
+    EnemyStat(15, 0.2, 1, True, 2, 1, True),
     # EnemyType.FLYING_HEAVY
-    EnemyStat(50, 0.05, 1.5, True),
+    EnemyStat(50, 0.05, 1.5, True, 2, 1, False),
 ]
+
+# Load animations once here
+ENEMY_ANIMATIONS: list[Animation] = []
+
+for enemy_type in EnemyType:
+    start = enemy_type.value
+    stat = ENEMY_STATS[enemy_type.value]
+    animation = Animation(
+        [
+            pygame.transform.scale_by(frame, stat.size)
+            for frame in g.ENEMIES[start * 4 : start * 4 + stat.anim_length]
+        ],
+        0.1 * stat.anim_speed,
+    )
+    ENEMY_ANIMATIONS.append(animation)
 
 
 MAX_ENEMIES = 100
@@ -96,8 +125,10 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
         return False
 
     new_enemy = enemies[active_enemies]
-    new_enemy.enemy_type = enemy_type
+    new_enemy.type = enemy_type
     new_enemy.x, new_enemy.y = PATH_START_POS
+    new_enemy.animator = Animator()
+    animator_initialise(new_enemy.animator, {0: ENEMY_ANIMATIONS[enemy_type.value]})
 
     # (-1, -1) denotes outside grid for either spawn run or goal run
     new_enemy.cx, new_enemy.cy = PATH_START_POS
@@ -133,59 +164,79 @@ def enemy_update(i: int) -> bool:
 
     RETURN: whether died, because if died then dont increment i for next
     """
-    e = enemies[i]
+    enemy = enemies[i]
 
     # Dead then no need to update
-    if e.health <= 0:
+    if enemy.health <= 0:
         return True
 
-    speed = ENEMY_STATS[e.enemy_type].speed * c.TILE_SIZE
+    animator_update(enemy.animator, g.dt)
+
+    stat = ENEMY_STATS[enemy.type]
+    speed = stat.speed * c.TILE_SIZE
+
+    enemy.direction = c.RIGHT
 
     # Travelling to start
-    if (e.cx, e.cy) == PATH_START_POS:
-        e.x += speed
+    if (enemy.cx, enemy.cy) == PATH_START_POS:
+        enemy.x += speed
         # Reached start of map
-        if e.x >= PATH_START_TILE[0] * c.TILE_SIZE:
-            e.cx, e.cy = PATH_START_TILE
+        if enemy.x >= PATH_START_TILE[0] * c.TILE_SIZE:
+            enemy.cx, enemy.cy = PATH_START_TILE
 
     # Travelling to goal
-    elif (e.cx, e.cy) == PATH_END_TILE:
-        e.x += speed
+    elif (enemy.cx, enemy.cy) == PATH_END_TILE:
+        enemy.x += speed
         # Reached end of screen
-        if e.x >= PATH_END_POS[0]:
+        if enemy.x >= PATH_END_POS[0]:
             p.player.health -= 1
             g.camera.trauma = 0.3
-            e.health = 0  # Set to dead so tower can see that it died
+            enemy.health = 0  # Set to dead so tower can see that it died
             return True
 
     # Reached next cell pos
     else:
         # Move e.x and e.y
-        dx, dy = c.DIRECTIONS[flowfield[e.cy][e.cx]]
-        dx, dy = -dx, -dy
+        dx, dy = c.DIRECTIONS[flowfield[enemy.cy][enemy.cx]]
+        xv, yv = -dx * speed, -dy * speed
+        enemy.x += xv
+        enemy.y += yv
 
-        e.x += dx * speed
-        e.y += dy * speed
-
-        rx, ry = round(e.x), round(e.y)
+        rx, ry = round(enemy.x), round(enemy.y)
         # add to rx and ry to account for the size of the enemy
-        if dx > 0:  # going right
+        if xv > 0:  # going right
             rx -= c.TILE_SIZE // 2
-        if dy < 0:  # going up
+        elif xv < 0:  # going left (idk if this ever occurs)
+            rx += c.TILE_SIZE // 2
+            enemy.direction = c.LEFT
+        if yv < 0:  # going up
             ry += c.TILE_SIZE // 2
-        elif dy > 0:  # going down
+            enemy.direction = c.UP
+        elif yv > 0:  # going down
             ry -= c.TILE_SIZE // 2
+            enemy.direction = c.DOWN
 
-        e.cx = clamp(rx // c.TILE_SIZE, 0, c.GRID_WIDTH_TILES - 1)
-        e.cy = clamp(ry // c.TILE_SIZE, 0, c.GRID_HEIGHT_TILES - 1)
+        enemy.cx = clamp(rx // c.TILE_SIZE, 0, c.GRID_WIDTH_TILES - 1)
+        enemy.cy = clamp(ry // c.TILE_SIZE, 0, c.GRID_HEIGHT_TILES - 1)
 
     return False
 
 
 def enemy_render(i: int) -> None:
-    e = enemies[i]
+    enemy = enemies[i]
+    stat = ENEMY_STATS[enemy.type.value]
+
+    surf = animator_get_frame(enemy.animator)
+    if stat.anim_rotate:
+        surf = pygame.transform.rotate(
+            surf, {c.RIGHT: 0, c.UP: 90, c.DOWN: -90, c.LEFT: 180}[enemy.direction]
+        )
 
     g.window.blit(
-        g.ENEMIES[e.enemy_type.value - 1],
-        camera_to_screen(g.camera, e.x - c.TILE_SIZE // 2, e.y - c.TILE_SIZE // 2),
+        surf,
+        camera_to_screen(
+            g.camera,
+            enemy.x - (c.TILE_SIZE * stat.size) // 2,
+            enemy.y - (c.TILE_SIZE * stat.size) // 2,
+        ),
     )
