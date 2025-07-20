@@ -105,5 +105,4 @@ PLAYER_SFX = [
 ]
 
 path = "data/music/"
-NINTENDO_MUSIC = path + "theme.ogg"
-GAME_MUSIC = path + "The Spirit of the Forest OGG.ogg"
+GAME_MUSIC = pygame.mixer.Sound(path + "The Spirit of the Forest OGG.ogg")

@@ -78,8 +78,6 @@ class Game(Scene):
     def enter(self) -> None:
         self.current_state = MenuState.GAME
 
-        # play_music(g.GAME_MUSIC, -1)
-
         # player resources
         p.player_reset()
 
@@ -520,7 +518,7 @@ class Game(Scene):
             )
 
         if self.tutorial < TutorialState.COMPLETE:
-            ui.im_set_next_position(c.WINDOW_WIDTH-150, c.WINDOW_HEIGHT-35)
+            ui.im_set_next_position(c.WINDOW_WIDTH - 150, c.WINDOW_HEIGHT - 35)
             if ui.im_button_text("SKIP"):
                 self.tutorial = TutorialState.COMPLETE
             ui.im_new()

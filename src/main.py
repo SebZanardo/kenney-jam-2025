@@ -8,14 +8,14 @@ import core.globals as g
 from core.setup import setup
 
 from components.statemachine import statemachine_execute
-from components.audio import play_music, set_music_volume, set_sfx_volume
+from components.audio import AudioChannel, play_sound, set_music_volume, set_sfx_volume
 
 
 async def main() -> None:
     setup()
     print("Starting game loop")
 
-    play_music(g.GAME_MUSIC, -1)
+    play_sound(AudioChannel.MUSIC, g.GAME_MUSIC, -1)
 
     # Set volume
     set_music_volume(g.setting_params["music"][0] / 100)
