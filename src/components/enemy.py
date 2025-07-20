@@ -20,6 +20,7 @@ from components.pathing import (
     PATH_END_POS,
     PATH_END_TILE,
     flowfield,
+    inside_grid,
 )
 import components.player as p
 from components.camera import camera_to_screen
@@ -220,6 +221,14 @@ def enemy_update(i: int) -> bool:
 
     # Reached next cell pos
     else:
+        # Incase this happens safety
+        if not inside_grid(enemy.x, enemy.y):
+            p.player.health -= 1
+            play_sound(AudioChannel.PLAYER, g.PLAYER_SFX[0])
+            g.camera.trauma = 0.3
+            enemy.health = 0  # Set to dead so tower can see that it died
+            return True
+
         # pathfind
         if not stat.flying:
             d = flowfield[enemy.cy][enemy.cx]
