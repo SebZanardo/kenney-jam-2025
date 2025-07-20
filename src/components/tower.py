@@ -139,8 +139,8 @@ def tower_update(tower: Tower) -> None:
 
     stat = TOWER_STATS[tower.type.value][tower.level]
 
-    if tower.target is not None:
-        mult = power / (stat.reload_time / 15)
+    if tower.type == TowerType.CORE or tower.target is not None:
+        mult = power / (1 if stat.reload_time <= 0 else stat.reload_time / 15)
         animator_update(tower.animator, g.dt * mult)
         animator_update(tower.blending_anim, g.dt * mult)
 
@@ -234,15 +234,6 @@ def tower_render(tower: Tower) -> None:
                 g.camera, (tower.tile[0] + 1) * c.TILE_SIZE - 10, tower.tile[1] * c.TILE_SIZE - 3
             ),
         )
-
-    # g.window.blit(
-    #     g.FONT.render(
-    #         f"{}",
-    #         True,
-    #         c.WHITE,
-    #     ),
-    #     camera_to_screen_shake(g.camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
-    # )
 
 
 def tower_render_radius(tower: Tower) -> None:
