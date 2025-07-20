@@ -88,6 +88,7 @@ LOGO = pygame.transform.scale_by(LOGO, 2)
 path = "data/sfx/"
 HOVER_SFX = pygame.mixer.Sound(path + "hover.ogg")
 SELECT_SFX = pygame.mixer.Sound(path + "select.ogg")
+TOWER_SFX = [pygame.mixer.Sound(path + f"tower{i}.ogg") for i in range(4)]
 
 path = "data/music/"
 NINTENDO_MUSIC = path + "theme.ogg"
