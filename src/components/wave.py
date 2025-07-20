@@ -26,23 +26,12 @@ class WaveData:
 
 # This stores all wave data
 waves: list[list[Wave]] = [
-    [
-        Wave(e.EnemyType.GROUND, 1, 0),
-        Wave(e.EnemyType.FLYING, 1, 0),
-        Wave(e.EnemyType.GROUND_FAST, 1, 30),
-        Wave(e.EnemyType.FLYING_FAST, 1, 30),
-        Wave(e.EnemyType.GROUND_HEAVY, 1, 60),
-        Wave(e.EnemyType.FLYING_HEAVY, 1, 60),
-        Wave(e.EnemyType.GROUND_HEAVY_FAST, 1, 90),
-        Wave(e.EnemyType.GROUND_SUPER_HEAVY, 1, 120),
-    ],
-    [Wave(e.EnemyType.GROUND, 8, 10)],
-    [Wave(e.EnemyType.GROUND_HEAVY, 10, 8)],
-    [Wave(e.EnemyType.GROUND_FAST, 30, 4)],
-    [
-        Wave(e.EnemyType.GROUND_FAST, 30, 4),
-        Wave(e.EnemyType.GROUND, 8, 10),
-    ],
+    [Wave(e.EnemyType.GROUND, 3, 10)],
+    [Wave(e.EnemyType.GROUND, 5, 15)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 1, 10)],
+    [Wave(e.EnemyType.GROUND, 10, 8)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 3, 20)],
+    [Wave(e.EnemyType.GROUND, 15, 15)],
 ]
 WAVE_COUNT = len(waves)
 wave_data = WaveData()

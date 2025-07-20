@@ -91,36 +91,36 @@ TOWER_STATS = [
     ),
     # TowerType.NORMAL
     (
-        TowerStat(3, 15, 1, 80),
-        TowerStat(6, 10, 3, 88),
-        TowerStat(9, 5, 5, 96),
+        TowerStat(3, 8, 1, 80),
+        TowerStat(6, 6, 3, 88),
+        TowerStat(9, 4, 6, 96),
     ),
     # TowerType.SLOW
     (
-        TowerStat(5, 20, 2, 80),
-        TowerStat(10, 15, 8, 96),
-        TowerStat(15, 10, 15, 112),
+        TowerStat(5, 15, 2, 60),
+        TowerStat(10, 12, 4, 70),
+        TowerStat(15, 10, 7, 80),
     ),
     # TowerType.SPLASH
     (
-        TowerStat(15, 2, 5, 64),
-        TowerStat(30, 1.5, 10, 72),
-        TowerStat(45, 1, 15, 80),
+        TowerStat(15, 30, 20, 140),
+        TowerStat(30, 25, 30, 160),
+        TowerStat(45, 20, 45, 180),
     ),
     # TowerType.ZAP
     (
-        TowerStat(30, 5, 16, 64),
-        TowerStat(60, 4.5, 35, 80),
-        TowerStat(90, 4, 50, 96),
+        TowerStat(30, 15, 40, 60),
+        TowerStat(60, 12, 60, 70),
+        TowerStat(90, 8, 85, 80),
     ),
 ]
 
 
 def tower_get_power(tower: Tower) -> float:
     if tower.type == TowerType.CORE:
-        connected_tower_count = tower.connected_tower_count - tower.level
+        connected_tower_count = tower.connected_tower_count - (tower.level + 1) * 2
     elif tower.core_tower is not None:
-        connected_tower_count = tower.core_tower.connected_tower_count - tower.core_tower.level
+        connected_tower_count = tower.core_tower.connected_tower_count - (tower.core_tower.level + 1) * 2
     else:
         return 0.0
     return min(1.0, math.exp(-0.25 * (connected_tower_count - 1)))

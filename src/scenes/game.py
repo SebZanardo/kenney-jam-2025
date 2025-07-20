@@ -100,6 +100,8 @@ class Game(Scene):
         self.blending_anim = Animator()
         animator_initialise(self.blending_anim, {0: Animation(g.BLENDING_FX[0:4], 0.15)})
 
+        p.player.speed = p.SpeedType.PAUSED
+
         self.gameover = False
         self.gameover_timer = 90
 
@@ -202,6 +204,7 @@ class Game(Scene):
         for tower in self.towers:
             tower_render(tower)
             if (
+                not self.gameover and
                 p.player.mode == p.GameMode.VIEW
                 and self.dragging_tower_type is None
                 and tower.tile == hov_tile
@@ -319,41 +322,38 @@ class Game(Scene):
                     c.WINDOW_WIDTH - c.TILE_SIZE - 4, i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6 + (30 if i != 0 else 0)
                 )
                 text = f"{tower_type.name}\n-${TOWER_PRICES[tower_type.value]}"
-                if tower_type != TowerType.CORE:
-                    text += f"\nDmg: {TOWER_STATS[tower_type.value][0].damage}"
                 if ui.im_button_image(TOWER_ANIMATIONS[tower_type.value][1], text):
                     ui.context.held_id = -1
                     if p.player.money >= TOWER_PRICES[tower_type.value]:
                         self.dragging_tower_type = tower_type
 
             # preview tile
-            if p.player.health > 0:
-                preview_tile: pygame.Surface | None = None
+            preview_tile: pygame.Surface | None = None
 
-                if self.dragging_tower_type is not None:
-                    preview_tile = TOWER_ANIMATIONS[self.dragging_tower_type.value][1][1]
-                    if hov_tile is not None:
-                        tower_render_radius(Tower(hov_tile, self.dragging_tower_type, 0))
+            if self.dragging_tower_type is not None:
+                preview_tile = TOWER_ANIMATIONS[self.dragging_tower_type.value][1][1]
+                if hov_tile is not None:
+                    tower_render_radius(Tower(hov_tile, self.dragging_tower_type, 0))
 
-                elif p.player.mode == p.GameMode.WIRING:
-                    if hov_wire is not None:
-                        preview_tile = g.WIRES[0]
+            elif p.player.mode == p.GameMode.WIRING:
+                if hov_wire is not None:
+                    preview_tile = g.WIRES[0]
 
-                if preview_tile is not None:
-                    if hov_tile is None:
-                        g.window.blit(preview_tile, g.mouse_pos)
-                    else:
-                        surf = preview_tile.copy()
-                        surf.set_alpha(200)
-                        surf.blit(
-                            animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
-                        )
-                        g.window.blit(
-                            surf,
-                            camera_to_screen(
-                                g.camera, hov_tile[0] * c.TILE_SIZE, hov_tile[1] * c.TILE_SIZE
-                            ),
-                        )
+            if preview_tile is not None:
+                if hov_tile is None:
+                    g.window.blit(preview_tile, g.mouse_pos)
+                else:
+                    surf = preview_tile.copy()
+                    surf.set_alpha(200)
+                    surf.blit(
+                        animator_get_frame(self.blending_anim), special_flags=pygame.BLEND_MULT
+                    )
+                    g.window.blit(
+                        surf,
+                        camera_to_screen(
+                            g.camera, hov_tile[0] * c.TILE_SIZE, hov_tile[1] * c.TILE_SIZE
+                        ),
+                    )
 
         # heading
         if self.gameover:
@@ -362,7 +362,7 @@ class Game(Scene):
                 heading,
                 (
                     c.WINDOW_WIDTH // 2 - heading.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - heading.get_height() // 2,
+                    c.WINDOW_HEIGHT // 2 - heading.get_height() // 2 - 30,
                 ),
             )
 
@@ -373,7 +373,7 @@ class Game(Scene):
                     continue_text,
                     (
                         c.WINDOW_WIDTH // 2 - continue_text.get_width() // 2,
-                        c.WINDOW_HEIGHT // 2 - continue_text.get_height() // 2 + 50,
+                        c.WINDOW_HEIGHT // 2 - continue_text.get_height() // 2 + 20,
                     ),
                 )
 
@@ -512,18 +512,20 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                     hand.tooltip = Tooltip(
                         f"Upgrade {tower.type.name}\nLv {tower.level + 1} -> {tower.level + 2}"
                     )
-                    if tower.type != TowerType.CORE:
-                        stat_old = TOWER_STATS[tower.type.value][tower.level]
-                        stat_new = TOWER_STATS[tower.type.value][tower.level + 1]
-                        hand.tooltip.text += (
-                            f"\nDmg {signed_num(stat_new.damage - stat_old.damage)}"
-                        )
-                        hand.tooltip.text += (
-                            f"\nSpd {signed_num(stat_old.reload_time - stat_new.reload_time)}"
-                        )
-                        hand.tooltip.text += (
-                            f"\nRng {signed_num((stat_new.radius - stat_old.radius) / c.TILE_SIZE)}"
-                        )
+                    # NOTE: these should be hidden from player. more fun if they
+                    # work it out and trust that we balanced properly
+                    # if tower.type != TowerType.CORE:
+                    #     stat_old = TOWER_STATS[tower.type.value][tower.level]
+                    #     stat_new = TOWER_STATS[tower.type.value][tower.level + 1]
+                    #     hand.tooltip.text += (
+                    #         f"\nDmg {signed_num(stat_new.damage - stat_old.damage)}"
+                    #     )
+                    #     hand.tooltip.text += (
+                    #         f"\nSpd {signed_num(stat_old.reload_time - stat_new.reload_time)}"
+                    #     )
+                    #     hand.tooltip.text += (
+                    #         f"\nRng {signed_num((stat_new.radius - stat_old.radius) / c.TILE_SIZE)}"
+                    #     )
                 else:
                     valid_placement = False
                     hand.tooltip = Tooltip("MAX LEVEL")
@@ -535,7 +537,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 
         elif p.player.mode == p.GameMode.DESTROY:
             hand.tooltip = Tooltip(
-                f"{name}\n+${TOWER_STATS[tower.type.value][tower.level].sell_price}"
+                f"{name}\nSell: +${TOWER_STATS[tower.type.value][tower.level].sell_price}"
             )
             hand.type = HandType.HOVER
             if t.mouse_pressed():
@@ -546,8 +548,6 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 
         elif p.player.mode == p.GameMode.VIEW:
             hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
-            if tower.type != TowerType.CORE:
-                hand.tooltip.text += f"\nDmg: {TOWER_STATS[tower.type.value][tower.level].damage}"
 
         hov_tower = tower
         break
