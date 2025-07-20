@@ -595,6 +595,7 @@ def game_delete_tower(self: Game, tower: Tower):
 
     path.collision_grid[tower.tile[1]][tower.tile[0]] = False
     path.flowfield_regenerate(path.flowfield)
+    self.pathsssss = path.flowfield_path(path.flowfield)
 
     if self.tutorial < TutorialState.COMPLETE:
         sell = TOWER_PRICES[tower.type.value]
