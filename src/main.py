@@ -8,7 +8,7 @@ import core.globals as g
 from core.setup import setup
 
 from components.statemachine import statemachine_execute
-from components.audio import play_music
+from components.audio import play_music, set_music_volume, set_sfx_volume
 
 
 async def main() -> None:
@@ -16,6 +16,10 @@ async def main() -> None:
     print("Starting game loop")
 
     play_music(g.GAME_MUSIC, -1)
+
+    # Set volume
+    set_music_volume(g.setting_params["music"][0] / 100)
+    set_sfx_volume(g.setting_params["sfx"][0] / 100)
 
     while True:
         g.clock.tick(c.FPS)
