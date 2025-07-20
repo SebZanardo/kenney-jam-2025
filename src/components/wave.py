@@ -26,24 +26,59 @@ class WaveData:
 
 # This stores all wave data
 waves: list[list[Wave]] = [
-    [
-        Wave(e.EnemyType.GROUND, 1, 0),
-        # Wave(e.EnemyType.FLYING, 1, 0),
-        Wave(e.EnemyType.GROUND_FAST, 1, 30),
-        # Wave(e.EnemyType.FLYING_FAST, 1, 30),
-        Wave(e.EnemyType.GROUND_HEAVY, 1, 60),
-        # Wave(e.EnemyType.FLYING_HEAVY, 1, 60),
-        Wave(e.EnemyType.GROUND_HEAVY_FAST, 1, 90),
-        Wave(e.EnemyType.GROUND_SUPER_HEAVY, 1, 120),
-    ],
-    [Wave(e.EnemyType.GROUND, 8, 10)],
-    [Wave(e.EnemyType.GROUND_HEAVY, 10, 8)],
-    [Wave(e.EnemyType.GROUND_FAST, 30, 4)],
-    [
-        Wave(e.EnemyType.GROUND_FAST, 30, 4),
-        Wave(e.EnemyType.GROUND, 8, 10),
-    ],
+    [Wave(e.EnemyType.GROUND, 1, 10)],
+    [Wave(e.EnemyType.GROUND, 3, 20)],
+    [Wave(e.EnemyType.GROUND, 5, 15)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 1, 10)],
+    [Wave(e.EnemyType.GROUND, 10, 8)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 3, 45)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 1, 10), Wave(e.EnemyType.GROUND, 1, 20)] * 3,
+    [Wave(e.EnemyType.GROUND, 15, 15)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 5, 30)],
+    [Wave(e.EnemyType.GROUND, 3, 25), Wave(e.EnemyType.GROUND_HEAVY, 1, 10)] * 3,
+    [Wave(e.EnemyType.GROUND_FAST, 3, 120)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 10, 45)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 1, 10), Wave(e.EnemyType.GROUND_FAST, 1, 60)] * 5,
+    [Wave(e.EnemyType.GROUND, 20, 8)],
+    [Wave(e.EnemyType.GROUND_FAST, 10, 30)],
+    [Wave(e.EnemyType.FLYING_FAST, 3, 120)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 20, 30)],
+    [Wave(e.EnemyType.GROUND, 20, 8)],
+    [Wave(e.EnemyType.FLYING_FAST, 8, 60)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 30, 60)],
+    [Wave(e.EnemyType.FLYING, 5, 120)],
+    [Wave(e.EnemyType.FLYING_FAST, 10, 60)],
+    [Wave(e.EnemyType.FLYING, 2, 30), Wave(e.EnemyType.FLYING_FAST, 1, 10)] * 3,
+    [Wave(e.EnemyType.GROUND, 40, 10)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 40, 30)],
+    [Wave(e.EnemyType.GROUND_FAST, 40, 20)],
+    [Wave(e.EnemyType.GROUND_HEAVY_FAST, 3, 120)],
+    [Wave(e.EnemyType.FLYING, 20, 30)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 20, 50)],
+    [Wave(e.EnemyType.FLYING_FAST, 20, 20)],
+    [Wave(e.EnemyType.FLYING_HEAVY, 1, 20)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 10, 30)],
+    [Wave(e.EnemyType.GROUND_FAST, 10, 50)],
+    [Wave(e.EnemyType.GROUND, 50, 10)],
+    [Wave(e.EnemyType.FLYING, 2, 30), Wave(e.EnemyType.FLYING_FAST, 3, 20)] * 5,
+    [Wave(e.EnemyType.FLYING_HEAVY, 3, 200)],
+    [Wave(e.EnemyType.GROUND_HEAVY_FAST, 10, 40), Wave(e.EnemyType.GROUND_FAST, 5, 20)] * 5,
+    [Wave(e.EnemyType.GROUND, 30, 10)],
+    [Wave(e.EnemyType.FLYING_HEAVY, 5, 200)],
+    [Wave(e.EnemyType.GROUND, 5, 10), Wave(e.EnemyType.GROUND_HEAVY, 5, 30)] * 3,
+    [Wave(e.EnemyType.GROUND_FAST, 50, 20)],
+    [Wave(e.EnemyType.FLYING_FAST, 20, 50)],
+    [Wave(e.EnemyType.GROUND_HEAVY_FAST, 20, 30)],
+    [Wave(e.EnemyType.FLYING, 20, 30)],
+    [Wave(e.EnemyType.GROUND_HEAVY, 50, 30)],
+    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 1, 100)],
+    [Wave(e.EnemyType.FLYING_HEAVY, 10, 60)],
+    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 3, 120)],
+    [Wave(e.EnemyType.GROUND_FAST, 10, 10), Wave(e.EnemyType.FLYING_FAST, 10, 10)] * 3,
+    [Wave(e.EnemyType.GROUND_HEAVY_FAST, 20, 20), Wave(e.EnemyType.FLYING_HEAVY, 20, 30)] * 3,
+    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 10, 30)],
 ]
+
 WAVE_COUNT = len(waves)
 wave_data = WaveData()
 
@@ -101,7 +136,7 @@ def wave_new() -> None:
     print(f"New wave: {wave_data.number}")
 
     # Increase enemy health multiplier
-    e.enemy_health_multiplier = 1 + wave_data.number / WAVE_COUNT
+    e.enemy_health_multiplier = 1 + (wave_data.number / WAVE_COUNT) * 20
 
     wave_data.spawn_instruction_index = 0
     wave_data.spawn_done = False

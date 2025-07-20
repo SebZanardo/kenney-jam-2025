@@ -28,7 +28,7 @@ def settings_menu() -> bool:
 
     ui.im_set_next_position(
         c.WINDOW_WIDTH // 2 - ui.style.button_dim[0] // 2,
-        c.WINDOW_HEIGHT - 80 - ui.style.button_dim[1],
+        c.WINDOW_HEIGHT - 84 - ui.style.button_dim[1],
     )
     ui.context.rx = ui.context.x
     if ui.im_button_text("reset"):

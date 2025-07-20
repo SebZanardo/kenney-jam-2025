@@ -5,8 +5,9 @@ import random
 
 import pygame
 
-from components.camera import Camera, camera_to_screen_shake
 import core.globals as g
+
+from components.camera import Camera, camera_to_screen_shake
 from components.motion import Motion, motion_update
 
 
@@ -15,8 +16,14 @@ class ParticleSpriteType(IntEnum):
     CREATE = 1
     DELETE = 2
     BUILD = 3
-    ATTACK_BIG = 4
-    ATTACK_SMALL = 5
+    NORMAL_BIG = 4
+    NORMAL_SMALL = 5
+    SLOW_BIG = 6
+    SLOW_SMALL = 7
+    SPLASH_BIG = 8
+    SPLASH_SMALL = 9
+    ZAP_BIG = 10
+    ZAP_SMALL = 11
 
 
 @dataclass(slots=True)

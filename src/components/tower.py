@@ -91,36 +91,36 @@ TOWER_STATS = [
     ),
     # TowerType.NORMAL
     (
-        TowerStat(3, 15, 1, 80),
-        TowerStat(6, 10, 3, 88),
-        TowerStat(9, 5, 5, 96),
+        TowerStat(3, 8, 4, 80),
+        TowerStat(6, 6, 6, 88),
+        TowerStat(9, 4, 8, 96),
     ),
     # TowerType.SLOW
     (
-        TowerStat(5, 20, 2, 80),
-        TowerStat(10, 15, 8, 96),
-        TowerStat(15, 10, 15, 112),
+        TowerStat(5, 15, 1, 60),
+        TowerStat(10, 12, 2, 70),
+        TowerStat(15, 8, 4, 80),
     ),
     # TowerType.SPLASH
     (
-        TowerStat(15, 2, 5, 64),
-        TowerStat(30, 1.5, 10, 72),
-        TowerStat(45, 1, 15, 80),
+        TowerStat(15, 10, 20, 140),
+        TowerStat(30, 9, 30, 160),
+        TowerStat(45, 8, 45, 180),
     ),
     # TowerType.ZAP
     (
-        TowerStat(30, 5, 16, 64),
-        TowerStat(60, 4.5, 35, 80),
-        TowerStat(90, 4, 50, 96),
+        TowerStat(30, 15, 40, 60),
+        TowerStat(60, 12, 50, 70),
+        TowerStat(90, 8, 65, 80),
     ),
 ]
 
 
 def tower_get_power(tower: Tower) -> float:
     if tower.type == TowerType.CORE:
-        connected_tower_count = tower.connected_tower_count - tower.level
+        connected_tower_count = tower.connected_tower_count - (tower.level + 1) * 2
     elif tower.core_tower is not None:
-        connected_tower_count = tower.core_tower.connected_tower_count - tower.core_tower.level
+        connected_tower_count = tower.core_tower.connected_tower_count - (tower.core_tower.level + 1) * 2
     else:
         return 0.0
     return min(1.0, math.exp(-0.25 * (connected_tower_count - 1)))
@@ -132,10 +132,12 @@ def tower_update(tower: Tower) -> None:
     if power == 0:
         return
 
-    animator_update(tower.animator, g.dt * power)
-    animator_update(tower.blending_anim, g.dt * power)
-
     stat = TOWER_STATS[tower.type.value][tower.level]
+
+    if tower.target is not None:
+        mult = power / (stat.reload_time / 15)
+        animator_update(tower.animator, g.dt * mult)
+        animator_update(tower.blending_anim, g.dt * mult)
 
     if stat.radius == 0:
         return
@@ -181,19 +183,7 @@ def tower_update(tower: Tower) -> None:
 
             tower.cooldown = stat.reload_time
 
-            # TODO: make different attacks use different particles
-            for particle_type in (ParticleSpriteType.ATTACK_BIG, ParticleSpriteType.ATTACK_SMALL):
-                particle_burst(
-                    particle_type,
-                    count=2,
-                    position=(tower.target.x, tower.target.y),
-                    position_variance=c.TILE_SIZE // 2,
-                    velocity=0,
-                    velocity_variance=0,
-                    lifespan=10,
-                    lifespan_variance=2,
-                )
-
+            particle_tower_create(tower.type, tower.level, tower.target.x, tower.target.y)
 
 def tower_render(tower: Tower) -> None:
     if tower_get_power(tower) == 0:
@@ -242,3 +232,55 @@ def tower_render_radius(tower: Tower) -> None:
             tower.tile[1] * c.TILE_SIZE - radius + c.TILE_SIZE // 2,
         ),
     )
+
+
+def particle_tower_create(type: TowerType, level: int, x: int, y: int) -> None:
+    # TODO: play sfx here
+    if type == TowerType.NORMAL:
+        for particle_type in (ParticleSpriteType.NORMAL_BIG, ParticleSpriteType.NORMAL_SMALL):
+            particle_burst(
+                particle_type,
+                count=5 * (level + 1),
+                position=(x, y),
+                position_variance=c.TILE_SIZE,
+                velocity=0,
+                velocity_variance=0,
+                lifespan=10,
+                lifespan_variance=2,
+            )
+    elif type == TowerType.SLOW:
+        for particle_type in (ParticleSpriteType.SLOW_BIG, ParticleSpriteType.SLOW_SMALL):
+            particle_burst(
+                particle_type,
+                count=7 * (level + 1),
+                position=(x, y),
+                position_variance=c.TILE_SIZE * 2,
+                velocity=0,
+                velocity_variance=0,
+                lifespan=20,
+                lifespan_variance=5,
+            )
+    elif type == TowerType.SPLASH:
+        for particle_type in (ParticleSpriteType.SPLASH_BIG, ParticleSpriteType.SPLASH_SMALL):
+            particle_burst(
+                particle_type,
+                count=8 * (level + 1),
+                position=(x, y),
+                position_variance=c.TILE_SIZE * 4,
+                velocity=20,
+                velocity_variance=0,
+                lifespan=15,
+                lifespan_variance=3,
+            )
+    elif type == TowerType.ZAP:
+        for particle_type in (ParticleSpriteType.ZAP_SMALL, ParticleSpriteType.ZAP_BIG):
+            particle_burst(
+                particle_type,
+                count=6 * (level + 1),
+                position=(x, y),
+                position_variance=c.TILE_SIZE,
+                velocity=0,
+                velocity_variance=0,
+                lifespan=8,
+                lifespan_variance=3,
+            )

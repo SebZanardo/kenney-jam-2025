@@ -30,19 +30,15 @@ collision_grid: list[list[bool]] = [
     [False] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)
 ]
 
-# Score based on how crowded cell is (ground only for now but could do air too)
-crowded_grid: list[list[float]] = [[0.0] * c.GRID_WIDTH_TILES for _ in range(c.GRID_HEIGHT_TILES)]
-
 
 def pathing_reset() -> None:
-    global flowfield, placement_flowfield, collision_grid, crowded_grid
+    global flowfield, placement_flowfield, collision_grid
 
     for y in range(c.GRID_HEIGHT_TILES):
         for x in range(c.GRID_WIDTH_TILES):
             flowfield[y][x] = -1
             placement_flowfield[y][x] = -1
             collision_grid[y][x] = False
-            crowded_grid[y][x] = 0.0
 
 
 def flowfield_preview(x: int, y: int) -> bool:
@@ -126,10 +122,6 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
 
                 q.append((nx, ny))
                 field[ny][nx] = i
-
-    # BUG: REMOVE THIS FOR BETTER PERFORMANCE #################################
-    if not c.IS_WEB:
-        debug_print()
     ###########################################################################
 
     return complete
@@ -161,13 +153,6 @@ def debug_print() -> None:
         buffer = ""
         for v in row:
             buffer += f"{'#' if v else '.'} "
-        print(buffer)
-
-    print("CROWDED MAP", "#" * 100)
-    for row in crowded_grid:
-        buffer = ""
-        for v in row:
-            buffer += f"{v} "
         print(buffer)
 
 

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import IntEnum
-import random
 
 import pygame
 
@@ -35,7 +34,6 @@ class EnemyType(IntEnum):
     GROUND_SUPER_HEAVY = 4
 
     # flying
-    # TODO: Implement
     FLYING = 5
     FLYING_FAST = 6
     FLYING_HEAVY = 7
@@ -76,19 +74,19 @@ ENEMY_STATS = [
     # EnemyType.GROUND
     EnemyStat(10, 1, 0.1, 1, False, 4, 1, False),
     # EnemyType.GROUND_FAST
-    EnemyStat(15, 2, 0.2, 1, False, 2, 1, True),
+    EnemyStat(30, 2, 0.2, 1, False, 2, 1, True),
     # EnemyType.GROUND_HEAVY
-    EnemyStat(50, 3, 0.05, 1.5, False, 2, 2, True),
+    EnemyStat(50, 5, 0.05, 1.5, False, 2, 2, True),
     # EnemyType.GROUND_HEAVY_FAST
-    EnemyStat(100, 5, 0.1, 1.5, False, 2, 1, False),
+    EnemyStat(200, 8, 0.1, 1.5, False, 2, 1, False),
     # EnemyType.GROUND_SUPER_HEAVY
-    EnemyStat(300, 10, 0.025, 2, False, 2, 5, False),
+    EnemyStat(500, 20, 0.025, 2, False, 2, 5, False),
     # EnemyType.FLYING
-    EnemyStat(10, 1, 0.1, 1, True, 2, 1, False),
+    EnemyStat(30, 5, 0.05, 1, True, 2, 1, False),
     # EnemyType.FLYING_FAST
-    EnemyStat(15, 2, 0.2, 1, True, 2, 1, True),
+    EnemyStat(50, 2, 0.1, 1, True, 2, 1, True),
     # EnemyType.FLYING_HEAVY
-    EnemyStat(50, 3, 0.05, 1.5, True, 2, 1, False),
+    EnemyStat(200, 10, 0.025, 1.5, True, 2, 1, False),
 ]
 
 # Load animations once here
@@ -131,14 +129,15 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
     new_enemy = enemies[active_enemies]
     new_enemy.type = enemy_type
 
-    if not stat.flying:
-        new_enemy.x, new_enemy.y = PATH_START_POS
-    else:
-        new_enemy.x, new_enemy.y = (
-            PATH_START_POS[0],
-            random.choice([0, 1, c.GRID_HEIGHT_TILES - 2, c.GRID_HEIGHT_TILES - 1])
-            + c.TILE_SIZE // 2,
-        )
+    new_enemy.x, new_enemy.y = PATH_START_POS
+    # if not stat.flying:
+    #     new_enemy.x, new_enemy.y = PATH_START_POS
+    # else:
+    #     new_enemy.x, new_enemy.y = (
+    #         PATH_START_POS[0],
+    #         random.choice([0, 1, c.GRID_HEIGHT_TILES - 2, c.GRID_HEIGHT_TILES - 1])
+    #         + c.TILE_SIZE // 2,
+    #     )
 
     new_enemy.animator = Animator()
     animator_initialise(new_enemy.animator, {0: ENEMY_ANIMATIONS[enemy_type.value]})
@@ -178,13 +177,15 @@ def enemy_update(i: int) -> bool:
     """
     enemy = enemies[i]
 
+    stat = ENEMY_STATS[enemy.type]
+
     # Dead then no need to update
     if enemy.health <= 0:
+        p.score_add(stat.health)
         return True
 
     animator_update(enemy.animator, g.dt)
 
-    stat = ENEMY_STATS[enemy.type]
     speed = stat.speed * c.TILE_SIZE
 
     enemy.direction = c.RIGHT
