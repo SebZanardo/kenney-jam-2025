@@ -27,6 +27,9 @@ class WaveData:
     spawn_done = False
 
 
+HEALTH_SCALING = 30
+
+
 # This stores all wave data
 waves: list[list[Wave]] = [
     [Wave(e.EnemyType.GROUND, 1, 10)],
@@ -142,7 +145,7 @@ def wave_new() -> None:
     print(f"New wave: {wave_data.number}")
 
     # Increase enemy health multiplier
-    e.enemy_health_multiplier = 1 + (wave_data.number / WAVE_COUNT) * 20
+    e.enemy_health_multiplier = 1 + (wave_data.number / WAVE_COUNT) * HEALTH_SCALING
 
     wave_data.spawn_instruction_index = 0
     wave_data.spawn_done = False
