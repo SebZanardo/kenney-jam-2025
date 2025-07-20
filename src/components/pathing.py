@@ -73,7 +73,13 @@ def collision_check(x: int, y: int) -> bool:
         checked.add((enemy.cx, enemy.cy))
 
         # Cannot place on enemy
-        if enemy.x // c.TILE_SIZE == x and enemy.y // c.TILE_SIZE == y:
+        ex = round(enemy.x / c.TILE_SIZE)
+        ey = round(enemy.y / c.TILE_SIZE)
+
+        if ex == x and ey == y:
+            return True
+
+        if placement_flowfield[ey][ex]:
             return True
 
     return False

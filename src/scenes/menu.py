@@ -21,7 +21,7 @@ from components.animation import (
     animator_update,
 )
 from components.tower import TowerType, particle_tower_create
-from components.particles import ParticleSpriteType, particle_burst, particles_render, particles_update
+from components.particles import ParticleSpriteType, particle_burst, particles_render, particles_update, particles_clear
 
 from scenes.scene import Scene
 from scenes import manager
@@ -53,12 +53,6 @@ class Menu(Scene):
         super().__init__(statemachine)
 
         self.current_state = MenuState.MAIN
-        g.camera = Camera(
-            Motion.empty(),
-            pygame.Vector2(),
-            pygame.Vector2(),
-            pygame.Vector2(),
-        )
 
     def enter(self) -> None:
         self.walking = []
@@ -102,6 +96,7 @@ class Menu(Scene):
             if not w.dead:
                 # check for click
                 surf = animator_get_frame(w.animator)
+                surf.set_alpha(50)
 
                 x, y = camera_to_screen(g.camera, w.x, w.y)
 
@@ -111,9 +106,9 @@ class Menu(Scene):
                     g.mouse_pos[1] >= y and g.mouse_pos[1] <= (y + surf.get_height())
                 ):
                     tower_type = random.choice(list(TowerType)[1:])
-                    particle_tower_create(tower_type, 1, w.x + surf.get_width() // 2, w.y + surf.get_height() // 2)
+                    particle_tower_create(tower_type, 0, w.x + surf.get_width() // 2, w.y + surf.get_height() // 2)
 
-                    g.camera.trauma += 0.15
+                    g.camera.trauma += 0.2
                     w.dead = True
 
                 g.window.blit(
@@ -158,7 +153,8 @@ class Menu(Scene):
             ui.im_reset_position(
                 c.WINDOW_WIDTH // 2 - ui.style.button_dim[0] // 2, c.WINDOW_HEIGHT // 2 - 2
             )
-            if ui.im_button_text("play") or t.is_pressed(t.Action.START):
+            if ui.im_button_text("play"):
+                particles_clear()
                 statemachine_change_state(self.statemachine, manager.SceneState.GAME)
                 ui.im_new()
 
@@ -196,9 +192,6 @@ class Menu(Scene):
             if ui.im_button_text("back"):
                 self.current_state = MenuState.MAIN
                 ui.im_new()
-
-        if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
-            g.camera.trauma += 0.5
 
         # hand
         hand_render()
