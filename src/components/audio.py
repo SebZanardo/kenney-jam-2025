@@ -4,6 +4,7 @@ import pygame
 
 class AudioChannel(IntEnum):
     UI = 0
+    MUSIC = auto()
     TOWER = auto()
     TOWER_ALT = auto()
     PLAYER = auto()

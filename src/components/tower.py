@@ -190,7 +190,9 @@ def tower_update(tower: Tower) -> None:
 
 
 def tower_render(tower: Tower) -> None:
-    if tower_get_power(tower) == 0:
+    power = tower_get_power(tower)
+
+    if power == 0:
         surf = TOWER_ANIMATIONS[tower.type.value][2]
     else:
         surf = animator_get_frame(tower.animator)
@@ -210,6 +212,14 @@ def tower_render(tower: Tower) -> None:
             (tower.tile[1] + 0.5) * c.TILE_SIZE - surf.get_height() // 2,
         ),
     )
+
+    if 0 < power < 1:
+        g.window.blit(
+            g.ICONS[2],
+            camera_to_screen_shake(
+                g.camera, (tower.tile[0] + 1) * c.TILE_SIZE - 10, tower.tile[1] * c.TILE_SIZE - 3
+            ),
+        )
 
     # g.window.blit(
     #     g.FONT.render(

@@ -37,7 +37,7 @@ camera: Camera | None = None
 
 # User settings
 default_setting_params = {
-    "music": [30],
+    "music": [50],
     "sfx": [50],
     "screenshake": [True],
 }
@@ -105,5 +105,4 @@ PLAYER_SFX = [
 ]
 
 path = "data/music/"
-NINTENDO_MUSIC = path + "theme.ogg"
-GAME_MUSIC = path + "The Spirit of the Forest OGG.ogg"
+GAME_MUSIC = pygame.mixer.Sound(path + "The Spirit of the Forest OGG.ogg")

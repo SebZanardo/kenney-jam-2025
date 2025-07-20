@@ -78,8 +78,6 @@ class Game(Scene):
     def enter(self) -> None:
         self.current_state = MenuState.GAME
 
-        # play_music(g.GAME_MUSIC, -1)
-
         # player resources
         p.player_reset()
 
@@ -303,6 +301,13 @@ class Game(Scene):
             if ui.im_button_image(g.BUTTONS[3], "Settings"):
                 ui.im_new()
                 self.current_state = MenuState.SETTINGS
+            if self.tutorial < TutorialState.COMPLETE:
+                ui.im_set_next_position(
+                    c.WINDOW_WIDTH - 2 * c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE
+                )
+                if ui.im_button_image(g.BUTTONS[5], "Skip tutorial"):
+                    ui.im_new()
+                    self.tutorial = TutorialState.COMPLETE
 
         text_y, icon_y, icon_w = 7, 8, 18
         wave_text = g.FONT.render(f"WAVE {wave_data.number + 1}", False, c.WHITE)
@@ -518,12 +523,6 @@ class Game(Scene):
                     c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 100,
                 ),
             )
-
-        if self.tutorial < TutorialState.COMPLETE:
-            ui.im_set_next_position(c.WINDOW_WIDTH-150, c.WINDOW_HEIGHT-35)
-            if ui.im_button_text("SKIP"):
-                self.tutorial = TutorialState.COMPLETE
-            ui.im_new()
 
         # hand
         hand_render()
