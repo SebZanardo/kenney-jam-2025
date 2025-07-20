@@ -11,8 +11,8 @@ from components.particles import Particle, particle_spawn
 from utilities.math import signed_num
 
 
-STARTING_MONEY = 10000
-STARTING_HEALTH = 10000
+STARTING_MONEY = 30
+STARTING_HEALTH = 100
 
 
 class GameMode(Enum):
