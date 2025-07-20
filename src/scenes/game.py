@@ -12,7 +12,6 @@ from components.animation import (
     Animator,
     animator_get_frame,
     animator_initialise,
-    animator_switch_animation,
     animator_update,
 )
 from components.audio import play_music
@@ -38,6 +37,7 @@ from components.tower import (
     TOWER_STATS,
     Tower,
     TowerType,
+    tower_get_power,
     tower_render,
     tower_update,
 )
@@ -193,7 +193,9 @@ class Game(Scene):
         for x in range(c.GRID_WIDTH_TILES):
             for y in range(c.GRID_HEIGHT_TILES):
                 g.window.blit(
-                    g.TERRAIN[8 if (x, y) in (path.PATH_START_TILE, path.PATH_END_TILE) else (x + y) % 2],
+                    g.TERRAIN[
+                        8 if (x, y) in (path.PATH_START_TILE, path.PATH_END_TILE) else (x + y) % 2
+                    ],
                     camera_to_screen_shake(g.camera, x * c.TILE_SIZE, y * c.TILE_SIZE),
                 )
 
@@ -382,6 +384,9 @@ def game_place_tower_at(self: Game, type: TowerType, tile: Pos) -> Tower:
 
 def game_place_tower_on(self: Game, type: TowerType, parent: Wire):
     parent.tower = game_place_tower_at(self, type, parent.tile)
+    if parent.core_tower is not None:
+        parent.core_tower.connected_tower_count += 1
+        parent.tower.core_tower = parent.core_tower
 
 
 def game_delete_tower(self: Game, tower: Tower):
@@ -390,6 +395,7 @@ def game_delete_tower(self: Game, tower: Tower):
     path.flowfield_regenerate(path.flowfield)
 
     p.player.money += TOWER_STATS[tower.type.value][tower.level].sell_price
+    p.score_add(-100)
 
     tile_particle_burst(ParticleSpriteType.DELETE, tower.tile)
     g.camera.trauma = 0.35
@@ -398,6 +404,8 @@ def game_delete_tower(self: Game, tower: Tower):
 def game_delete_tower_from(self: Game, parent: Wire):
     game_delete_tower(self, parent.tower)
     parent.tower = None
+    if parent.core_tower is not None:
+        parent.core_tower.connected_tower_count -= 1
 
     # delete wires coming from cores
     if parent.incoming_side is None:
@@ -457,7 +465,9 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                 hand.type = HandType.NO
 
         elif p.player.mode == p.GameMode.DESTROY:
-            hand.tooltip = Tooltip(f"{name}\n+${TOWER_STATS[tower.type.value][tower.level].sell_price}")
+            hand.tooltip = Tooltip(
+                f"{name}\n+${TOWER_STATS[tower.type.value][tower.level].sell_price}"
+            )
             hand.type = HandType.HOVER
             if t.mouse_pressed():
                 if hov_wire is not None:
@@ -466,7 +476,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                     game_delete_tower(self, tower)
 
         elif p.player.mode == p.GameMode.VIEW:
-            hand.tooltip = Tooltip(f"{name}")
+            hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
 
         break
 
@@ -488,13 +498,15 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
             and hov_wire.tower.level < MAX_TOWER_LEVEL
         ):
             game_upgrade_tower(self, hov_wire.tower)
+        # normal tower
         elif self.dragging_tower_type != TowerType.CORE:
             if hov_wire is not None and hov_wire.tower is None:
                 game_place_tower_on(self, self.dragging_tower_type, hov_wire)
+        # core
         else:
             if hov_wire is None:
                 tower = game_place_tower_at(self, self.dragging_tower_type, tile)
-                self.wires.append(Wire(tile, None, {}, True, tower))
+                self.wires.append(Wire(tile, None, {}, True, tower, tower))
                 p.player.mode = p.GameMode.WIRING
 
     self.dragging_tower_type = None
@@ -503,7 +515,9 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
 # WIRES
 def game_place_wire(self: Game, wire: Wire, parent: Wire):
     parent.outgoing_sides[c.INVERTED_DIRECTIONS[wire.incoming_side]] = wire
+
     p.player.money -= 1
+
     tile_particle_burst(ParticleSpriteType.CREATE, wire.tile)
 
 
@@ -512,7 +526,9 @@ def game_delete_wire(self: Game, wire: Wire, parent: Wire | None):
         parent.outgoing_sides = {
             dir: node for dir, node in parent.outgoing_sides.items() if node != wire
         }
+
     p.player.money += 1
+
     if wire.tower is not None:
         game_delete_tower_from(self, wire)
     else:
@@ -545,6 +561,7 @@ def game_mode_wire_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
             if (overwrite := wire_find(self.wires, tile)[0]) is None:
                 if p.player.money >= 1:
                     wire = Wire(tile[:], c.INVERTED_DIRECTIONS[adjacent_sides[tile]], {})
+                    wire.core_tower = self.wire_draw_start.core_tower
                     game_place_wire(self, wire, self.wire_draw_start)
                     self.wire_draw_start = wire
                 else:

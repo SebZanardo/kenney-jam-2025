@@ -21,7 +21,7 @@ class ParticleSpriteType(IntEnum):
 
 @dataclass(slots=True)
 class Particle:
-    sprite_type: ParticleSpriteType
+    sprite: pygame.Surface
     motion: Motion
     rotation: float
     rotational_velocity: float
@@ -29,11 +29,15 @@ class Particle:
     lifetime: int = 0  # current frame
 
 
-particles: list[Particle] = []
+_particles: list[Particle] = []
+
+
+def particle_spawn(*new_particles: Particle):
+    _particles.extend(new_particles)
 
 
 def particle_burst(
-    sprite_index: int,
+    sprite_type: ParticleSpriteType,
     *,
     count: int,
     position: tuple[float, float],
@@ -62,14 +66,15 @@ def particle_burst(
         )
 
         # create particle
-        particle = Particle(
-            sprite_index,
-            motion,
-            rotation,
-            random.uniform(-500, 500),
-            lifespan + random.randint(-lifespan_variance // 2, lifespan_variance // 2),
+        particle_spawn(
+            Particle(
+                g.PARTICLES[sprite_type.value],
+                motion,
+                rotation,
+                random.uniform(-500, 500),
+                lifespan + random.randint(-lifespan_variance // 2, lifespan_variance // 2),
+            )
         )
-        particles.append(particle)
 
 
 def particle_update(particle: Particle) -> None:
@@ -80,27 +85,27 @@ def particle_update(particle: Particle) -> None:
 
 def particles_update() -> None:
     i = 0
-    while i < len(particles):
-        particle_update(particles[i])
-        if particles[i].lifetime >= particles[i].lifespan:
-            particles.pop(i)
+    while i < len(_particles):
+        particle_update(_particles[i])
+        if _particles[i].lifetime >= _particles[i].lifespan:
+            _particles.pop(i)
         else:
             i += 1
 
 
 def particle_render(particle: Particle, camera: Camera) -> None:
-    surf = pygame.transform.rotate(g.PARTICLES[particle.sprite_type.value], -particle.rotation)
+    surf = pygame.transform.rotate(particle.sprite, -particle.rotation)
     surf.set_alpha((1 - particle.lifetime / particle.lifespan) * 255)
     g.window.blit(
         surf,
         camera_to_screen_shake(
             camera,
-            particle.motion.position[0] - surf.get_width() // 2,
-            particle.motion.position[1] - surf.get_height() // 2,
+            particle.motion.position.x - surf.get_width() // 2,
+            particle.motion.position.y - surf.get_height() // 2,
         ),
     )
 
 
 def particles_render() -> None:
-    for particle in particles:
+    for particle in _particles:
         particle_render(particle, g.camera)
