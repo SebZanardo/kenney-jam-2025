@@ -28,11 +28,11 @@ class WaveData:
 waves: list[list[Wave]] = [
     [
         Wave(e.EnemyType.GROUND, 1, 0),
-        Wave(e.EnemyType.FLYING, 1, 0),
+        # Wave(e.EnemyType.FLYING, 1, 0),
         Wave(e.EnemyType.GROUND_FAST, 1, 30),
-        Wave(e.EnemyType.FLYING_FAST, 1, 30),
+        # Wave(e.EnemyType.FLYING_FAST, 1, 30),
         Wave(e.EnemyType.GROUND_HEAVY, 1, 60),
-        Wave(e.EnemyType.FLYING_HEAVY, 1, 60),
+        # Wave(e.EnemyType.FLYING_HEAVY, 1, 60),
         Wave(e.EnemyType.GROUND_HEAVY_FAST, 1, 90),
         Wave(e.EnemyType.GROUND_SUPER_HEAVY, 1, 120),
     ],

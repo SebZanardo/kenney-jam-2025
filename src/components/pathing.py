@@ -65,9 +65,6 @@ def collision_check(x: int, y: int) -> bool:
     """
     Checks if enemies are on tower or not
     """
-    valid = True
-
-    collision_grid[y][x] = True
     checked = set()
 
     for i in range(e.active_enemies):
@@ -79,16 +76,11 @@ def collision_check(x: int, y: int) -> bool:
 
         checked.add((enemy.cx, enemy.cy))
 
-        if not inside_grid(enemy.cx, enemy.cy):
-            continue
-
         # Cannot place on enemy
-        if placement_flowfield[enemy.cy][enemy.cx] == -1:
-            valid = False
-            break
-    collision_grid[y][x] = False
+        if enemy.x // c.TILE_SIZE == x and enemy.y // c.TILE_SIZE == y:
+            return True
 
-    return valid
+    return False
 
 
 def flowfield_regenerate(field: list[list[int]]) -> bool:
