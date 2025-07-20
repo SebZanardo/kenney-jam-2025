@@ -74,12 +74,12 @@ class ContextUI:
             hovered = True
 
             if self.hovered_id != self.current_id:
-                play_sound(AudioChannel.UI, g.HOVER_SFX)
+                play_sound(AudioChannel.UI, g.UI_SFX[0])
                 self.hovered_id = self.current_id
 
             if t.mouse_pressed(t.MouseButton.LEFT) and self.held_id == -1:
                 clicked = True
-                play_sound(AudioChannel.UI, g.SELECT_SFX)
+                play_sound(AudioChannel.UI, g.UI_SFX[1])
                 self.held_id = self.current_id
 
         self.current_id += 1

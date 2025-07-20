@@ -4,6 +4,7 @@ from enum import IntEnum
 import math
 import pygame
 
+from components.audio import AudioChannel, play_sound
 import core.constants as c
 import core.globals as g
 
@@ -120,7 +121,9 @@ def tower_get_power(tower: Tower) -> float:
     if tower.type == TowerType.CORE:
         connected_tower_count = tower.connected_tower_count - (tower.level + 1) * 2
     elif tower.core_tower is not None:
-        connected_tower_count = tower.core_tower.connected_tower_count - (tower.core_tower.level + 1) * 2
+        connected_tower_count = (
+            tower.core_tower.connected_tower_count - (tower.core_tower.level + 1) * 2
+        )
     else:
         return 0.0
     return min(1.0, math.exp(-0.25 * (connected_tower_count - 1)))
@@ -183,7 +186,8 @@ def tower_update(tower: Tower) -> None:
 
             tower.cooldown = stat.reload_time
 
-            particle_tower_create(tower.type, tower.level, tower.target.x, tower.target.y)
+            tower_particle_burst(tower.type, tower.level, tower.target.x, tower.target.y)
+
 
 def tower_render(tower: Tower) -> None:
     if tower_get_power(tower) == 0:
@@ -234,8 +238,16 @@ def tower_render_radius(tower: Tower) -> None:
     )
 
 
-def particle_tower_create(type: TowerType, level: int, x: int, y: int) -> None:
-    # TODO: play sfx here
+def tower_particle_burst(type: TowerType, level: int, x: int, y: int) -> None:
+    if type != TowerType.CORE:
+        play_sound(
+            (
+                AudioChannel.TOWER_ALT
+                if type in (TowerType.SPLASH, TowerType.ZAP)
+                else AudioChannel.TOWER
+            ),
+            g.TOWER_SFX[type.value - 1],
+        )
     if type == TowerType.NORMAL:
         for particle_type in (ParticleSpriteType.NORMAL_BIG, ParticleSpriteType.NORMAL_SMALL):
             particle_burst(

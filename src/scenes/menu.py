@@ -20,8 +20,14 @@ from components.animation import (
     animator_initialise,
     animator_update,
 )
-from components.tower import TowerType, particle_tower_create
-from components.particles import ParticleSpriteType, particle_burst, particles_render, particles_update, particles_clear
+from components.tower import TowerType, tower_particle_burst
+from components.particles import (
+    ParticleSpriteType,
+    particle_burst,
+    particles_render,
+    particles_update,
+    particles_clear,
+)
 
 from scenes.scene import Scene
 from scenes import manager
@@ -43,9 +49,9 @@ class EnemyWalker:
 
 
 LEFT_BOUND = -64
-RIGHT_BOUND = c.WINDOW_WIDTH+32
+RIGHT_BOUND = c.WINDOW_WIDTH + 32
 TOP_BOUND = 16
-BOTTOM_BOUND = c.WINDOW_HEIGHT-120
+BOTTOM_BOUND = c.WINDOW_HEIGHT - 120
 
 
 class Menu(Scene):
@@ -61,7 +67,7 @@ class Menu(Scene):
                 random.randint(LEFT_BOUND, RIGHT_BOUND),
                 random.randint(TOP_BOUND, BOTTOM_BOUND),
                 random.choice(list(e.EnemyType)),
-                Animator()
+                Animator(),
             )
             animator_initialise(w.animator, {0: e.ENEMY_ANIMATIONS[w.type.value]})
             w.animator.frame_index = 0
@@ -102,23 +108,23 @@ class Menu(Scene):
                 x, y = camera_to_screen(g.camera, w.x, w.y)
 
                 if (
-                    t.mouse_pressed(t.MouseButton.LEFT) and
-                    g.mouse_pos[0] >= x and g.mouse_pos[0] <= (x + surf.get_width()) and
-                    g.mouse_pos[1] >= y and g.mouse_pos[1] <= (y + surf.get_height())
+                    t.mouse_pressed(t.MouseButton.LEFT)
+                    and g.mouse_pos[0] >= x
+                    and g.mouse_pos[0] <= (x + surf.get_width())
+                    and g.mouse_pos[1] >= y
+                    and g.mouse_pos[1] <= (y + surf.get_height())
                 ):
                     tower_type = random.choice(list(TowerType)[1:])
-                    particle_tower_create(tower_type, 0, w.x + surf.get_width() // 2, w.y + surf.get_height() // 2)
+                    tower_particle_burst(
+                        tower_type, 0, w.x + surf.get_width() // 2, w.y + surf.get_height() // 2
+                    )
 
                     g.camera.trauma += 0.2
                     w.dead = True
 
                 g.window.blit(
                     surf,
-                    camera_to_screen_shake(
-                        g.camera,
-                        w.x,
-                        w.y
-                    ),
+                    camera_to_screen_shake(g.camera, w.x, w.y),
                 )
 
         particles_update()
@@ -126,7 +132,7 @@ class Menu(Scene):
 
         # Black out under hud
         pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 32))
-        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT-32, c.WINDOW_WIDTH, 32))
+        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 32, c.WINDOW_WIDTH, 32))
 
         for x in range(c.WINDOW_WIDTH // 14):
             g.window.blit(g.TERRAIN[3], (x * 14 - 1, 3))

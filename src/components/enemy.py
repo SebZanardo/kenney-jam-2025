@@ -10,6 +10,7 @@ from components.animation import (
     animator_initialise,
     animator_update,
 )
+from components.audio import AudioChannel, play_sound
 import core.globals as g
 import core.constants as c
 
@@ -203,6 +204,7 @@ def enemy_update(i: int) -> bool:
         # Reached end of screen
         if enemy.x >= PATH_END_POS[0]:
             p.player.health -= 1
+            play_sound(AudioChannel.PLAYER, g.PLAYER_SFX[0])
             g.camera.trauma = 0.3
             enemy.health = 0  # Set to dead so tower can see that it died
             return True
