@@ -133,6 +133,23 @@ def flowfield_regenerate(field: list[list[int]]) -> bool:
     return complete
 
 
+def flowfield_path(fieldsssss: list[list[int]]) -> list[tuple[int, int]]:
+    pathsss = [PATH_START_TILE]
+    x, y = PATH_START_TILE
+
+    i = 0
+    while (x, y) != PATH_END_TILE:
+        if fieldsssss[y][x] == -1 or i > 999:
+            return []
+        dx, dy = c.DIRECTIONS[fieldsssss[y][x]]
+        x -= dx
+        y -= dy
+        pathsss.append((x, y))
+        i += 1
+
+    return pathsss
+
+
 def flowfield_copy(from_field: list[list[int]], to_field: list[list[int]]) -> None:
     for y in range(c.GRID_HEIGHT_TILES):
         for x in range(c.GRID_WIDTH_TILES):

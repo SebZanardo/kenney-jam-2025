@@ -84,6 +84,7 @@ class Game(Scene):
         # map
         path.pathing_reset()
         path.flowfield_regenerate(path.flowfield)
+        path.flowfield_regenerate(path.placement_flowfield)
 
         # wave
         wave_reset()
@@ -114,6 +115,9 @@ class Game(Scene):
 
         self.tutorial = TutorialState.CORE
         self.wire_count = 0
+
+        self.valid_placement = False
+        self.pathsssss = []
 
     def execute(self) -> None:
         if not self.gameover and p.player.health <= 0:
@@ -241,6 +245,20 @@ class Game(Scene):
 
         # particles
         particles_render()
+
+        # render best path from placement map
+        # TODO: would be best not to update this every frame but idc aat this point
+        if self.valid_placement and hov_tile is not None and path.inside_grid(*hov_tile) and path.collision_grid[hov_tile[1]][hov_tile[0]] == False:
+            self.pathsssss = path.flowfield_path(path.placement_flowfield)
+        else:
+            self.pathsssss = path.flowfield_path(path.flowfield)
+
+        for pos in self.pathsssss:
+            r_pos = camera_to_screen(g.camera, pos[0] * c.TILE_SIZE, pos[1] * c.TILE_SIZE)
+            g.window.blit(
+                g.PATH,
+                r_pos
+            )
 
         # hud
         if hov_tile is None:
@@ -636,11 +654,11 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
     if self.dragging_tower_type is not None:
         # out of bounds
         if tile is None:
-            valid_placement = True
+            self.valid_placement = True
 
         # start or end tile
         elif tile in (path.PATH_START_TILE, path.PATH_END_TILE):
-            valid_placement = False
+            self.valid_placement = False
 
         else:
             if tile != self.last_flowfield_tile:
@@ -652,18 +670,18 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                 and hov_wire is not None
                 and (hov_wire.tower is None or hov_wire.tower.type != TowerType.CORE)
             ):
-                valid_placement = False
+                self.valid_placement = False
                 hand.tooltip = Tooltip("Place cores in empty space")
 
             # collision with enemy
             elif path.collision_check(*tile):
-                valid_placement = False
+                self.valid_placement = False
 
             # collision with tiles
             else:
-                valid_placement = self.last_flowfield_collision
+                self.valid_placement = self.last_flowfield_collision
 
-        if not valid_placement:
+        if not self.valid_placement:
             hand.type = HandType.NO
 
     hov_tower: Tower | None = None
@@ -700,12 +718,12 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                             (4, f"Spd {20 - stat_old.reload_time} -> {20 -stat_new.reload_time}")
                         )
                 else:
-                    valid_placement = False
+                    self.valid_placement = False
                     hand.tooltip = Tooltip("MAX LEVEL")
             else:
-                valid_placement = False
+                self.valid_placement = False
 
-            if not valid_placement:
+            if not self.valid_placement:
                 hand.type = HandType.NO
 
         elif p.player.mode == p.GameMode.DESTROY:
@@ -738,7 +756,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
         ):
             game_upgrade_tower(self, hov_tower)
 
-        elif valid_placement:
+        elif self.valid_placement:
             # place normal tower
             if self.dragging_tower_type != TowerType.CORE:
                 if hov_wire is None:
