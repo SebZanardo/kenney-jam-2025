@@ -95,7 +95,8 @@ class Menu(Scene):
                 w.dead = False
             if not w.dead:
                 # check for click
-                surf = animator_get_frame(w.animator)
+                frame = animator_get_frame(w.animator)
+                surf = frame.copy()
                 surf.set_alpha(50)
 
                 x, y = camera_to_screen(g.camera, w.x, w.y)
