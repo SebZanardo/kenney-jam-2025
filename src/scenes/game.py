@@ -484,7 +484,7 @@ class Game(Scene):
             )
         elif self.tutorial == TutorialState.VIEW:
             tutorial_text = g.FONT.render(
-                "Change your mode to perform different\nactions such as placing wires, removing\nor viewing tower stats",
+                "Change your mode to perform different\nactions such as placing wires and\nviewing stats or removing builds",
                 False,
                 c.WHITE,
             )
