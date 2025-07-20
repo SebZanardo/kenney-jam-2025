@@ -123,7 +123,11 @@ class Game(Scene):
             self.gameover_timer -= 1
 
         hand.type = HandType.DEFAULT
-        if self.wire_draw_start is not None or self.dragging_tower_type is not None or t.mouse_held(t.MouseButton.LEFT):
+        if (
+            self.wire_draw_start is not None
+            or self.dragging_tower_type is not None
+            or t.mouse_held(t.MouseButton.LEFT)
+        ):
             hand.type = HandType.GRAB
         hand.tooltip = None
 
@@ -193,7 +197,6 @@ class Game(Scene):
             particles_update()
             animator_update(self.blending_anim, g.dt)
 
-
         # RENDER
         g.window.fill(c.BLACK)
 
@@ -220,8 +223,8 @@ class Game(Scene):
 
             tower_render(tower)
             if (
-                not self.gameover and
-                p.player.mode == p.GameMode.VIEW
+                not self.gameover
+                and p.player.mode == p.GameMode.VIEW
                 and self.dragging_tower_type is None
                 and tower.tile == hov_tile
             ):
@@ -248,7 +251,7 @@ class Game(Scene):
 
         # Black out under hud
         pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 32))
-        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT-32, c.WINDOW_WIDTH, 32))
+        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 32, c.WINDOW_WIDTH, 32))
 
         # top and bottom
         for x in range(c.WINDOW_WIDTH // 14):
@@ -295,7 +298,7 @@ class Game(Scene):
                 if ui.im_button_image(
                     (g.BUTTONS_INV if last_mode == p.GameMode.DESTROY else g.BUTTONS)[2], "Destroy"
                 ):
-                        p.player.mode = p.GameMode.DESTROY
+                    p.player.mode = p.GameMode.DESTROY
 
             ui.im_set_next_position(c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE)
             if ui.im_button_image(g.BUTTONS[3], "Settings"):
@@ -354,14 +357,19 @@ class Game(Scene):
             for i, tower_type in enumerate(TowerType):
                 if self.tutorial == TutorialState.CORE and i > 0:
                     continue
-                elif self.tutorial == TutorialState.VIEW or self.tutorial == TutorialState.WIRES or self.tutorial == TutorialState.WIRE_MODE:
+                elif (
+                    self.tutorial == TutorialState.VIEW
+                    or self.tutorial == TutorialState.WIRES
+                    or self.tutorial == TutorialState.WIRE_MODE
+                ):
                     continue
 
                 if tower_type == last_dragging_tower_type:
                     ui.context.current_id += 1
                     continue
                 ui.im_set_next_position(
-                    c.WINDOW_WIDTH - c.TILE_SIZE - 4, i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6 + (30 if i != 0 else 0)
+                    c.WINDOW_WIDTH - c.TILE_SIZE - 4,
+                    i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6 + (30 if i != 0 else 0),
                 )
                 text = f"{tower_type.name}\n-${TOWER_PRICES[tower_type.value]}"
 
@@ -389,7 +397,9 @@ class Game(Scene):
                     surf = preview_tile.copy()
                     surf.set_alpha(200)
                     surf.blit(
-                        animator_get_frame(self.blending_anim), (0, 0), special_flags=pygame.BLEND_MULT
+                        animator_get_frame(self.blending_anim),
+                        (0, 0),
+                        special_flags=pygame.BLEND_MULT,
                     )
                     g.window.blit(
                         surf,
@@ -436,7 +446,11 @@ class Game(Scene):
                 ),
             )
         elif self.tutorial == TutorialState.WIRES:
-            tutorial_text = g.FONT.render("Click and drag to wire from the CORE\nYou can also branch wires from each other", False, c.WHITE)
+            tutorial_text = g.FONT.render(
+                "Click and drag to wire from the CORE\nYou can also branch wires from each other",
+                False,
+                c.WHITE,
+            )
 
             g.window.blit(
                 tutorial_text,
@@ -446,7 +460,9 @@ class Game(Scene):
                 ),
             )
         elif self.tutorial == TutorialState.TOWER:
-            tutorial_text = g.FONT.render("Place a tower on the map.\nMake sure to power it using wires", False, c.WHITE)
+            tutorial_text = g.FONT.render(
+                "Place a tower on the map.\nMake sure to power it using wires", False, c.WHITE
+            )
 
             g.window.blit(
                 tutorial_text,
@@ -466,7 +482,11 @@ class Game(Scene):
                 ),
             )
         elif self.tutorial == TutorialState.VIEW:
-            tutorial_text = g.FONT.render("Change your mode to perform different\nactions such as placing wires, removing\nor viewing tower stats", False, c.WHITE)
+            tutorial_text = g.FONT.render(
+                "Change your mode to perform different\nactions such as placing wires, removing\nor viewing tower stats",
+                False,
+                c.WHITE,
+            )
 
             g.window.blit(
                 tutorial_text,
@@ -476,7 +496,11 @@ class Game(Scene):
                 ),
             )
         elif self.tutorial == TutorialState.ANOTHER_TOWER:
-            tutorial_text = g.FONT.render("Build a defence with towers to stop\nenemies from reaching the other side.\nPlace another powered tower to continue", False, c.WHITE)
+            tutorial_text = g.FONT.render(
+                "Build a defence with towers to stop\nenemies from reaching the right side.\nPlace another powered tower to continue",
+                False,
+                c.WHITE,
+            )
 
             g.window.blit(
                 tutorial_text,
@@ -486,7 +510,7 @@ class Game(Scene):
                 ),
             )
         elif self.tutorial == TutorialState.UNPAUSE:
-            tutorial_text = g.FONT.render("Unpause the game to start. Goodluck!", False, c.WHITE)
+            tutorial_text = g.FONT.render("Unpause the game to start. Good luck!", False, c.WHITE)
 
             g.window.blit(
                 tutorial_text,
