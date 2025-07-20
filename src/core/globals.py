@@ -37,7 +37,7 @@ camera: Camera | None = None
 
 # User settings
 default_setting_params = {
-    "music": [30],
+    "music": [50],
     "sfx": [50],
     "screenshake": [True],
 }
