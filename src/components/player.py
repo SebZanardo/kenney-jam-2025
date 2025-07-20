@@ -8,6 +8,7 @@ from components.motion import Motion
 import core.constants as c
 import core.globals as g
 from components.particles import Particle, particle_spawn
+from utilities.math import signed_num
 
 
 # STARTING_MONEY = 15
@@ -46,14 +47,15 @@ def player_reset() -> None:
     player = Player()
 
 
+def money_add(amount: int) -> None:
+    player.money += amount
+
+
 def score_add(amount: int) -> None:
     player.score = max(player.score + amount, 0)
 
     if abs(amount) >= 100:
-        if amount >= 0:
-            text = g.FONT.render(f"+{amount}", False, c.GREEN)
-        else:
-            text = g.FONT.render(f"{amount}", False, c.RED)
+        text = g.FONT.render(signed_num(amount), False, c.GREEN if amount > 0 else c.RED)
         particle_spawn(
             Particle(
                 text,

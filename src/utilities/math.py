@@ -3,6 +3,13 @@ Bbox = tuple[int, int, int, int]
 Color = tuple[int, int, int]
 
 
+def signed_num(value: int | float) -> str:
+    if value >= 0:
+        return f"+{value}"
+    else:
+        return f"{value}"
+
+
 def clamp(value: int | float, minimum: int | float, maximum: int | float) -> int | float:
     return min(max(value, minimum), maximum)
 
