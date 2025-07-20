@@ -56,6 +56,7 @@ class TowerStat:
 
 
 # Load animations once here
+# tuple is as follows: (shooting anim, (dim button, button), disabled image)
 TOWER_ANIMATIONS: list[tuple[Animation, tuple[pygame.Surface, pygame.Surface], pygame.Surface]] = []
 
 for tower_type in TowerType:
