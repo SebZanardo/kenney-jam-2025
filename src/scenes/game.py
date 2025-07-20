@@ -221,7 +221,7 @@ class Game(Scene):
             tower_render(tower)
             if (
                 not self.gameover
-                and p.player.mode == p.GameMode.VIEW
+                and p.player.mode == p.GameMode.WIRING
                 and self.dragging_tower_type is None
                 and tower.tile == hov_tile
             ):
@@ -247,8 +247,8 @@ class Game(Scene):
             self.wire_draw_start = None
 
         # Black out under hud
-        pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 32))
-        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 32, c.WINDOW_WIDTH, 32))
+        pygame.draw.rect(g.window, c.BLACK, (0, 0, c.WINDOW_WIDTH, 35))
+        pygame.draw.rect(g.window, c.BLACK, (0, c.WINDOW_HEIGHT - 35, c.WINDOW_WIDTH, 35))
 
         # top and bottom
         for x in range(c.WINDOW_WIDTH // 14):
@@ -278,24 +278,21 @@ class Game(Scene):
                             p.player.speed = p.SpeedType.FAST
 
             if self.tutorial >= TutorialState.VIEW:
-                ui.im_set_next_position(c.WINDOW_WIDTH - 4 * c.TILE_SIZE, 0)
-                if ui.im_button_image(
-                    (g.BUTTONS_INV if last_mode == p.GameMode.VIEW else g.BUTTONS)[0], "View"
-                ):
-                    p.player.mode = p.GameMode.VIEW
-                    if self.tutorial == TutorialState.VIEW:
-                        self.tutorial = TutorialState.TOWER
-                ui.im_same_line()
+                ui.im_set_next_position(c.WINDOW_WIDTH - 3 * c.TILE_SIZE, 0)
                 if ui.im_button_image(
                     (g.BUTTONS_INV if last_mode == p.GameMode.WIRING else g.BUTTONS)[1], "Lay wire"
                 ):
                     p.player.mode = p.GameMode.WIRING
+                    if self.tutorial == TutorialState.VIEW:
+                        self.tutorial = TutorialState.TOWER
 
                 ui.im_same_line()
                 if ui.im_button_image(
                     (g.BUTTONS_INV if last_mode == p.GameMode.DESTROY else g.BUTTONS)[2], "Destroy"
                 ):
                     p.player.mode = p.GameMode.DESTROY
+                    if self.tutorial == TutorialState.VIEW:
+                        self.tutorial = TutorialState.TOWER
 
             ui.im_set_next_position(c.TILE_SIZE, c.WINDOW_HEIGHT - c.TILE_SIZE)
             if ui.im_button_image(g.BUTTONS[3], "Settings"):
@@ -487,7 +484,7 @@ class Game(Scene):
             )
         elif self.tutorial == TutorialState.VIEW:
             tutorial_text = g.FONT.render(
-                "Change your mode to perform different\nactions such as placing wires, removing\nor viewing tower stats",
+                "Change your mode to perform different\nactions such as placing wires and\nviewing stats or removing builds",
                 False,
                 c.WHITE,
             )
@@ -659,6 +656,7 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
             continue
 
         name = f"{tower.type.name} Lv {tower.level + 1}"
+        hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
 
         if self.dragging_tower_type is not None:
             if self.dragging_tower_type == tower.type:
@@ -700,9 +698,6 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                     game_delete_tower_from(self, hov_wire)
                 else:
                     game_delete_tower(self, tower)
-
-        elif p.player.mode == p.GameMode.VIEW:
-            hand.tooltip = Tooltip(f"{name}\nPower: {tower_get_power(tower) * 100:.0f}%")
 
         hov_tower = tower
         break

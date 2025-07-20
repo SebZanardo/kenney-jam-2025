@@ -53,6 +53,10 @@ class Enemy:
     health: int = 0
     max_health: int = 0
 
+    slow_timer: int = 0
+
+    slow_timer: int = 0
+
     # visual
     direction: str = c.RIGHT
     animator: Animator | None = None
@@ -190,6 +194,9 @@ def enemy_update(i: int) -> bool:
     animator_update(enemy.animator, g.dt)
 
     speed = stat.speed * c.TILE_SIZE
+    if enemy.slow_timer > 0:
+        enemy.slow_timer -= 1
+        speed /= 2
 
     enemy.direction = c.RIGHT
 

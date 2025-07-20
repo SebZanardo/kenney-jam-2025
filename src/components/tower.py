@@ -54,6 +54,8 @@ class TowerStat:
     reload_time: int
     damage: int
     radius: int
+    splash_radius: int
+    slow: int
 
 
 # Load animations once here
@@ -86,33 +88,33 @@ MAX_TOWER_LEVEL = 2
 TOWER_STATS = [
     # TowerType.CORE
     (
-        TowerStat(10, 0, 0, 0),
-        TowerStat(20, 0, 0, 0),
-        TowerStat(30, 0, 0, 0),
+        TowerStat(10, 0, 0, 0, 0, 0),
+        TowerStat(20, 0, 0, 0, 0, 0),
+        TowerStat(30, 0, 0, 0, 0, 0),
     ),
     # TowerType.NORMAL
     (
-        TowerStat(3, 8, 4, 80),
-        TowerStat(6, 6, 6, 88),
-        TowerStat(9, 4, 8, 96),
+        TowerStat(3, 8, 4, 80, 0, 0),
+        TowerStat(6, 6, 6, 88, 0, 0),
+        TowerStat(9, 4, 8, 96, 0, 0),
     ),
     # TowerType.SLOW
     (
-        TowerStat(5, 15, 1, 60),
-        TowerStat(10, 12, 2, 70),
-        TowerStat(15, 8, 4, 80),
+        TowerStat(5, 15, 0, 60, 32, 5),
+        TowerStat(10, 10, 0, 70, 40, 6),
+        TowerStat(15, 4, 0, 80, 50, 8),
     ),
     # TowerType.SPLASH
     (
-        TowerStat(15, 10, 20, 140),
-        TowerStat(30, 9, 30, 160),
-        TowerStat(45, 8, 45, 180),
+        TowerStat(15, 10, 20, 140, 100, 0),
+        TowerStat(30, 9, 30, 160, 110, 0),
+        TowerStat(45, 8, 45, 180, 125, 0),
     ),
     # TowerType.ZAP
     (
-        TowerStat(30, 15, 40, 60),
-        TowerStat(60, 12, 50, 70),
-        TowerStat(90, 8, 65, 80),
+        TowerStat(30, 15, 40, 60, 0, 6),
+        TowerStat(60, 12, 50, 70, 0, 8),
+        TowerStat(90, 8, 65, 80, 0, 10),
     ),
 ]
 
@@ -176,6 +178,18 @@ def tower_update(tower: Tower) -> None:
         # Damage target
         if tower.cooldown <= 0:
             tower.target.health -= stat.damage
+            tower.target.slow_timer += stat.slow
+
+            if stat.splash_radius > 0:
+                # NOTE: omg this is so grosss but we have no time
+                for i in range(e.active_enemies):
+                    ennn = e.enemies[i]
+                    diff_x = ennn.x - tower.target.x
+                    diff_y = ennn.y - tower.target.y
+                    distance = math.sqrt((diff_x ** 2) + (diff_y ** 2))
+                    if distance < stat.splash_radius:
+                        ennn.health -= stat.damage / 2  #splash damage halved
+                        ennn.slow_timer += stat.slow
 
             if tower.target.health <= 0:
                 reward = e.ENEMY_STATS[tower.target.type.value].reward
