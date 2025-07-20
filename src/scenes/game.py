@@ -77,7 +77,7 @@ class Game(Scene):
             pygame.Vector2(30, 30),
         )
 
-        play_music(g.GAME_MUSIC, -1)
+        # play_music(g.GAME_MUSIC, -1)
 
         # player resources
         p.player_reset()
@@ -321,8 +321,7 @@ class Game(Scene):
                 ui.context.current_id += 1
                 continue
             ui.im_set_next_position(
-                c.WINDOW_WIDTH - c.TILE_SIZE - 4,
-                (i - 2.5) * (c.TILE_SIZE + 6) + c.WINDOW_HEIGHT // 2,
+                c.WINDOW_WIDTH - c.TILE_SIZE - 4, i * (c.TILE_SIZE + 6) + c.TILE_SIZE + 6 + (30 if i != 0 else 0)
             )
             text = f"{tower_type.name}\n-${TOWER_PRICES[tower_type.value]}"
             if tower_type != TowerType.CORE:

@@ -36,7 +36,7 @@ class Menu(Scene):
         )
 
     def enter(self) -> None:
-        play_music(g.NINTENDO_MUSIC, -1)
+        pass
 
     def execute(self) -> None:
         hand.type = HandType.DEFAULT
@@ -48,7 +48,7 @@ class Menu(Scene):
 
         if self.current_state == MenuState.MAIN:
             ui.im_reset_position(
-                c.WINDOW_WIDTH // 2 - ui.style.button_dim[0] // 2, c.WINDOW_HEIGHT // 2
+                c.WINDOW_WIDTH // 2 - ui.style.button_dim[0] // 2, c.WINDOW_HEIGHT // 2 - 2
             )
             if ui.im_button_text("play") or t.is_pressed(t.Action.START):
                 statemachine_change_state(self.statemachine, manager.SceneState.GAME)
@@ -67,13 +67,15 @@ class Menu(Scene):
                     pygame.quit()
                     raise SystemExit
 
+            g.window.blit(g.LOGO, (190, 40))
+
         elif self.current_state == MenuState.SETTINGS:
             if not settings_menu():
                 self.current_state = MenuState.MAIN
                 ui.im_new()
 
         elif self.current_state == MenuState.CREDITS:
-            ui.im_reset_position(c.WINDOW_WIDTH // 2, c.WINDOW_HEIGHT // 2 - 50)
+            ui.im_reset_position(c.WINDOW_WIDTH // 2, c.WINDOW_HEIGHT // 2 - 70)
             ui.im_text("Made for the Kenney Game Jam 2025", 0)
             ui.im_text("By ProfDragon and SebZanardo", 0)
             ui.im_text("", 0)
@@ -81,7 +83,7 @@ class Menu(Scene):
             ui.im_text("Music - Darren Curtis", 0)
 
             ui.im_set_next_position(
-                c.WINDOW_WIDTH // 2 - ui.style.button_dim[0] // 2, c.WINDOW_HEIGHT - 80
+                c.WINDOW_WIDTH // 2 - ui.style.button_dim[0] // 2, c.WINDOW_HEIGHT - 83
             )
             if ui.im_button_text("back"):
                 self.current_state = MenuState.MAIN
@@ -94,4 +96,4 @@ class Menu(Scene):
         hand_render()
 
     def exit(self) -> None:
-        stop_music()
+        pass

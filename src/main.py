@@ -8,11 +8,14 @@ import core.globals as g
 from core.setup import setup
 
 from components.statemachine import statemachine_execute
+from components.audio import play_music
 
 
 async def main() -> None:
     setup()
     print("Starting game loop")
+
+    play_music(g.GAME_MUSIC, -1)
 
     while True:
         g.clock.tick(c.FPS)
@@ -33,8 +36,6 @@ async def main() -> None:
         t.update_mouse_buffer()
 
         statemachine_execute(g.scene_manager)
-
-        pygame.display.set_caption(f"{int(g.clock.get_fps())}")
 
         # Keep these calls together in this order
         pygame.display.flip()
