@@ -30,9 +30,9 @@ class Tower:
     level: int
 
     # visual
-    direction: str
-    animator: Animator
-    blending_anim: Animator
+    direction: str = c.UP
+    animator: Animator | None = None
+    blending_anim: Animator | None = None
 
     # for cores
     connected_tower_count: int = 0
@@ -111,11 +111,12 @@ TOWER_STATS = (
 
 
 def tower_get_power(tower: Tower) -> float:
-    connected_tower_count: int = 0
     if tower.type == TowerType.CORE:
         connected_tower_count = tower.connected_tower_count
     elif tower.core_tower is not None:
         connected_tower_count = tower.core_tower.connected_tower_count
+    else:
+        return 0.0
     return min(1.0, math.exp(-0.25 * (connected_tower_count - 1)))
 
 
@@ -195,21 +196,19 @@ def tower_render(tower: Tower) -> None:
     #     camera_to_screen_shake(g.camera, tower.tile[0] * c.TILE_SIZE, tower.tile[1] * c.TILE_SIZE),
     # )
 
-    # TODO: Move this to on view hover ########################################
+
+def tower_render_radius(tower: Tower) -> None:
     radius = TOWER_STATS[tower.type.value][tower.level].radius
     diameter = radius * 2
-    position = (
-        tower.tile[0] * c.TILE_SIZE - radius + c.TILE_SIZE // 2,
-        tower.tile[1] * c.TILE_SIZE - radius + c.TILE_SIZE // 2
+
+    surf = pygame.transform.scale(g.RADIUS, (diameter, diameter))
+    surf.set_alpha(50)
+
+    g.window.blit(
+        surf,
+        camera_to_screen_shake(
+            g.camera,
+            tower.tile[0] * c.TILE_SIZE - radius + c.TILE_SIZE // 2,
+            tower.tile[1] * c.TILE_SIZE - radius + c.TILE_SIZE // 2,
+        ),
     )
-
-    resized_radius = pygame.transform.scale(g.RADIUS, (diameter, diameter))
-
-    temp = pygame.Surface((diameter, diameter)).convert()
-    temp.set_colorkey(c.MAGENTA)
-    temp.fill(c.MAGENTA)
-    temp.blit(resized_radius, (0, 0))
-    temp.set_alpha(50)
-
-    g.window.blit(temp, camera_to_screen_shake(g.camera, *position))
-    ###########################################################################
