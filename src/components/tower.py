@@ -121,8 +121,13 @@ def tower_get_power(tower: Tower) -> float:
 
 
 def tower_update(tower: Tower) -> None:
-    animator_update(tower.animator, g.dt)
-    animator_update(tower.blending_anim, g.dt)
+    # Don't update if unpowered
+    power = tower_get_power(tower)
+    if power == 0:
+        return
+
+    animator_update(tower.animator, g.dt * power)
+    animator_update(tower.blending_anim, g.dt * power)
 
     stats = TOWER_STATS[tower.type.value][tower.level]
 
@@ -132,7 +137,7 @@ def tower_update(tower: Tower) -> None:
     tx, ty = (tower.tile[0] + 0.5) * c.TILE_SIZE, (tower.tile[1] + 0.5) * c.TILE_SIZE
 
     # Tick down cooldown no matter what
-    tower.cooldown -= 1
+    tower.cooldown -= 1 * power
 
     # Find a target
     if tower.target is None:

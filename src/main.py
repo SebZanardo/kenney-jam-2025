@@ -34,6 +34,8 @@ async def main() -> None:
 
         statemachine_execute(g.scene_manager)
 
+        pygame.display.set_caption(f"{int(g.clock.get_fps())}")
+
         # Keep these calls together in this order
         pygame.display.flip()
         await asyncio.sleep(0)  # Very important, and keep it 0

@@ -142,7 +142,6 @@ def enemy_spawn(enemy_type: EnemyType) -> bool:
     new_enemy.animator = Animator()
     animator_initialise(new_enemy.animator, {0: ENEMY_ANIMATIONS[enemy_type.value]})
 
-    # (-1, -1) denotes outside grid for either spawn run or goal run
     new_enemy.cx, new_enemy.cy = PATH_START_POS
 
     new_enemy.health = stat.health * enemy_health_multiplier
@@ -210,7 +209,11 @@ def enemy_update(i: int) -> bool:
     else:
         # pathfind
         if not stat.flying:
-            dx, dy = c.DIRECTIONS[flowfield[enemy.cy][enemy.cx]]
+            d = flowfield[enemy.cy][enemy.cx]
+            if d == -1:
+                print("Oh shit something went wrong with pathing")
+                pygame.quit()
+            dx, dy = c.DIRECTIONS[d]
             xv, yv = -dx * speed, -dy * speed
         # fly
         else:
@@ -220,6 +223,7 @@ def enemy_update(i: int) -> bool:
         enemy.y += yv
 
         rx, ry = round(enemy.x), round(enemy.y)
+
         # add to rx and ry to account for the size of the enemy
         if xv > 0:  # going right
             rx -= c.TILE_SIZE // 2
