@@ -55,6 +55,8 @@ class Enemy:
 
     slow_timer: int = 0
 
+    slow_timer: int = 0
+
     # visual
     direction: str = c.RIGHT
     animator: Animator | None = None
