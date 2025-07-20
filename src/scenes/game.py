@@ -232,7 +232,7 @@ class Game(Scene):
         elif power_count > 2 and self.tutorial == TutorialState.ANOTHER_TOWER:
             self.tutorial = TutorialState.UNPAUSE
 
-        if self.tutorial == TutorialState.WIRE_MODE and p.GameMode.VIEW:
+        if self.tutorial == TutorialState.WIRE_MODE and p.GameMode.WIRING:
             self.tutorial = TutorialState.ANOTHER_TOWER
 
         # enemies

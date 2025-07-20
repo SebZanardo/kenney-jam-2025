@@ -116,3 +116,8 @@ def particle_render(particle: Particle, camera: Camera) -> None:
 def particles_render() -> None:
     for particle in _particles:
         particle_render(particle, g.camera)
+
+
+def particles_clear() -> None:
+    global _particles
+    _particles = []
