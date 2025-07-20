@@ -91,27 +91,27 @@ TOWER_STATS = [
     ),
     # TowerType.NORMAL
     (
-        TowerStat(3, 8, 1, 80),
-        TowerStat(6, 6, 3, 88),
-        TowerStat(9, 4, 6, 96),
+        TowerStat(3, 8, 4, 80),
+        TowerStat(6, 6, 6, 88),
+        TowerStat(9, 4, 8, 96),
     ),
     # TowerType.SLOW
     (
-        TowerStat(5, 15, 2, 60),
-        TowerStat(10, 12, 4, 70),
-        TowerStat(15, 10, 7, 80),
+        TowerStat(5, 15, 1, 60),
+        TowerStat(10, 12, 2, 70),
+        TowerStat(15, 8, 4, 80),
     ),
     # TowerType.SPLASH
     (
-        TowerStat(15, 30, 20, 140),
-        TowerStat(30, 25, 30, 160),
-        TowerStat(45, 20, 45, 180),
+        TowerStat(15, 10, 20, 140),
+        TowerStat(30, 9, 30, 160),
+        TowerStat(45, 8, 45, 180),
     ),
     # TowerType.ZAP
     (
         TowerStat(30, 15, 40, 60),
-        TowerStat(60, 12, 60, 70),
-        TowerStat(90, 8, 85, 80),
+        TowerStat(60, 12, 50, 70),
+        TowerStat(90, 8, 65, 80),
     ),
 ]
 
@@ -132,11 +132,12 @@ def tower_update(tower: Tower) -> None:
     if power == 0:
         return
 
-    if tower.target is not None:
-        animator_update(tower.animator, g.dt * power)
-        animator_update(tower.blending_anim, g.dt * power)
-
     stat = TOWER_STATS[tower.type.value][tower.level]
+
+    if tower.target is not None:
+        mult = power / (stat.reload_time / 15)
+        animator_update(tower.animator, g.dt * mult)
+        animator_update(tower.blending_anim, g.dt * mult)
 
     if stat.radius == 0:
         return

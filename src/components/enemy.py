@@ -74,19 +74,19 @@ ENEMY_STATS = [
     # EnemyType.GROUND
     EnemyStat(10, 1, 0.1, 1, False, 4, 1, False),
     # EnemyType.GROUND_FAST
-    EnemyStat(15, 2, 0.2, 1, False, 2, 1, True),
+    EnemyStat(30, 2, 0.2, 1, False, 2, 1, True),
     # EnemyType.GROUND_HEAVY
-    EnemyStat(50, 3, 0.05, 1.5, False, 2, 2, True),
+    EnemyStat(50, 5, 0.05, 1.5, False, 2, 2, True),
     # EnemyType.GROUND_HEAVY_FAST
-    EnemyStat(100, 5, 0.1, 1.5, False, 2, 1, False),
+    EnemyStat(200, 8, 0.1, 1.5, False, 2, 1, False),
     # EnemyType.GROUND_SUPER_HEAVY
-    EnemyStat(300, 10, 0.025, 2, False, 2, 5, False),
+    EnemyStat(500, 20, 0.025, 2, False, 2, 5, False),
     # EnemyType.FLYING
-    EnemyStat(10, 1, 0.1, 1, True, 2, 1, False),
+    EnemyStat(30, 5, 0.05, 1, True, 2, 1, False),
     # EnemyType.FLYING_FAST
-    EnemyStat(15, 2, 0.2, 1, True, 2, 1, True),
+    EnemyStat(50, 2, 0.1, 1, True, 2, 1, True),
     # EnemyType.FLYING_HEAVY
-    EnemyStat(50, 3, 0.05, 1.5, True, 2, 1, False),
+    EnemyStat(200, 10, 0.025, 1.5, True, 2, 1, False),
 ]
 
 # Load animations once here

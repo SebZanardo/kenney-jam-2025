@@ -41,7 +41,7 @@ class EnemyWalker:
     dead: bool = False
 
 
-LEFT_BOUND = -32
+LEFT_BOUND = -64
 RIGHT_BOUND = c.WINDOW_WIDTH+32
 TOP_BOUND = 16
 BOTTOM_BOUND = c.WINDOW_HEIGHT-120
