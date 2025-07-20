@@ -12,22 +12,14 @@ class AudioChannel(IntEnum):
     WAVE = auto()
 
 
-def play_music(path: str, *args) -> None:
-    pygame.mixer.music.load(path)
-    pygame.mixer.music.play(*args)
-
-
-def stop_music() -> None:
-    pygame.mixer.music.stop()
-
-
 def set_music_volume(value: float) -> None:
-    pygame.mixer.music.set_volume(value)
+    pygame.mixer.Channel(AudioChannel.MUSIC).set_volume(value / 2)
 
 
 def set_sfx_volume(value: float) -> None:
     for channel in AudioChannel:
-        pygame.mixer.Channel(channel).set_volume(value)
+        if channel != AudioChannel.MUSIC:
+            pygame.mixer.Channel(channel).set_volume(value / 2)
 
 
 def channel_busy(channel: AudioChannel) -> bool:
