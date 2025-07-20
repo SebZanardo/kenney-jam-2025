@@ -232,6 +232,9 @@ class Game(Scene):
         elif power_count > 2 and self.tutorial == TutorialState.ANOTHER_TOWER:
             self.tutorial = TutorialState.UNPAUSE
 
+        if self.tutorial == TutorialState.WIRE_MODE and p.GameMode.VIEW:
+            self.tutorial = TutorialState.ANOTHER_TOWER
+
         # enemies
         for i in range(e.active_enemies):
             e.enemy_render(i)
@@ -286,8 +289,6 @@ class Game(Scene):
                 if ui.im_button_image(
                     (g.BUTTONS_INV if last_mode == p.GameMode.WIRING else g.BUTTONS)[1], "Lay wire"
                 ):
-                    if self.tutorial == TutorialState.WIRE_MODE:
-                        self.tutorial = TutorialState.ANOTHER_TOWER
                     p.player.mode = p.GameMode.WIRING
 
                 ui.im_same_line()
@@ -352,10 +353,6 @@ class Game(Scene):
             last_dragging_tower_type = self.dragging_tower_type
             for i, tower_type in enumerate(TowerType):
                 if self.tutorial == TutorialState.CORE and i > 0:
-                    continue
-                elif self.tutorial == TutorialState.TOWER and i == 0:
-                    continue
-                elif self.tutorial == TutorialState.ANOTHER_TOWER and i == 0:
                     continue
                 elif self.tutorial == TutorialState.VIEW or self.tutorial == TutorialState.WIRES or self.tutorial == TutorialState.WIRE_MODE:
                     continue
@@ -435,7 +432,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 100,
                 ),
             )
         elif self.tutorial == TutorialState.WIRES:
@@ -445,7 +442,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 100,
                 ),
             )
         elif self.tutorial == TutorialState.TOWER:
@@ -455,7 +452,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 100,
                 ),
             )
         elif self.tutorial == TutorialState.WIRE_MODE:
@@ -465,7 +462,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 100,
                 ),
             )
         elif self.tutorial == TutorialState.VIEW:
@@ -475,7 +472,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 100,
                 ),
             )
         elif self.tutorial == TutorialState.ANOTHER_TOWER:
@@ -485,7 +482,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 100,
                 ),
             )
         elif self.tutorial == TutorialState.UNPAUSE:
@@ -495,7 +492,7 @@ class Game(Scene):
                 tutorial_text,
                 (
                     c.WINDOW_WIDTH // 2 - tutorial_text.get_width() // 2,
-                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 60,
+                    c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 100,
                 ),
             )
 
