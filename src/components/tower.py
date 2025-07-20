@@ -194,7 +194,7 @@ def tower_render(tower: Tower) -> None:
 
     if tower.level > 0:
         surf = surf.copy()
-        surf.blit(animator_get_frame(tower.blending_anim), special_flags=pygame.BLEND_MULT)
+        surf.blit(animator_get_frame(tower.blending_anim), (0, 0), special_flags=pygame.BLEND_MULT)
         if tower.level > 1:
             surf.fill((128, 128, 128), special_flags=pygame.BLEND_ADD)
 
