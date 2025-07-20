@@ -79,7 +79,7 @@ def collision_check(x: int, y: int) -> bool:
         if ex == x and ey == y:
             return True
 
-        if placement_flowfield[ey][ex]:
+        if placement_flowfield[ey][ex] == -1:
             return True
 
     return False

@@ -141,10 +141,6 @@ class Game(Scene):
             return
 
         # UPDATE
-        if g.action_buffer[t.Action.START] == t.InputState.PRESSED:
-            statemachine_change_state(self.statemachine, manager.SceneState.MENU)
-            return
-
         # mouse pos in camera space
         last_hand_pos = camera_from_screen(g.camera, *g.last_mouse_pos)
         hand_pos = camera_from_screen(g.camera, *g.mouse_pos)
@@ -232,7 +228,7 @@ class Game(Scene):
         elif power_count > 2 and self.tutorial == TutorialState.ANOTHER_TOWER:
             self.tutorial = TutorialState.UNPAUSE
 
-        if self.tutorial == TutorialState.WIRE_MODE and p.GameMode.WIRING:
+        if self.tutorial == TutorialState.WIRE_MODE and p.player.mode == p.GameMode.WIRING:
             self.tutorial = TutorialState.ANOTHER_TOWER
 
         # enemies
@@ -420,7 +416,7 @@ class Game(Scene):
                     ),
                 )
 
-                if t.is_pressed(t.Action.START) or t.mouse_pressed(t.MouseButton.LEFT):
+                if t.mouse_pressed(t.MouseButton.LEFT):
                     statemachine_change_state(self.statemachine, manager.SceneState.MENU)
                     return
 
@@ -495,6 +491,12 @@ class Game(Scene):
                     c.WINDOW_HEIGHT // 2 - tutorial_text.get_height() // 2 + 100,
                 ),
             )
+
+        if self.tutorial < TutorialState.COMPLETE:
+            ui.im_set_next_position(c.WINDOW_WIDTH-150, c.WINDOW_HEIGHT-35)
+            if ui.im_button_text("SKIP"):
+                self.tutorial = TutorialState.COMPLETE
+            ui.im_new()
 
         # hand
         hand_render()
