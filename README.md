@@ -1,4 +1,6 @@
-# kenney-jam-2025
+# POWER defence
+
+#### Play [POWER defence](https://sebzanardo.itch.io/power-defence) in your browser!  
 
 ## To run locally
 ### Desktop
