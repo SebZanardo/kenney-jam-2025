@@ -96,7 +96,7 @@ class Game(Scene):
         self.last_flowfield_tile: Pos | None = None
         self.last_flowfield_collision: bool = False
         self.valid_tower_placement: bool = False
-        self.pathsssss: list[Pos] = path.flowfield_path(path.flowfield)
+        self.preview_path: list[Pos] = path.flowfield_path(path.flowfield)
 
         # wires
         self.wires: list[Wire] = [
@@ -247,7 +247,7 @@ class Game(Scene):
         particles_render()
 
         if self.tutorial == TutorialState.COMPLETE:
-            for x, y in self.pathsssss:
+            for x, y in self.preview_path:
                 g.window.blit(
                     g.PATH,
                     camera_to_screen_shake(g.camera, x * c.TILE_SIZE, y * c.TILE_SIZE),
@@ -594,7 +594,7 @@ def game_delete_tower(self: Game, tower: Tower):
 
     path.collision_grid[tower.tile[1]][tower.tile[0]] = False
     path.flowfield_regenerate(path.flowfield)
-    self.pathsssss = path.flowfield_path(path.flowfield)
+    self.preview_path = path.flowfield_path(path.flowfield)
 
     if self.tutorial < TutorialState.COMPLETE:
         sell = TOWER_PRICES[tower.type.value]
@@ -641,19 +641,19 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
         if tile is None:
             self.valid_tower_placement = True
 
-        # start or end tile
-        elif tile in (path.PATH_START_TILE, path.PATH_END_TILE):
-            self.valid_tower_placement = False
-
         else:
             if tile != self.last_flowfield_tile:
                 path.flowfield_copy(path.flowfield, path.placement_flowfield)
                 self.last_flowfield_collision = path.flowfield_preview(*tile)
-                self.pathsssss = path.flowfield_path(path.placement_flowfield)
+                self.preview_path = path.flowfield_path(path.placement_flowfield)
                 self.last_flowfield_tile = tile[:]
 
+            # start or end tile
+            if tile in (path.PATH_START_TILE, path.PATH_END_TILE):
+                self.valid_tower_placement = False
+
             # ensure cores are either placed in empty space or on other cores
-            if (
+            elif (
                 self.dragging_tower_type == TowerType.CORE
                 and hov_wire is not None
                 and (hov_wire.tower is None or hov_wire.tower.type != TowerType.CORE)
@@ -728,13 +728,13 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
         hov_tower = tower
         break
 
-    # placing
     if self.dragging_tower_type is None:
         return
 
     if g.mouse_buffer[t.MouseButton.LEFT] in (t.InputState.PRESSED, t.InputState.HELD):
         return
-
+    
+    # placing - user has let go of mouse button
     if tile is not None and p.player.money >= TOWER_PRICES[self.dragging_tower_type.value]:
         # upgrade
         if (
@@ -757,6 +757,10 @@ def game_mode_tower_create(self: Game, tile: Pos | None, hov_wire: Wire | None):
                 tower = game_place_tower_at(self, self.dragging_tower_type, tile)
                 self.wires.append(Wire(tile, None, {}, True, tower, tower))
                 p.player.mode = p.GameMode.WIRING
+        
+        # place operation failed
+        else:
+            self.preview_path = path.flowfield_path(path.flowfield)
 
     self.dragging_tower_type = None
 
