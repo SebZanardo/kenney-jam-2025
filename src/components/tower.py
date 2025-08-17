@@ -106,9 +106,9 @@ TOWER_STATS = [
     ),
     # TowerType.SPLASH
     (
-        TowerStat(15, 10, 20, 120, 100, 0),
-        TowerStat(30, 9, 30, 140, 110, 0),
-        TowerStat(45, 8, 45, 160, 125, 0),
+        TowerStat(15, 10, 10, 120, 100, 0),
+        TowerStat(30, 9, 15, 140, 110, 0),
+        TowerStat(45, 8, 22, 160, 125, 0),
     ),
     # TowerType.ZAP
     (

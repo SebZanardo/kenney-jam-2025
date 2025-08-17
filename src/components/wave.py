@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 import core.globals as g
 import components.enemy as e
-import components.player as p
 from components.audio import AudioChannel, play_sound
 
 
