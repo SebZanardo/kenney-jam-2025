@@ -91,14 +91,16 @@ def input_event_queue() -> bool:
             if not c.IS_WEB:
                 return False
 
-        elif event.type == pygame.WINDOWFOCUSGAINED:
-            set_music_volume(g.setting_params["music"][0] / 100)
-            set_sfx_volume(g.setting_params["sfx"][0] / 100)
-
-        elif event.type == pygame.WINDOWFOCUSLOST:
-            # Stop music to hopefully reduce buggin out
-            set_music_volume(0)
-            set_sfx_volume(0)
+        elif event.type == pygame.ACTIVEEVENT:
+            if event.gain == 0 and event.state == 2:
+                # Stop music to hopefully reduce buggin out
+                set_music_volume(0)
+                set_sfx_volume(0)
+                pygame.mouse.set_visible(True)
+            elif event.gain == 1 and event.state == 1:
+                set_music_volume(g.setting_params["music"][0] / 100)
+                set_sfx_volume(g.setting_params["sfx"][0] / 100)
+                pygame.mouse.set_visible(False)
 
     return True
 

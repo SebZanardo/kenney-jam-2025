@@ -39,11 +39,6 @@ async def main() -> None:
 
         t.update_mouse_buffer()
 
-        if pygame.mouse.get_focused():
-            pygame.mouse.set_visible(False)
-        else:
-            pygame.mouse.set_visible(True)
-
         statemachine_execute(g.scene_manager)
 
         # Keep these calls together in this order

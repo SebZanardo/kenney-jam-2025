@@ -94,9 +94,9 @@ TOWER_STATS = [
     ),
     # TowerType.NORMAL
     (
-        TowerStat(3, 8, 4, 80, 0, 0),
-        TowerStat(6, 6, 6, 88, 0, 0),
-        TowerStat(9, 4, 8, 96, 0, 0),
+        TowerStat(3, 8, 8, 80, 0, 0),
+        TowerStat(6, 6, 10, 88, 0, 0),
+        TowerStat(9, 4, 13, 96, 0, 0),
     ),
     # TowerType.SLOW
     (
