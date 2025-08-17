@@ -71,18 +71,19 @@ waves: list[list[Wave]] = [
     [Wave(e.EnemyType.GROUND_HEAVY_FAST, 10, 40), Wave(e.EnemyType.GROUND_FAST, 5, 20)] * 5,
     [Wave(e.EnemyType.GROUND, 30, 10)],
     [Wave(e.EnemyType.FLYING_HEAVY, 5, 200)],
+    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 1, 100)],
     [Wave(e.EnemyType.GROUND, 5, 10), Wave(e.EnemyType.GROUND_HEAVY, 5, 30)] * 3,
     [Wave(e.EnemyType.GROUND_FAST, 50, 20)],
     [Wave(e.EnemyType.FLYING_FAST, 20, 50)],
+    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 3, 120)],
     [Wave(e.EnemyType.GROUND_HEAVY_FAST, 20, 30)],
     [Wave(e.EnemyType.FLYING, 20, 30)],
     [Wave(e.EnemyType.GROUND_HEAVY, 50, 30)],
-    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 1, 100)],
     [Wave(e.EnemyType.FLYING_HEAVY, 10, 60)],
-    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 3, 120)],
     [Wave(e.EnemyType.GROUND_FAST, 10, 10), Wave(e.EnemyType.FLYING_FAST, 10, 10)] * 3,
-    [Wave(e.EnemyType.GROUND_HEAVY_FAST, 20, 20), Wave(e.EnemyType.FLYING_HEAVY, 20, 30)] * 3,
-    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 10, 30)],
+    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 30, 20)],
+    [Wave(e.EnemyType.GROUND_HEAVY_FAST, 10, 20), Wave(e.EnemyType.FLYING_HEAVY, 10, 30)] * 3,
+    [Wave(e.EnemyType.GROUND_SUPER_HEAVY, 50, 10)],
 ]
 
 WAVE_COUNT = len(waves)
@@ -138,11 +139,12 @@ def wave_update() -> None:
 
 
 def wave_new() -> None:
-    p.money_add(wave_data.number + 1)
+    # too much money
+    # p.money_add(wave_data.number + 1)
     play_sound(AudioChannel.WAVE, g.PLAYER_SFX[2])
 
     wave_data.number += 1
-    print(f"New wave: {wave_data.number}")
+    # print(f"New wave: {wave_data.number}")
 
     # Increase enemy health multiplier
     e.enemy_health_multiplier = 1 + (wave_data.number / WAVE_COUNT) * HEALTH_SCALING
@@ -158,7 +160,7 @@ def wave_instruction_new() -> None:
     if wave_data.spawn_instruction_index >= len(w):
         # Signal that spawn wave is done
         wave_data.spawn_done = True
-        print("Current wave spawning complete")
+        # print("Current wave spawning complete")
         return
 
     wave_instruction: Wave = w[wave_data.spawn_instruction_index]
@@ -168,4 +170,4 @@ def wave_instruction_new() -> None:
     wave_data.spawn_tick = wave_instruction.spawn_tick
     wave_data.spawn_tick_counter = 0
 
-    print(f"New wave spawn index: {wave_data.spawn_instruction_index}")
+    # print(f"New wave spawn index: {wave_data.spawn_instruction_index}")

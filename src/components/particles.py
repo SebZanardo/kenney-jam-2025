@@ -36,11 +36,44 @@ class Particle:
     lifetime: int = 0  # current frame
 
 
+MAX_PARTICLES = 200
 _particles: list[Particle] = []
 
+# Instantiate once here before game. values dont matter
+for _ in range(MAX_PARTICLES):
+    particle = Particle(
+        g.PARTICLES[0],
+        Motion(
+            pygame.Vector2(),
+            pygame.Vector2(),
+            pygame.Vector2()
+        ),
+        0.0,
+        0.0,
+        0
+    )
+    _particles.append(particle)
 
-def particle_spawn(*new_particles: Particle):
-    _particles.extend(new_particles)
+particles_active: int = 0
+
+
+def particle_spawn(
+    sprite: pygame.Surface,
+    motion: Motion,
+    rotation: float,
+    rotational_velocity: float,
+    lifespan: int,
+    lifetime: int = 0,
+):
+    global particles_active
+    _particles[particles_active].sprite = sprite
+    _particles[particles_active].motion = motion
+    _particles[particles_active].rotation = rotation
+    _particles[particles_active].rotational_velocity = rotational_velocity
+    _particles[particles_active].lifespan = lifespan
+    _particles[particles_active].lifetime = lifetime
+
+    particles_active = min(particles_active + 1, MAX_PARTICLES-1)
 
 
 def particle_burst(
@@ -74,13 +107,11 @@ def particle_burst(
 
         # create particle
         particle_spawn(
-            Particle(
-                g.PARTICLES[sprite_type.value],
-                motion,
-                rotation,
-                random.uniform(-500, 500),
-                lifespan + random.randint(-lifespan_variance // 2, lifespan_variance // 2),
-            )
+            g.PARTICLES[sprite_type.value],
+            motion,
+            rotation,
+            random.uniform(-500, 500),
+            lifespan + random.randint(-lifespan_variance // 2, lifespan_variance // 2),
         )
 
 
@@ -91,11 +122,17 @@ def particle_update(particle: Particle) -> None:
 
 
 def particles_update() -> None:
+    global particles_active
     i = 0
-    while i < len(_particles):
-        particle_update(_particles[i])
-        if _particles[i].lifetime >= _particles[i].lifespan:
-            _particles.pop(i)
+    while i < particles_active:
+        particle = _particles[i]
+        particle_update(particle)
+
+        if particle.lifetime >= particle.lifespan:
+            # Switch with end of array :)) love this trick
+            particles_active -= 1
+            _particles[i] = _particles[particles_active]
+            _particles[particles_active] = particle
         else:
             i += 1
 
@@ -114,10 +151,10 @@ def particle_render(particle: Particle, camera: Camera) -> None:
 
 
 def particles_render() -> None:
-    for particle in _particles:
-        particle_render(particle, g.camera)
+    for i in range(particles_active):
+        particle_render(_particles[i], g.camera)
 
 
 def particles_clear() -> None:
-    global _particles
-    _particles = []
+    global particles_active
+    particles_active = 0

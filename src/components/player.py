@@ -50,17 +50,15 @@ def score_add(amount: int) -> None:
     if abs(amount) >= 50:
         text = g.FONT.render(signed_num(amount), False, c.GREEN if amount > 0 else c.RED)
         particle_spawn(
-            Particle(
-                text,
-                Motion(
-                    pygame.Vector2(c.GRID_WIDTH // 2 + random.randint(-30, 30), c.GRID_HEIGHT),
-                    pygame.Vector2(0, -100),
-                    pygame.Vector2(),
-                ),
-                0,
-                0,
-                20,
-            )
+            text,
+            Motion(
+                pygame.Vector2(c.GRID_WIDTH // 2 + random.randint(-30, 30), c.GRID_HEIGHT),
+                pygame.Vector2(0, -100),
+                pygame.Vector2(),
+            ),
+            0,
+            0,
+            20
         )
 
 
