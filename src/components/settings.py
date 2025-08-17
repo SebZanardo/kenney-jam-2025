@@ -33,6 +33,8 @@ def settings_menu() -> bool:
     ui.context.rx = ui.context.x
     if ui.im_button_text("reset"):
         g.setting_params = copy.deepcopy(g.default_setting_params)
+        set_music_volume(g.setting_params["music"][0] / 100)
+        set_sfx_volume(g.setting_params["sfx"][0] / 100)
 
     if ui.im_button_text("back"):
         write_settings()

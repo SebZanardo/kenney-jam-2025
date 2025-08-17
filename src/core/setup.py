@@ -32,7 +32,7 @@ def setup() -> None:
 
     # Try load settings from web
     load_settings()
-    print(g.setting_params)
-    print("Loaded settings")
+    # print(g.setting_params)
+    # print("Loaded settings")
 
     pygame.mouse.set_visible(False)

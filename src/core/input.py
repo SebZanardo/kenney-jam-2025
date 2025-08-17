@@ -4,6 +4,8 @@ from enum import IntEnum, auto
 import core.constants as c
 import core.globals as g
 
+from components.audio import set_music_volume, set_sfx_volume
+
 
 class InputState(IntEnum):
     NOTHING = 0  # released for >1 frame
@@ -88,6 +90,15 @@ def input_event_queue() -> bool:
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             if not c.IS_WEB:
                 return False
+
+        elif event.type == pygame.WINDOWFOCUSGAINED:
+            set_music_volume(g.setting_params["music"][0] / 100)
+            set_sfx_volume(g.setting_params["sfx"][0] / 100)
+
+        elif event.type == pygame.WINDOWFOCUSLOST:
+            # Stop music to hopefully reduce buggin out
+            set_music_volume(0)
+            set_sfx_volume(0)
 
     return True
 

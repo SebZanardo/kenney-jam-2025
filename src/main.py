@@ -13,7 +13,7 @@ from components.audio import AudioChannel, play_sound, set_music_volume, set_sfx
 
 async def main() -> None:
     setup()
-    print("Starting game loop")
+    # print("Starting game loop")
 
     play_sound(AudioChannel.MUSIC, g.GAME_MUSIC, -1)
 
@@ -39,6 +39,11 @@ async def main() -> None:
 
         t.update_mouse_buffer()
 
+        if pygame.mouse.get_focused():
+            pygame.mouse.set_visible(False)
+        else:
+            pygame.mouse.set_visible(True)
+
         statemachine_execute(g.scene_manager)
 
         # Keep these calls together in this order
@@ -47,7 +52,7 @@ async def main() -> None:
 
 
 def terminate() -> None:
-    print("Terminated application")
+    # print("Terminated application")
 
     pygame.mixer.stop()
     g.window.fill(c.BLACK)
